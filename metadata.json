@@ -1,0 +1,6 @@
+{
+  "name": "React labs website",
+  "description": "A setup with Vite, React, Tailwind, Motion.js, and GSAP.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [""]
+}
