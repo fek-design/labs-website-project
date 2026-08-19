@@ -16,20 +16,18 @@ context: |
 
 rules:
   components:
-    - Never use standard hex codes in inline styles; rely strictly on tailwind.config.ts variables.
-    - Buttons must flip CMYK pairs on hover (e.g., cyan background flips to pink).
-    - Grid layouts must use Tailwind CSS for asymmetrical bento structures (e.g., 2x2 primary spans, 1x1 secondary spans).
-    - SVG Telemetry ribbons must be animated exclusively using GSAP ScrollTrigger and the useGSAP() hook to ensure React unmount cleanup.
+    - Never use standard hex codes in inline styles; rely strictly on the @theme variables defined in app/globals.css.
+    - Buttons must flip CMYK pairs on hover.
+    - Grid layouts must use Tailwind CSS for asymmetrical bento structures.
   database_actions:
     - All Prisma mutations must be executed strictly within Next.js Server Actions ('use server').
-    - Every Server Action must enforce a NextAuth Admin session check before executing logic (Ring 3 Security).
-    - Any Server Action that modifies inventory or loans must simultaneously append a record to the AuditLog table.
+    - Every Server Action must enforce a NextAuth Admin session check before executing logic.
+    - Any Server Action that modifies inventory or loans must append a record to AuditLog.
   file_handling:
-    - Do not implement AWS S3, Vercel Blob, or any cloud storage. 
-    - All image uploads must use Node.js `fs` to save locally to `/public/uploads`.
+    - Do not implement cloud storage. All image uploads must save locally to /public/uploads.
 
 operations:
   apply:
     guidance:
-      - Validate that no cloud services are accidentally imported or recommended.
+      - Validate that no cloud services are accidentally imported.
       - Ensure strict separation between UI client components and secured server actions.

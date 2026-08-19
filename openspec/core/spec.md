@@ -28,21 +28,3 @@ The UI separates global consistency from local operational modules.
   * `CapabilityBento`: The asymmetrical Makerspace grid.
   * `EquipmentPOS`: The Medialab checkout scanner.
   * `ManualViewer`: The accordion document library.
-
-## IV. The Spec Kit (The Visual Contract)
-The UI adheres to a brutalist CMYK design system, merging high-end editorial layouts with a dark-mode institutional identity. Deviations are blocked at the `tailwind.config.ts` level.
-
-### 1. Palette & Surfaces
-* **Base Floor:** `#000000` (Brand Black). white backgrounds are allowed, but only if used as accent and pattern breaking.
-* **Surface Cards:** `#141414` with `#262626` borders.
-* **CMYK Accents:** Yellow (`#FFED00`), Pink (`#E6007E`), Cyan (`#009FE3`). Used exclusively for telemetry, hover states, active buttons, and organic ribbons.
-
-### 2. Typography & Content
-* **Primary Font:** `Stack Sans Notch`.
-* **Hero Typography:** Lab names and primary headers abandon standard web sizing. They utilize massive scaling (`text-6xl` to `text-8xl`), aggressive tracking, and overlay blending (`mix-blend-mode`) directly over darkened photographic lab assets.
-* **Hierarchy:** Standard headers (`H2`/`H3`) are Bold/High-Contrast. Body text is muted (`text-gray-400`).
-
-### 3. Geometry, Layout & Textures
-* **Buttons:** Must be full pill (`rounded-full`). Hover states must flip CMYK pairs.
-* **The Bento Grid:** Strict asymmetrical layouts using Tailwind CSS Grid. High-value operational data (e.g., primary machines) use massive 2x2 spans; secondary data use 1x1 spans. Cards use `1.25rem` (`rounded-3xl`) radius with high-contrast accent borders on hover.
-* **Telemetry Ribbons (GSAP):** To break grid rigidity, the background utilizes organic, serpentine SVG ribbons with CMYK gradients. These weave behind and between the rigid Bento cards. They must be animated exclusively using GSAP ScrollTrigger and the `@gsap/react` `useGSAP()` hook to ensure proper React unmount cleanup.

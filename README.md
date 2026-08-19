@@ -1,55 +1,36 @@
-# Zealand Labs Website
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Database Setup
+## Getting Started
 
-This project uses **local MySQL** with **Prisma ORM** (see `openspec/specs/core/spec.md`).
-
-### Prerequisites
-
-- Node.js 22+
-- MySQL 8+ running locally (or Docker — see below)
-
-### Quick start with Docker
+First, run the development server:
 
 ```bash
-docker run --name zealand-mysql \
-  -e MYSQL_ROOT_PASSWORD=password \
-  -e MYSQL_DATABASE=zealand_labs \
-  -p 3306:3306 \
-  -d mysql:8
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-### Configuration
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-1. Copy the example environment file:
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-   ```bash
-   cp .env.example .env
-   ```
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-2. Adjust `DATABASE_URL` in `.env` if your MySQL credentials differ.
+## Learn More
 
-   Default: `mysql://root:password@localhost:3306/zealand_labs`
+To learn more about Next.js, take a look at the following resources:
 
-### Migrate and seed
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-```bash
-npm install
-npm run db:migrate    # apply migrations (creates tables)
-npm run db:seed       # populate development data
-npm run db:studio     # open Prisma Studio to inspect data
-```
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-### Other database commands
+## Deploy on Vercel
 
-| Script | Description |
-|--------|-------------|
-| `npm run db:generate` | Regenerate Prisma Client after schema changes |
-| `npm run db:push` | Push schema directly (dev shortcut, no migration file) |
-| `npm run db:migrate` | Create/apply migrations interactively |
-| `npm run db:seed` | Run idempotent seed script |
-| `npm run db:studio` | Launch Prisma Studio |
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-### Dev credentials (seed only)
-
-- **Admin:** `admin@zealandlabs.local` / `devpassword`
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
