@@ -8,9 +8,11 @@ import { motion } from "motion/react";
 
 interface LoanCalendarProps {
   labSlug?: string;
+  syncTrigger?: number;
+  onSync?: () => void;
 }
 
-export function LoanCalendar({ labSlug = "medialab" }: LoanCalendarProps) {
+export function LoanCalendar({ labSlug = "medialab", syncTrigger = 0, onSync }: LoanCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "DUE_TODAY" | "OVERDUE" | "RETURNED">("ALL");
@@ -83,10 +85,10 @@ export function LoanCalendar({ labSlug = "medialab" }: LoanCalendarProps) {
     }
   }, [daysMatrix, labSlug]);
 
-  // Load calendar strictly on month/lab changes without continuous interval polling
+  // Load calendar on month/lab change and on external sync triggers (checkout/returns)
   useEffect(() => {
     fetchMonthLoans();
-  }, [fetchMonthLoans]);
+  }, [fetchMonthLoans, syncTrigger]);
 
   // Navigation handlers
   const handlePrevMonth = () => {
@@ -147,227 +149,186 @@ export function LoanCalendar({ labSlug = "medialab" }: LoanCalendarProps) {
     <div className="bg-[#141414] border border-[#262626] rounded-3xl p-6 shadow-2xl font-mono">
       {/* Top Header / Navigation Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#262626]">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-wider font-semibold text-zinc-500">
-              Loan Schedule
-            </span>
-            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0D0D0D] border border-[#262626] text-[11px] text-[#009FE3]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#009FE3] animate-pulse" />
-              <span>Event Matrix</span>
-            </div>
-          </div>
-          <h2 className="text-2xl font-bold text-white tracking-tight mt-1 flex items-center gap-3">
-            <span>
-              {monthNames[curMonth]} {curYear}
-            </span>
-            {isLoading && (
-              <div className="w-4 h-4 border-2 border-[#009FE3] border-t-transparent rounded-full animate-spin" />
-            )}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handlePrevMonth}
+            className="w-8 h-8 rounded-full border border-[#262626] bg-[#0D0D0D] flex items-center justify-center text-zinc-400 hover:text-white hover:border-[#FFED00] transition-colors"
+          >
+            ‹
+          </button>
+          <h2 className="text-xl font-bold tracking-tight text-white min-w-[180px] text-center">
+            {monthNames[curMonth]} {curYear}
           </h2>
+          <button
+            type="button"
+            onClick={handleNextMonth}
+            className="w-8 h-8 rounded-full border border-[#262626] bg-[#0D0D0D] flex items-center justify-center text-zinc-400 hover:text-white hover:border-[#FFED00] transition-colors"
+          >
+            ›
+          </button>
+          <button
+            type="button"
+            onClick={handleToday}
+            className="text-xs font-bold text-zinc-400 hover:text-white bg-[#0D0D0D] border border-[#262626] px-3 py-1 rounded-full transition-colors"
+          >
+            Today
+          </button>
+          {isLoading && (
+            <span className="text-xs text-zinc-500 animate-pulse">Syncing...</span>
+          )}
         </div>
 
-        {/* Controls: Prev/Today/Next & Filters */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Navigation Buttons */}
-          <div className="flex items-center bg-[#0D0D0D] border border-[#262626] rounded-full p-1">
+        {/* Filter Pills */}
+        <div className="flex flex-wrap items-center gap-1.5 bg-[#0D0D0D] border border-[#262626] p-1 rounded-full text-xs">
+          {(
+            [
+              { id: "ALL", label: "All Events" },
+              { id: "ACTIVE", label: "Checked Out" },
+              { id: "DUE_TODAY", label: "Due Today" },
+              { id: "OVERDUE", label: "Overdue" },
+              { id: "RETURNED", label: "Returned" },
+            ] as const
+          ).map((filter) => (
             <button
+              key={filter.id}
               type="button"
-              onClick={handlePrevMonth}
-              className="p-1.5 hover:bg-[#262626] rounded-full text-zinc-300 hover:text-white transition-colors"
-              title="Previous Month"
+              onClick={() => setStatusFilter(filter.id)}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
+                statusFilter === filter.id
+                  ? filter.id === "OVERDUE"
+                    ? "bg-[#E6007E] text-white"
+                    : filter.id === "DUE_TODAY"
+                    ? "bg-[#FFED00] text-black"
+                    : filter.id === "ACTIVE"
+                    ? "bg-[#009FE3] text-black"
+                    : "bg-white text-black"
+                  : "text-zinc-400 hover:text-white"
+              }`}
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-              </svg>
+              {filter.label}
             </button>
-            <button
-              type="button"
-              onClick={handleToday}
-              className="px-3 py-1 text-xs font-bold text-zinc-300 hover:text-white transition-colors"
-            >
-              Today
-            </button>
-            <button
-              type="button"
-              onClick={handleNextMonth}
-              className="p-1.5 hover:bg-[#262626] rounded-full text-zinc-300 hover:text-white transition-colors"
-              title="Next Month"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Status Filter Pills */}
-          <div className="flex items-center gap-1 bg-[#0D0D0D] border border-[#262626] rounded-full p-1 text-[11px]">
-            {(
-              [
-                { id: "ALL", label: "All" },
-                { id: "ACTIVE", label: "Active" },
-                { id: "DUE_TODAY", label: "Due Today" },
-                { id: "OVERDUE", label: "Overdue" },
-                { id: "RETURNED", label: "Returned" },
-              ] as const
-            ).map((filter) => (
-              <button
-                key={filter.id}
-                type="button"
-                onClick={() => setStatusFilter(filter.id)}
-                className={`px-2.5 py-1 rounded-full transition-colors ${
-                  statusFilter === filter.id
-                    ? filter.id === "OVERDUE"
-                      ? "bg-[#E6007E] text-white font-bold"
-                      : filter.id === "DUE_TODAY"
-                      ? "bg-[#FFED00] text-black font-bold"
-                      : filter.id === "ACTIVE"
-                      ? "bg-[#009FE3] text-black font-bold"
-                      : "bg-white text-black font-bold"
-                    : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Legend Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 py-3 text-[11px] text-zinc-400 border-b border-[#262626]">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#009FE3]" />
-            <span>Active Loan</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#FFED00]" />
-            <span>Due on Date</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#E6007E]" />
-            <span>Overdue</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-zinc-600" />
-            <span>Returned</span>
-          </div>
-        </div>
-        <div>Click any day or event badge to inspect & check in gear</div>
-      </div>
-
-      {/* Calendar Grid */}
-      <div className="mt-4">
-        {/* Day Headers */}
-        <div className="grid grid-cols-7 gap-2 mb-2 text-center text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-          {weekDayLabels.map((lbl) => (
-            <div key={lbl} className="py-1">
-              {lbl}
-            </div>
           ))}
         </div>
-
-        {/* Days Matrix */}
-        <div className="grid grid-cols-7 gap-2">
-          {daysMatrix.map((item, idx) => {
-            const isToday =
-              item.date.toDateString() === new Date().toDateString();
-            const isSelected =
-              item.date.toDateString() === selectedDate.toDateString();
-            const dayEvents = getEventsForDay(item.date);
-
-            return (
-              <CalendarDayCell
-                key={idx}
-                date={item.date}
-                isCurrentMonth={item.isCurrentMonth}
-                isToday={isToday}
-                isSelected={isSelected}
-                events={dayEvents}
-                onSelectDate={(d) => setSelectedDate(d)}
-                onSelectLoan={(l) => setInspectingLoan(l)}
-              />
-            );
-          })}
-        </div>
       </div>
 
-      {/* Selected Day Agenda Drawer */}
-      <div className="mt-6 pt-5 border-t border-[#262626] bg-[#0D0D0D] border rounded-2xl p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h4 className="text-sm font-bold text-white">
-              Selected Agenda:{" "}
-              <span className="text-[#FFED00]">
-                {selectedDate.toLocaleDateString("en-DK", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </span>
-            </h4>
-            <span className="text-xs text-zinc-500 font-bold">
-              ({selectedDayEvents.length} event{selectedDayEvents.length === 1 ? "" : "s"})
-            </span>
+      {/* Main Grid: Days of the week + Month Matrix */}
+      <div className="mt-4 grid grid-cols-7 gap-2">
+        {weekDayLabels.map((day) => (
+          <div
+            key={day}
+            className="text-center text-zinc-500 font-bold text-[11px] uppercase tracking-wider py-1"
+          >
+            {day}
           </div>
+        ))}
+
+        {daysMatrix.map(({ date, isCurrentMonth }, idx) => {
+          const events = getEventsForDay(date);
+          const isToday =
+            date.getDate() === new Date().getDate() &&
+            date.getMonth() === new Date().getMonth() &&
+            date.getFullYear() === new Date().getFullYear();
+          const isSelected =
+            date.getDate() === selectedDate.getDate() &&
+            date.getMonth() === selectedDate.getMonth() &&
+            date.getFullYear() === selectedDate.getFullYear();
+
+          return (
+            <CalendarDayCell
+              key={idx}
+              date={date}
+              isCurrentMonth={isCurrentMonth}
+              isToday={isToday}
+              isSelected={isSelected}
+              events={events}
+              onSelectDate={(d) => setSelectedDate(d)}
+              onSelectLoan={(loan) => setInspectingLoan(loan)}
+            />
+          );
+        })}
+      </div>
+
+      {/* Selected Day Agenda Inspection */}
+      <div className="mt-6 pt-4 border-t border-[#262626]">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-bold uppercase text-zinc-400">
+            Agenda for {selectedDate.toLocaleDateString("en-DK", { month: "short", day: "numeric", year: "numeric" })}
+          </h3>
+          <span className="text-xs text-zinc-500 font-mono">
+            {selectedDayEvents.length} event(s) recorded
+          </span>
         </div>
 
-        <div className="mt-3 space-y-2">
-          {selectedDayEvents.length === 0 ? (
-            <p className="text-xs text-zinc-500 italic py-2">
-              No equipment loans or return deadlines recorded for this date.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {selectedDayEvents.map((loan) => (
+        {selectedDayEvents.length === 0 ? (
+          <div className="text-zinc-600 text-xs py-4 text-center">
+            No checkouts or scheduled returns on this date.
+          </div>
+        ) : (
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {selectedDayEvents.map((loan) => {
+              const isOverdue =
+                loan.isOverdue || (loan.status === "ACTIVE" && new Date(loan.expectedReturn) < new Date());
+
+              return (
                 <div
                   key={loan.id}
                   onClick={() => setInspectingLoan(loan)}
-                  className="bg-[#141414] border border-[#262626] hover:border-[#009FE3] p-3 rounded-xl cursor-pointer transition-all flex flex-col justify-between"
+                  className={`p-3.5 rounded-2xl border bg-[#0D0D0D] cursor-pointer transition-all hover:scale-[1.01] ${
+                    loan.status === "RETURNED"
+                      ? "border-[#262626] text-zinc-400"
+                      : isOverdue
+                      ? "border-[#E6007E]/50 hover:border-[#E6007E]"
+                      : "border-[#262626] hover:border-[#009FE3]"
+                  }`}
                 >
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-white text-xs">{loan.inventory?.name}</span>
-                      <span
-                        className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                          loan.isOverdue
-                            ? "bg-[#E6007E]/20 text-[#E6007E]"
-                            : loan.status === "RETURNED"
-                            ? "bg-zinc-800 text-zinc-400"
-                            : "bg-[#009FE3]/20 text-[#009FE3]"
-                        }`}
-                      >
-                        {loan.isOverdue ? "OVERDUE" : loan.status}
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-[#009FE3] mt-0.5">{loan.inventory?.assetTag}</div>
-                    <div className="text-[10px] text-zinc-400 mt-1">Patron: {loan.patron?.studentId}</div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">
+                      {loan.inventory?.name}
+                    </span>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        loan.status === "RETURNED"
+                          ? "bg-zinc-800 text-zinc-400 border-zinc-700"
+                          : isOverdue
+                          ? "bg-[#E6007E]/20 text-[#E6007E] border-[#E6007E]"
+                          : "bg-[#009FE3]/20 text-[#009FE3] border-[#009FE3]"
+                      }`}
+                    >
+                      {isOverdue ? "OVERDUE" : loan.status === "ACTIVE" ? "CHECKED OUT" : loan.status}
+                    </span>
                   </div>
 
-                  <div className="mt-2 pt-2 border-t border-[#262626] flex items-center justify-between text-[10px]">
-                    <span className="text-zinc-500">
-                      Due: {new Date(loan.expectedReturn).toLocaleTimeString("en-DK", { hour: "2-digit", minute: "2-digit" })}
+                  <div className="text-[11px] text-zinc-400 mt-1 flex items-center justify-between">
+                    <span>Tag: <strong className="text-white">[{loan.inventory?.assetTag}]</strong></span>
+                    <span>Student: <strong className="text-[#FFED00]">{loan.patron?.studentId}</strong></span>
+                  </div>
+
+                  <div className="text-[10px] text-zinc-500 mt-2 flex items-center justify-between">
+                    <span>Out: {new Date(loan.checkoutDate).toLocaleDateString("en-DK", { month: "short", day: "numeric" })}</span>
+                    <span className={isOverdue ? "text-[#E6007E] font-bold" : "text-zinc-400"}>
+                      Due: {new Date(loan.expectedReturn).toLocaleDateString("en-DK", { month: "short", day: "numeric" })}
                     </span>
-                    <span className="text-[#009FE3] hover:underline font-bold">Inspect →</span>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Loan Inspection Modal */}
-      <LoanDetailModal
-        loan={inspectingLoan}
-        isOpen={Boolean(inspectingLoan)}
-        onClose={() => setInspectingLoan(null)}
-        onRefresh={() => {
-          fetchMonthLoans();
-        }}
-      />
+      {/* Loan Inspection & Action Modal */}
+      {inspectingLoan && (
+        <LoanDetailModal
+          loan={inspectingLoan}
+          isOpen={!!inspectingLoan}
+          onClose={() => setInspectingLoan(null)}
+          onRefresh={() => {
+            fetchMonthLoans();
+            if (onSync) onSync();
+          }}
+        />
+      )}
     </div>
   );
 }

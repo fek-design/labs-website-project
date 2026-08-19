@@ -58,6 +58,9 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
   const [showNewPatronPrompt, setShowNewPatronPrompt] = useState<string | null>(null);
   const [newPatronEmail, setNewPatronEmail] = useState("");
 
+  // Calendar real-time sync key
+  const [calendarSyncKey, setCalendarSyncKey] = useState(0);
+
   const activePatronRef = React.useRef<any>(null);
   activePatronRef.current = activePatron;
 
@@ -80,6 +83,8 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
       if (currentPatronId && refreshedPatron) {
         setActivePatron(refreshedPatron);
       }
+
+      setCalendarSyncKey((k) => k + 1);
     } catch (err) {
       console.error("Error refreshing POS data", err);
     }
@@ -392,7 +397,7 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
                   </p>
                 </div>
               </div>
-              <LoanCalendar labSlug={labSlug} />
+              <LoanCalendar labSlug={labSlug} syncTrigger={calendarSyncKey} onSync={refreshData} />
             </div>
           </div>
         )}

@@ -37,6 +37,12 @@ enum LoanStatus {
   DAMAGED
 }
 
+enum TagFacet {
+  DISCIPLINE
+  PROCESS
+  MATERIAL
+}
+
 model Admin {
   id            String     @id @default(uuid())
   username      String     @unique
@@ -119,6 +125,7 @@ model Tag {
   id        Int            @id @default(autoincrement())
   name      String         @unique
   slug      String         @unique
+  facet     TagFacet       @default(DISCIPLINE)
   inventory InventoryTag[]
 }
 

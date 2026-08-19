@@ -1,10 +1,10 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma";
-import { Role, HardwareType, OperationalStatus } from "@prisma/client";
+import { Role, HardwareType, OperationalStatus, TagFacet } from "@prisma/client";
 
 async function main() {
-  console.log("🧹 Resetting database & seeding clean mock test data...");
+  console.log("🧹 Resetting database & seeding 3-tier faceted taxonomy mock test data...");
 
   // Clear existing records in foreign-key dependency order
   await prisma.repairLog.deleteMany();
@@ -74,29 +74,50 @@ async function main() {
 
   console.log(`Admins ready: admin (SUPER_ADMIN / password: pass), technician (TECHNICIAN / password: pass)`);
 
-  // 3. Seed Taxonomy Tags
-  console.log("Creating Taxonomy Tags...");
-  const tagData = [
-    { name: "3D Printing", slug: "3d-printing" },
-    { name: "Laser Cutting", slug: "laser-cutting" },
-    { name: "Electronics", slug: "electronics" },
-    { name: "Camera Gear", slug: "camera-gear" },
-    { name: "Audio Equipment", slug: "audio-equipment" },
-    { name: "Lighting", slug: "lighting" },
-    { name: "XR & VR", slug: "xr-vr" },
-    { name: "General Tools", slug: "general-tools" },
+  // 3. Seed 3-Tier Faceted Taxonomy Tags
+  console.log("Creating 3-Tier Faceted Taxonomy Tags...");
+  const facetedTagsData = [
+    // DISCIPLINE (Lab domain / workspace zone)
+    { name: "Textile", slug: "textile", facet: TagFacet.DISCIPLINE },
+    { name: "3D Fabrication", slug: "3d-fabrication", facet: TagFacet.DISCIPLINE },
+    { name: "Rapid Prototyping", slug: "rapid-prototyping", facet: TagFacet.DISCIPLINE },
+    { name: "Medialab & AV", slug: "medialab-av", facet: TagFacet.DISCIPLINE },
+    { name: "Electronics", slug: "electronics", facet: TagFacet.DISCIPLINE },
+
+    // PROCESS (Hardware execution technique)
+    { name: "Direct-to-Garment", slug: "direct-to-garment", facet: TagFacet.PROCESS },
+    { name: "Sublimation", slug: "sublimation", facet: TagFacet.PROCESS },
+    { name: "FDM 3D Printing", slug: "fdm-3d-printing", facet: TagFacet.PROCESS },
+    { name: "Resin SLA Printing", slug: "resin-sla-printing", facet: TagFacet.PROCESS },
+    { name: "Laser Cutting", slug: "laser-cutting", facet: TagFacet.PROCESS },
+    { name: "Screen Printing", slug: "screen-printing", facet: TagFacet.PROCESS },
+    { name: "Embroidery", slug: "embroidery", facet: TagFacet.PROCESS },
+    { name: "Soldering & SMD", slug: "soldering-smd", facet: TagFacet.PROCESS },
+    { name: "Cinema 4K Recording", slug: "cinema-4k-recording", facet: TagFacet.PROCESS },
+    { name: "Wireless Audio", slug: "wireless-audio", facet: TagFacet.PROCESS },
+    { name: "Studio Lighting", slug: "studio-lighting", facet: TagFacet.PROCESS },
+    { name: "VR & Spatial Computing", slug: "vr-spatial-computing", facet: TagFacet.PROCESS },
+
+    // MATERIAL (Consumable / substrate)
+    { name: "Cotton/Polyester", slug: "cotton-polyester", facet: TagFacet.MATERIAL },
+    { name: "PLA/PETG Filament", slug: "pla-petg-filament", facet: TagFacet.MATERIAL },
+    { name: "Cast Acrylic", slug: "cast-acrylic", facet: TagFacet.MATERIAL },
+    { name: "Photopolymer Resin", slug: "photopolymer-resin", facet: TagFacet.MATERIAL },
+    { name: "Heat Transfer Vinyl", slug: "heat-transfer-vinyl", facet: TagFacet.MATERIAL },
+    { name: "Lead-Free Solder", slug: "lead-free-solder", facet: TagFacet.MATERIAL },
+    { name: "UHS-II V90 SD Media", slug: "v90-sd-media", facet: TagFacet.MATERIAL },
   ];
 
   const tags: Record<string, any> = {};
-  for (const t of tagData) {
+  for (const t of facetedTagsData) {
     const createdTag = await prisma.tag.create({
-      data: { name: t.name, slug: t.slug },
+      data: { name: t.name, slug: t.slug, facet: t.facet },
     });
     tags[t.slug] = createdTag;
   }
-  console.log(`Taxonomy tags created: ${Object.keys(tags).length}`);
+  console.log(`Faceted taxonomy tags created: ${Object.keys(tags).length}`);
 
-  // 4. Seed Verified Makerspace Static Machines (Authentic Specs)
+  // 4. Seed Verified Makerspace Static Machines (Clean Authentic Specs)
   console.log("Creating Verified Makerspace Machines...");
 
   const bambuX1C = await prisma.inventory.create({
@@ -109,7 +130,6 @@ async function main() {
       imageUrl: "/uploads/bambu-x1c.webp",
       notes: "0.4mm hardened steel nozzle. AMS automated material system with 4 filament slots.",
       customFields: {
-        buildVolume: "256 x 256 x 256 mm",
         manualUrl: "https://wiki.bambulab.com/en/x1",
         manualFileName: "Bambu_X1C_User_Guide.pdf",
         safetyGuide: "Allow heated bed plate to cool before removing models.",
@@ -127,11 +147,26 @@ async function main() {
       imageUrl: "/uploads/beambox-pro.webp",
       notes: "CO2 glass laser tube with integrated air assist and smart camera alignment.",
       customFields: {
-        laserPower: "50W CO2",
-        workArea: "600 x 375 mm",
         manualUrl: "https://support.flux3dp.com/hc/en-us/categories/360001717316-Beambox",
         manualFileName: "Flux_Beambox_Pro_Manual.pdf",
         safetyGuide: "Turn on external exhaust blower before laser emission. Never cut PVC or vinyl.",
+      },
+    },
+  });
+
+  const brotherGTX = await prisma.inventory.create({
+    data: {
+      assetTag: "MK-TEX-0001",
+      name: "Brother GTX Pro Direct-to-Garment Printer",
+      labId: makerspaceKoge.id,
+      hardwareType: HardwareType.STATIC_MACHINE,
+      operationalStatus: OperationalStatus.AVAILABLE,
+      imageUrl: "/uploads/brother-gtx.webp",
+      notes: "Industrial DTG printer for organic cotton textiles and polyester blends with Innobella textile inks.",
+      customFields: {
+        manualUrl: "https://www.brother-ism.com",
+        manualFileName: "Brother_GTX_Pro_Operation_Manual.pdf",
+        safetyGuide: "Always wear safety gloves when handling pretreatment liquid and ink cartridges.",
       },
     },
   });
@@ -146,8 +181,6 @@ async function main() {
       imageUrl: "/uploads/weller-soldering.webp",
       notes: "Digital temperature controlled iron with ESD-safe bench mat and HEPA fume extraction.",
       customFields: {
-        power: "90W",
-        tempRange: "50°C - 450°C",
         safetyGuide: "Always wear safety goggles and keep fume extraction hood positioned over work.",
       },
     },
@@ -204,15 +237,44 @@ async function main() {
     },
   });
 
-  // 6. Connect Inventory with Tags
+  // 6. Connect Inventory with 3-Tier Faceted Tags
   const tagMappings = [
-    { inventoryId: bambuX1C.id, tagId: tags["3d-printing"].id },
+    // Bambu Lab X1C
+    { inventoryId: bambuX1C.id, tagId: tags["3d-fabrication"].id },
+    { inventoryId: bambuX1C.id, tagId: tags["fdm-3d-printing"].id },
+    { inventoryId: bambuX1C.id, tagId: tags["pla-petg-filament"].id },
+
+    // Laser Cutter
+    { inventoryId: laserCutter.id, tagId: tags["rapid-prototyping"].id },
     { inventoryId: laserCutter.id, tagId: tags["laser-cutting"].id },
+    { inventoryId: laserCutter.id, tagId: tags["cast-acrylic"].id },
+
+    // Brother GTX Pro Textile
+    { inventoryId: brotherGTX.id, tagId: tags["textile"].id },
+    { inventoryId: brotherGTX.id, tagId: tags["direct-to-garment"].id },
+    { inventoryId: brotherGTX.id, tagId: tags["cotton-polyester"].id },
+
+    // Weller Soldering
     { inventoryId: solderingStation.id, tagId: tags["electronics"].id },
-    { inventoryId: sonyFX30.id, tagId: tags["camera-gear"].id },
-    { inventoryId: rodeWirelessPro.id, tagId: tags["audio-equipment"].id },
-    { inventoryId: aputureAmaran.id, tagId: tags["lighting"].id },
-    { inventoryId: metaQuest3.id, tagId: tags["xr-vr"].id },
+    { inventoryId: solderingStation.id, tagId: tags["soldering-smd"].id },
+    { inventoryId: solderingStation.id, tagId: tags["lead-free-solder"].id },
+
+    // Sony FX30
+    { inventoryId: sonyFX30.id, tagId: tags["medialab-av"].id },
+    { inventoryId: sonyFX30.id, tagId: tags["cinema-4k-recording"].id },
+    { inventoryId: sonyFX30.id, tagId: tags["v90-sd-media"].id },
+
+    // RØDE Wireless PRO
+    { inventoryId: rodeWirelessPro.id, tagId: tags["medialab-av"].id },
+    { inventoryId: rodeWirelessPro.id, tagId: tags["wireless-audio"].id },
+
+    // Aputure Amaran
+    { inventoryId: aputureAmaran.id, tagId: tags["medialab-av"].id },
+    { inventoryId: aputureAmaran.id, tagId: tags["studio-lighting"].id },
+
+    // Meta Quest 3
+    { inventoryId: metaQuest3.id, tagId: tags["medialab-av"].id },
+    { inventoryId: metaQuest3.id, tagId: tags["vr-spatial-computing"].id },
   ];
 
   for (const mapping of tagMappings) {
@@ -236,12 +298,11 @@ async function main() {
     },
   });
 
-  // 8. Seed an Active Loan and a Returned Loan with Check-in Comparison
+  // 8. Seed an Active Loan
   const now = new Date();
-  const checkoutDate = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000); // 10 days ago
-  const expectedReturnDate = new Date(now.getTime() + 20 * 24 * 60 * 60 * 1000); // 20 days in future
+  const checkoutDate = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
+  const expectedReturnDate = new Date(now.getTime() + 25 * 24 * 60 * 60 * 1000);
 
-  // Active Loan for Camera
   await prisma.loan.create({
     data: {
       inventoryId: sonyFX30.id,
@@ -255,7 +316,7 @@ async function main() {
   });
 
   console.log("Seeded sample active loan for Sony FX30.");
-  console.log("✅ Database reset & clean seed completed successfully!");
+  console.log("✅ 3-Tier Faceted Taxonomy seed completed successfully!");
 }
 
 main()

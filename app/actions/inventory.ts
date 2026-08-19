@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { HardwareType, OperationalStatus } from "@prisma/client";
+import { HardwareType, OperationalStatus, TagFacet } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 async function getActorAdminId(providedAdminId?: string): Promise<string> {
@@ -23,13 +23,23 @@ const LAB_PREFIX_MAP: Record<string, string> = {
 };
 
 const CATEGORY_CODE_MAP: Record<string, string> = {
+  "3d-fabrication": "3DP",
   "3d-printing": "3DP",
+  "fdm-3d-printing": "3DP",
   "laser-cutting": "LSR",
+  textile: "TEX",
+  "direct-to-garment": "DTG",
+  "rapid-prototyping": "RPD",
   "camera-gear": "CAM",
+  "cinema-4k-recording": "CAM",
   "audio-equipment": "AUD",
+  "wireless-audio": "AUD",
   lighting: "LGT",
+  "studio-lighting": "LGT",
   "xr-vr": "VRX",
+  "vr-spatial-computing": "VRX",
   electronics: "ELC",
+  "soldering-smd": "ELC",
   "general-tools": "GEN",
 };
 
@@ -71,16 +81,20 @@ export async function generateAssetTag(params: {
 }
 
 /**
- * 1. Get filtered inventory with Macro-Lab, taxonomy tag, and status filters
+ * 1. Get filtered inventory with Multi-Faceted (Discipline, Process, Material) & Location filtering
  */
 export async function getInventoryWithFilters(filters: {
   labSlug?: string;
   hardwareType?: HardwareType;
   operationalStatus?: OperationalStatus;
   tagSlug?: string;
+  disciplineSlug?: string;
+  processSlug?: string;
+  materialSlug?: string;
   searchQuery?: string;
 }) {
   const where: any = {};
+  const andConditions: any[] = [];
 
   if (filters.labSlug && filters.labSlug !== "ALL") {
     where.lab = { slug: filters.labSlug };
@@ -95,11 +109,39 @@ export async function getInventoryWithFilters(filters: {
   }
 
   if (filters.tagSlug && filters.tagSlug !== "ALL") {
-    where.tags = {
-      some: {
-        tag: { slug: filters.tagSlug },
+    andConditions.push({
+      tags: {
+        some: { tag: { slug: filters.tagSlug } },
       },
-    };
+    });
+  }
+
+  if (filters.disciplineSlug && filters.disciplineSlug !== "ALL") {
+    andConditions.push({
+      tags: {
+        some: { tag: { slug: filters.disciplineSlug, facet: TagFacet.DISCIPLINE } },
+      },
+    });
+  }
+
+  if (filters.processSlug && filters.processSlug !== "ALL") {
+    andConditions.push({
+      tags: {
+        some: { tag: { slug: filters.processSlug, facet: TagFacet.PROCESS } },
+      },
+    });
+  }
+
+  if (filters.materialSlug && filters.materialSlug !== "ALL") {
+    andConditions.push({
+      tags: {
+        some: { tag: { slug: filters.materialSlug, facet: TagFacet.MATERIAL } },
+      },
+    });
+  }
+
+  if (andConditions.length > 0) {
+    where.AND = andConditions;
   }
 
   if (filters.searchQuery?.trim()) {
@@ -139,12 +181,58 @@ export async function getLabsList() {
 }
 
 /**
- * 3. Get all taxonomy tags
+ * 3. Get all taxonomy tags, grouped by 3-Tier Facet
  */
 export async function getTagsList() {
   return await prisma.tag.findMany({
+    orderBy: [{ facet: "asc" }, { name: "asc" }],
+  });
+}
+
+export async function getFacetedTags() {
+  const allTags = await prisma.tag.findMany({
     orderBy: { name: "asc" },
   });
+
+  return {
+    disciplines: allTags.filter((t) => t.facet === TagFacet.DISCIPLINE),
+    processes: allTags.filter((t) => t.facet === TagFacet.PROCESS),
+    materials: allTags.filter((t) => t.facet === TagFacet.MATERIAL),
+  };
+}
+
+/**
+ * Dynamic Tag Creation within a specific facet
+ */
+export async function createTag(data: { name: string; facet: TagFacet }) {
+  const cleanName = data.name.trim();
+  if (!cleanName) {
+    throw new Error("Tag name cannot be empty.");
+  }
+
+  const slug = cleanName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+
+  const existing = await prisma.tag.findUnique({
+    where: { slug },
+  });
+
+  if (existing) {
+    return { success: true, tag: existing };
+  }
+
+  const newTag = await prisma.tag.create({
+    data: {
+      name: cleanName,
+      slug,
+      facet: data.facet,
+    },
+  });
+
+  revalidatePath("/admin/pos");
+  return { success: true, tag: newTag };
 }
 
 /**

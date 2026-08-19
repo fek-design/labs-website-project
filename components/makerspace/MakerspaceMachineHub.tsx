@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { getInventoryWithFilters, updateInventoryItem } from "@/app/actions/inventory";
-import { uploadMachineManual } from "@/app/actions/upload";
+import { uploadMachineManual, deleteMachineManual, replaceMachineManual } from "@/app/actions/upload";
 import { OperationalStatus, HardwareType } from "@prisma/client";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -12,12 +12,13 @@ export function MakerspaceMachineHub() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTag, setSelectedTag] = useState<string>("ALL");
 
-  // PDF Upload State
+  // PDF Upload / Replace State
   const [uploadingMachineId, setUploadingMachineId] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const activeMachineForUpload = useRef<string | null>(null);
+  const isReplacingRef = useRef<boolean>(false);
 
   const fetchMachines = useCallback(async () => {
     try {
@@ -52,8 +53,9 @@ export function MakerspaceMachineHub() {
     }
   };
 
-  const handleTriggerUpload = (machineId: string) => {
+  const handleTriggerUpload = (machineId: string, isReplacing: boolean = false) => {
     activeMachineForUpload.current = machineId;
+    isReplacingRef.current = isReplacing;
     setUploadError(null);
     setUploadSuccess(null);
     if (fileInputRef.current) {
@@ -78,7 +80,10 @@ export function MakerspaceMachineHub() {
       formData.append("file", file);
       formData.append("machineId", machineId);
 
-      const res = await uploadMachineManual(formData);
+      const res = isReplacingRef.current
+        ? await replaceMachineManual(formData)
+        : await uploadMachineManual(formData);
+
       if (res.success) {
         setUploadSuccess(`PDF "${file.name}" attached successfully!`);
         fetchMachines();
@@ -90,6 +95,22 @@ export function MakerspaceMachineHub() {
     } finally {
       setUploadingMachineId(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDeleteManual = async (machineId: string) => {
+    if (!confirm("Are you sure you want to delete this PDF manual?")) return;
+    try {
+      setUploadingMachineId(machineId);
+      await deleteMachineManual(machineId);
+      setUploadSuccess("Manual removed successfully.");
+      fetchMachines();
+      setTimeout(() => setUploadSuccess(null), 4000);
+    } catch (err: any) {
+      setUploadError(err.message || "Failed to delete manual.");
+      setTimeout(() => setUploadError(null), 4000);
+    } finally {
+      setUploadingMachineId(null);
     }
   };
 
@@ -157,12 +178,12 @@ export function MakerspaceMachineHub() {
         {/* Search Bar */}
         <div className="sm:col-span-8">
           <label className="text-[10px] text-zinc-500 uppercase block mb-1 font-bold">
-            Machine Search (Name, Tag, or Spec)
+            Machine Search (Name, Tag, or Category)
           </label>
           <div className="relative">
             <input
               type="text"
-              placeholder="Search 3D printers, laser cutters, CNCs..."
+              placeholder="Search 3D printers, laser cutters, CNCs, textiles..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-[#0D0D0D] border border-[#262626] focus:border-[#FFED00] text-white text-xs rounded-xl p-3 outline-none pl-9 font-bold"
@@ -191,10 +212,11 @@ export function MakerspaceMachineHub() {
             className="w-full bg-[#0D0D0D] border border-[#262626] text-white text-xs rounded-xl p-3 outline-none font-bold"
           >
             <option value="ALL">All Categories</option>
-            <option value="3d-printing">3D Printing</option>
-            <option value="laser-cutting">Laser Cutting</option>
+            <option value="3d-fabrication">3D Fabrication</option>
+            <option value="rapid-prototyping">Rapid Prototyping</option>
+            <option value="textile">Textile</option>
             <option value="electronics">Electronics</option>
-            <option value="general-tools">General Tools</option>
+            <option value="laser-cutting">Laser Cutting</option>
           </select>
         </div>
       </div>
@@ -212,6 +234,7 @@ export function MakerspaceMachineHub() {
             const isUploading = uploadingMachineId === machine.id;
             const manualUrl = machine.customFields?.manualUrl;
             const manualFileName = machine.customFields?.manualFileName;
+            const machineTags = machine.tags || [];
 
             return (
               <div
@@ -250,35 +273,44 @@ export function MakerspaceMachineHub() {
                     </span>
                   </div>
 
-                  {/* Clean Technical Specifications & Operational Notes */}
-                  <div className="mt-4 bg-[#141414] border border-[#262626] rounded-2xl p-4 space-y-2 text-xs">
-                    <div className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider">
-                      Technical Parameters & Specs
+                  {/* 3-Tier Faceted Tags */}
+                  {machineTags.length > 0 && (
+                    <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                      {machineTags.map((it: any) => {
+                        const tag = it.tag;
+                        const isDiscipline = tag.facet === "DISCIPLINE";
+                        const isProcess = tag.facet === "PROCESS";
+                        const isMaterial = tag.facet === "MATERIAL";
+
+                        return (
+                          <span
+                            key={tag.id}
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                              isDiscipline
+                                ? "bg-[#FFED00]/10 text-[#FFED00] border-[#FFED00]/30"
+                                : isProcess
+                                ? "bg-[#009FE3]/10 text-[#009FE3] border-[#009FE3]/30"
+                                : isMaterial
+                                ? "bg-[#E6007E]/10 text-[#E6007E] border-[#E6007E]/30"
+                                : "bg-zinc-800 text-zinc-300 border-zinc-700"
+                            }`}
+                          >
+                            {tag.name}
+                          </span>
+                        );
+                      })}
                     </div>
-                    {machine.customFields?.buildVolume && (
-                      <div className="flex justify-between">
-                        <span className="text-zinc-400">Build Volume:</span>
-                        <span className="text-white font-bold">{machine.customFields.buildVolume}</span>
+                  )}
+
+                  {/* Clean Technical Parameters & Operational Notes (No Fake Specs) */}
+                  {machine.notes && (
+                    <div className="mt-4 bg-[#141414] border border-[#262626] rounded-2xl p-4 text-xs">
+                      <div className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-1">
+                        Operational Details & Configuration
                       </div>
-                    )}
-                    {machine.customFields?.laserPower && (
-                      <div className="flex justify-between">
-                        <span className="text-zinc-400">Laser Power:</span>
-                        <span className="text-white font-bold">{machine.customFields.laserPower}</span>
-                      </div>
-                    )}
-                    {machine.customFields?.workArea && (
-                      <div className="flex justify-between">
-                        <span className="text-zinc-400">Work Area:</span>
-                        <span className="text-white font-bold">{machine.customFields.workArea}</span>
-                      </div>
-                    )}
-                    {machine.notes && (
-                      <div className="pt-2 border-t border-[#262626] text-zinc-300 text-[11px]">
-                        {machine.notes}
-                      </div>
-                    )}
-                  </div>
+                      <p className="text-zinc-300 leading-relaxed">{machine.notes}</p>
+                    </div>
+                  )}
 
                   {/* Safety Protocols */}
                   {machine.customFields?.safetyGuide && (
@@ -289,35 +321,59 @@ export function MakerspaceMachineHub() {
                   )}
                 </div>
 
-                {/* PDF Manual Documents & Actions */}
+                {/* PDF Manual Documents & Action Controls */}
                 <div className="mt-6 pt-4 border-t border-[#262626] space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     {/* Manual Link or View Button */}
                     {manualUrl ? (
-                      <a
-                        href={manualUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#009FE3]/10 border border-[#009FE3]/30 text-[#009FE3] hover:bg-[#009FE3]/20 rounded-full text-xs font-bold transition-colors"
-                      >
-                        <span>📄 {manualFileName || "View User Manual (PDF)"}</span>
-                        <span>↗</span>
-                      </a>
-                    ) : (
-                      <span className="text-zinc-600 italic text-[11px]">
-                        No manual PDF attached yet
-                      </span>
-                    )}
+                      <div className="flex items-center gap-2">
+                        <a
+                          href={manualUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#009FE3]/10 border border-[#009FE3]/30 text-[#009FE3] hover:bg-[#009FE3]/20 rounded-full text-xs font-bold transition-colors"
+                        >
+                          <span>📄 {manualFileName || "View PDF Manual"}</span>
+                          <span>↗</span>
+                        </a>
 
-                    {/* Upload / Replace PDF Manual Action */}
-                    <button
-                      type="button"
-                      disabled={isUploading}
-                      onClick={() => handleTriggerUpload(machine.id)}
-                      className="px-3 py-1.5 bg-[#141414] hover:bg-[#262626] border border-[#262626] text-zinc-300 hover:text-white rounded-full text-[11px] font-bold transition-colors"
-                    >
-                      {isUploading ? "Uploading PDF..." : "📤 Upload PDF Manual"}
-                    </button>
+                        {/* Replace Manual */}
+                        <button
+                          type="button"
+                          disabled={isUploading}
+                          onClick={() => handleTriggerUpload(machine.id, true)}
+                          className="px-2.5 py-1 bg-[#141414] hover:bg-[#262626] border border-[#262626] text-zinc-300 hover:text-white rounded-full text-[10px] font-bold"
+                          title="Replace attached PDF manual"
+                        >
+                          🔄 Replace
+                        </button>
+
+                        {/* Delete Manual */}
+                        <button
+                          type="button"
+                          disabled={isUploading}
+                          onClick={() => handleDeleteManual(machine.id)}
+                          className="px-2.5 py-1 bg-[#E6007E]/10 hover:bg-[#E6007E]/20 border border-[#E6007E]/30 text-[#E6007E] rounded-full text-[10px] font-bold"
+                          title="Delete PDF manual"
+                        >
+                          🗑 Delete
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between w-full">
+                        <span className="text-zinc-600 italic text-[11px]">
+                          No manual PDF attached
+                        </span>
+                        <button
+                          type="button"
+                          disabled={isUploading}
+                          onClick={() => handleTriggerUpload(machine.id, false)}
+                          className="px-3 py-1.5 bg-[#141414] hover:bg-[#262626] border border-[#262626] text-zinc-300 hover:text-white rounded-full text-[11px] font-bold transition-colors"
+                        >
+                          {isUploading ? "Uploading PDF..." : "📤 Upload PDF Manual"}
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Status Switcher */}
