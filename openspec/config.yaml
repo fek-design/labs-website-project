@@ -1,32 +1,35 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Tech Stack: Next.js (App Router), React, Tailwind CSS, Prisma ORM (local MySQL), NextAuth (Credentials).
+  Animation: motion/react (micro-interactions), gsap & @gsap/react (macro/scroll telemetry).
+  Domain: Zealand Labs Infrastructure (Makerspace & Medialab POS System).
+  Mandate: Strict "Zero Cloud Dependency". All data, images, and logic run on a local network.
+  Security: Zero student accounts. Admins only.
+  
+  Open Spec Design System (Visual Contract):
+  - Base Floor: #000000 (Brand Black). No white/light backgrounds globally unless for strict pattern breaking.
+  - Accents (CMYK): #FFED00 (Yellow), #E6007E (Pink), #009FE3 (Cyan). Used for telemetry and active states.
+  - Surfaces: #141414 (Card base), #262626 (Border).
+  - Typography: 'Stack Sans Notch'. Hero headers use massive scaling (text-6xl+) and mix-blend-mode overlay.
+  - Geometry: Buttons are full pill (rounded-full). Cards use 1.25rem radius (rounded-3xl).
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  components:
+    - Never use standard hex codes in inline styles; rely strictly on tailwind.config.ts variables.
+    - Buttons must flip CMYK pairs on hover (e.g., cyan background flips to pink).
+    - Grid layouts must use Tailwind CSS for asymmetrical bento structures (e.g., 2x2 primary spans, 1x1 secondary spans).
+    - SVG Telemetry ribbons must be animated exclusively using GSAP ScrollTrigger and the useGSAP() hook to ensure React unmount cleanup.
+  database_actions:
+    - All Prisma mutations must be executed strictly within Next.js Server Actions ('use server').
+    - Every Server Action must enforce a NextAuth Admin session check before executing logic (Ring 3 Security).
+    - Any Server Action that modifies inventory or loans must simultaneously append a record to the AuditLog table.
+  file_handling:
+    - Do not implement AWS S3, Vercel Blob, or any cloud storage. 
+    - All image uploads must use Node.js `fs` to save locally to `/public/uploads`.
 
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+operations:
+  apply:
+    guidance:
+      - Validate that no cloud services are accidentally imported or recommended.
+      - Ensure strict separation between UI client components and secured server actions.

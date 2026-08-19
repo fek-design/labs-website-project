@@ -1,4 +1,4 @@
-# Zealand Labs - Core Architecture Specification (v1.2)
+# Zealand Labs - Core Architecture Specification (v1.5)
 
 ## I. Core Infrastructure (The Engine)
 This platform operates on a strict "Zero Cloud Dependency" mandate to ensure institutional longevity.
@@ -14,7 +14,9 @@ The database structure is decoupled from user authentication. Operational states
 
 ### Domain Rules
 1. **The Inventory Rule:** All physical assets (cameras, 3D printers) live in a unified `Inventory` table. Their workflow is dictated by the `HardwareType` Enum (`STATIC_MACHINE` vs `BORROWABLE_GEAR`).
-2. **The Medialab Workflow (Loans):** Driven by the `Loan` transaction engine. Requires an authenticated Admin to scan an asset and an unauthenticated `Patron` (Student ID).
+   * **Medialab Extension:** Assets support extended metadata, including local image URIs (`imageUrl`), flexible JSON arrays (`customFields`), and linked `RepairLog` tracking.
+2. **The Medialab Workflow (Loans):** Driven by the `Loan` transaction engine. Requires an authenticated Admin to scan an asset barcode and an unauthenticated `Patron` (Student ID).
+   * **Overdue Protocol:** Automated background cron jobs are strictly prohibited to maintain Zero Cloud dependency. Overdue identification is executed manually via native Prisma timestamp queries on the Admin dashboard.
 3. **The Makerspace Workflow (Walk-In):** Bookings are strictly banned. Operations rely entirely on live telemetry via the `OperationalStatus` Enum (`AVAILABLE`, `MAINTENANCE`, `BROKEN`).
 4. **The Taxonomy Engine:** Tags (Use-cases, Study Paths, Materials) use a strict many-to-many junction table (`InventoryTag`) to ensure normalized filtering.
 
