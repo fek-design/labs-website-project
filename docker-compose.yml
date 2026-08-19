@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  zealand_db:
+    image: mysql:8.0
+    container_name: zealand_labs_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: local_root_secure
+      MYSQL_DATABASE: zealand_labs
+      MYSQL_USER: zealand_admin
+      MYSQL_PASSWORD: local_admin_secure
+    ports:
+      - "3306:3306"
+    volumes:
+      - zealand_db_data:/var/lib/mysql
+
+volumes:
+  zealand_db_data:
+    name: zealand_db_volume

@@ -1,0 +1,150 @@
+datasource db {
+  provider = "mysql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  TECHNICIAN
+  TEACHER
+  SUPER_ADMIN
+}
+
+enum TrustStatus {
+  GOOD_STANDING
+  FLAGGED
+  BLOCKED
+}
+
+enum HardwareType {
+  STATIC_MACHINE
+  BORROWABLE_GEAR
+}
+
+enum OperationalStatus {
+  AVAILABLE
+  MAINTENANCE
+  BROKEN
+}
+
+enum LoanStatus {
+  ACTIVE
+  RETURNED
+  OVERDUE
+  LOST
+  DAMAGED
+}
+
+model Admin {
+  id            String     @id @default(uuid())
+  username      String     @unique
+  passwordHash  String
+  role          Role
+  isActive      Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+
+  auditLogs     AuditLog[]
+  loansCheckout Loan[]     @relation("AdminCheckout")
+  loansCheckin  Loan[]     @relation("AdminCheckin")
+}
+
+model AuditLog {
+  id           BigInt   @id @default(autoincrement())
+  actorAdminId String
+  actionType   String
+  targetTable  String
+  targetId     String
+  payloadDelta Json?
+  createdAt    DateTime @default(now())
+
+  admin Admin @relation(fields: [actorAdminId], references: [id])
+}
+
+model Patron {
+  id           String      @id @default(uuid())
+  studentId    String      @unique
+  email        String      @unique
+  trustStatus  TrustStatus @default(GOOD_STANDING)
+  createdAt    DateTime    @default(now())
+
+  loans Loan[]
+}
+
+model Lab {
+  id        Int         @id @default(autoincrement())
+  slug      String      @unique
+  name      String
+  campus    String
+  createdAt DateTime    @default(now())
+
+  inventory Inventory[]
+}
+
+model Inventory {
+  id                String            @id @default(uuid())
+  labId             Int
+  assetTag          String            @unique
+  name              String
+  hardwareType      HardwareType
+  operationalStatus OperationalStatus @default(AVAILABLE)
+  imageUrl          String?
+  purchaseDate      DateTime?
+  notes             String?
+  customFields      Json?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  lab      Lab            @relation(fields: [labId], references: [id])
+  loans    Loan[]
+  tags     InventoryTag[]
+  repairs  RepairLog[]
+}
+
+model RepairLog {
+  id          String    @id @default(uuid())
+  inventoryId String
+  description String
+  sentTo      String?
+  sentDate    DateTime  @default(now())
+  returnDate  DateTime?
+  isResolved  Boolean   @default(false)
+
+  inventory Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+}
+
+model Tag {
+  id        Int            @id @default(autoincrement())
+  name      String         @unique
+  slug      String         @unique
+  inventory InventoryTag[]
+}
+
+model InventoryTag {
+  inventoryId String
+  tagId       Int
+
+  inventory Inventory @relation(fields: [inventoryId], references: [id])
+  tag       Tag       @relation(fields: [tagId], references: [id])
+
+  @@id([inventoryId, tagId])
+}
+
+model Loan {
+  id              String     @id @default(uuid())
+  inventoryId     String
+  patronId        String
+  adminIdCheckout String
+  adminIdCheckin  String?
+  status          LoanStatus @default(ACTIVE)
+  checkoutDate    DateTime   @default(now())
+  expectedReturn  DateTime
+  actualReturn    DateTime?
+  notes           String?
+
+  inventory Inventory @relation(fields: [inventoryId], references: [id])
+  patron    Patron    @relation(fields: [patronId], references: [id])
+  adminOut  Admin     @relation("AdminCheckout", fields: [adminIdCheckout], references: [id])
+  adminIn   Admin?    @relation("AdminCheckin", fields: [adminIdCheckin], references: [id])
+}
