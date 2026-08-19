@@ -92,6 +92,7 @@ model Inventory {
   imageUrl          String?
   purchaseDate      DateTime?
   notes             String?
+  location          String?
   customFields      Json?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt

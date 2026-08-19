@@ -1,69 +1,136 @@
-import Image from "next/image";
+import React from "react";
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
-export default function Home() {
+export default async function Home() {
+  const [gearCount, machineCount, loanCount, overdueCount] = await Promise.all([
+    prisma.inventory.count({ where: { hardwareType: "BORROWABLE_GEAR" } }),
+    prisma.inventory.count({ where: { hardwareType: "STATIC_MACHINE" } }),
+    prisma.loan.count({ where: { status: "ACTIVE" } }),
+    prisma.loan.count({ where: { status: "ACTIVE", expectedReturn: { lt: new Date() } } }),
+  ]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <div className="min-h-screen bg-[#000000] text-white flex flex-col justify-between font-mono selection:bg-[#E6007E]/30 selection:text-white">
+      {/* Navigation */}
+      <header className="border-b border-[#262626] bg-[#0D0D0D]/80 backdrop-blur-md px-6 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#FFED00] flex items-center justify-center text-black font-extrabold text-xs">
+              ZL
+            </div>
+            <span className="font-extrabold tracking-tight text-base">
+              ZEALAND LABS
+            </span>
+          </div>
+
+          <Link
+            href="/admin/pos"
+            className="px-5 py-2 bg-[#FFED00] hover:bg-[#ffe600] text-black text-xs font-bold rounded-full transition-all shadow-lg shadow-[#FFED00]/10"
+          >
+            Launch Admin Console ↗
+          </Link>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <main className="max-w-7xl mx-auto px-6 py-16 w-full space-y-12">
+        <div className="space-y-4 max-w-3xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#141414] border border-[#262626] text-xs font-bold text-[#009FE3]">
+            <span className="w-2 h-2 rounded-full bg-[#009FE3] animate-pulse" />
+            <span>Staff Administered • Zero-Cloud Local Infrastructure</span>
+          </div>
+          <h1 className="text-4xl sm:text-7xl font-extrabold tracking-tight uppercase leading-none">
+            Makerspace & Medialab OS
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-sm sm:text-base text-zinc-400 max-w-xl">
+            Offline-first barcode scanning, equipment loan calendar schedule, physical location tracking, and machine manuals repository.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Bento Grid Features */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Medialab Checkout & Calendar */}
+          <div className="bg-[#141414] border border-[#262626] hover:border-[#009FE3] rounded-3xl p-6 transition-all shadow-xl flex flex-col justify-between group">
+            <div>
+              <div className="flex items-center justify-between text-xs text-zinc-500">
+                <span className="font-bold text-[#009FE3]">RENTALS & CALENDAR</span>
+                <span>{loanCount} Active Loans</span>
+              </div>
+              <h3 className="text-2xl font-extrabold text-white mt-3 group-hover:text-[#009FE3] transition-colors">
+                Medialab Front Desk
+              </h3>
+              <p className="text-xs text-zinc-400 mt-2">
+                1-month default loan durations, barcode scanner, and interactive schedule calendar on the front desk.
+              </p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-[#262626]">
+              <Link
+                href="/admin/pos"
+                className="text-xs font-bold text-[#FFED00] hover:underline"
+              >
+                Open POS & Calendar Desk →
+              </Link>
+            </div>
+          </div>
+
+          {/* Makerspace Machine Hub */}
+          <div className="bg-[#141414] border border-[#262626] hover:border-[#FFED00] rounded-3xl p-6 transition-all shadow-xl flex flex-col justify-between group">
+            <div>
+              <div className="flex items-center justify-between text-xs text-zinc-500">
+                <span className="font-bold text-[#FFED00]">STATIC MACHINES</span>
+                <span>{machineCount} Workstations</span>
+              </div>
+              <h3 className="text-2xl font-extrabold text-white mt-3 group-hover:text-[#FFED00] transition-colors">
+                Makerspace Manuals
+              </h3>
+              <p className="text-xs text-zinc-400 mt-2">
+                3D printers, laser cutters, official user manuals, safety checklists, and maintenance logs (non-rental).
+              </p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-[#262626]">
+              <Link
+                href="/admin/pos"
+                className="text-xs font-bold text-[#FFED00] hover:underline"
+              >
+                Open Machine Hub →
+              </Link>
+            </div>
+          </div>
+
+          {/* Inventory & Physical Locations */}
+          <div className="bg-[#141414] border border-[#262626] hover:border-emerald-500 rounded-3xl p-6 transition-all shadow-xl flex flex-col justify-between group">
+            <div>
+              <div className="flex items-center justify-between text-xs text-zinc-500">
+                <span className="font-bold text-emerald-400">PHYSICAL LOCATIONS</span>
+                <span>{gearCount + machineCount} Items</span>
+              </div>
+              <h3 className="text-2xl font-extrabold text-white mt-3 group-hover:text-emerald-400 transition-colors">
+                Inventory Tracking
+              </h3>
+              <p className="text-xs text-zinc-400 mt-2">
+                Physical room, shelf, and cabinet filters with streamlined item registration and tag editing.
+              </p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-[#262626]">
+              <Link
+                href="/admin/pos"
+                className="text-xs font-bold text-emerald-400 hover:underline"
+              >
+                Manage Inventory & Locations →
+              </Link>
+            </div>
+          </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-[#262626] bg-[#0D0D0D] py-6 px-6 text-center text-xs text-zinc-600">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+          <span>Zealand Labs Infrastructure • Zero Cloud Dependency Protocol</span>
+          <span className="text-zinc-500">Roskilde Campus • Open Spec Visual Contract</span>
+        </div>
+      </footer>
     </div>
   );
 }
