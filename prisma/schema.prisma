@@ -40,7 +40,6 @@ enum LoanStatus {
 enum TagFacet {
   DISCIPLINE
   PROCESS
-  MATERIAL
 }
 
 model Admin {
@@ -103,10 +102,11 @@ model Inventory {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  lab      Lab            @relation(fields: [labId], references: [id])
+  lab      Lab               @relation(fields: [labId], references: [id])
   loans    Loan[]
   tags     InventoryTag[]
   repairs  RepairLog[]
+  manuals  InventoryManual[]
 }
 
 model RepairLog {
@@ -137,6 +137,31 @@ model InventoryTag {
   tag       Tag       @relation(fields: [tagId], references: [id])
 
   @@id([inventoryId, tagId])
+}
+
+model Manual {
+  id          String            @id @default(uuid())
+  title       String
+  fileName    String
+  fileUrl     String
+  fileSize    Int?
+  mimeType    String            @default("application/pdf")
+  description String?           @db.Text
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  machines    InventoryManual[]
+}
+
+model InventoryManual {
+  inventoryId String
+  manualId    String
+  assignedAt  DateTime @default(now())
+
+  inventory Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  manual    Manual    @relation(fields: [manualId], references: [id], onDelete: Cascade)
+
+  @@id([inventoryId, manualId])
 }
 
 model Loan {

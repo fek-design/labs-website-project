@@ -20,11 +20,9 @@ export function InventoryManager() {
   const [facetedTags, setFacetedTags] = useState<{
     disciplines: any[];
     processes: any[];
-    materials: any[];
   }>({
     disciplines: [],
     processes: [],
-    materials: [],
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -34,7 +32,6 @@ export function InventoryManager() {
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [selectedDiscipline, setSelectedDiscipline] = useState<string>("ALL");
   const [selectedProcess, setSelectedProcess] = useState<string>("ALL");
-  const [selectedMaterial, setSelectedMaterial] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Modal / Drawer State
@@ -50,11 +47,10 @@ export function InventoryManager() {
   // New Item Form Data
   const [newName, setNewName] = useState("");
   const [newLabSlug, setNewLabSlug] = useState("makerspace");
-  const [newHardwareType, setNewHardwareType] = useState<HardwareType>(HardwareType.BORROWABLE_GEAR);
+  const [newHardwareType, setNewHardwareType] = useState<HardwareType>("BORROWABLE_GEAR");
   const [newNotes, setNewNotes] = useState("");
   const [selectedDisciplineSlug, setSelectedDisciplineSlug] = useState<string>("");
   const [selectedProcessSlug, setSelectedProcessSlug] = useState<string>("");
-  const [selectedMaterialSlug, setSelectedMaterialSlug] = useState<string>("");
   const [previewTag, setPreviewTag] = useState<string>("MK-GEN-0001");
 
   const fetchInventory = useCallback(async () => {
@@ -67,7 +63,6 @@ export function InventoryManager() {
           operationalStatus: selectedStatus !== "ALL" ? (selectedStatus as OperationalStatus) : undefined,
           disciplineSlug: selectedDiscipline !== "ALL" ? selectedDiscipline : undefined,
           processSlug: selectedProcess !== "ALL" ? selectedProcess : undefined,
-          materialSlug: selectedMaterial !== "ALL" ? selectedMaterial : undefined,
           searchQuery,
         }),
         getLabsList(),
@@ -92,7 +87,6 @@ export function InventoryManager() {
     selectedStatus,
     selectedDiscipline,
     selectedProcess,
-    selectedMaterial,
     searchQuery,
     selectedDisciplineSlug,
   ]);
@@ -127,9 +121,8 @@ export function InventoryManager() {
         const updatedTags = await getFacetedTags();
         setFacetedTags(updatedTags);
 
-        if (showNewTagModal === TagFacet.DISCIPLINE) setSelectedDisciplineSlug(res.tag.slug);
-        if (showNewTagModal === TagFacet.PROCESS) setSelectedProcessSlug(res.tag.slug);
-        if (showNewTagModal === TagFacet.MATERIAL) setSelectedMaterialSlug(res.tag.slug);
+        if (showNewTagModal === "DISCIPLINE") setSelectedDisciplineSlug(res.tag.slug);
+        if (showNewTagModal === "PROCESS") setSelectedProcessSlug(res.tag.slug);
 
         setShowNewTagModal(null);
         setNewTagNameInput("");
@@ -155,7 +148,6 @@ export function InventoryManager() {
       const tagSlugs = [
         selectedDisciplineSlug,
         selectedProcessSlug,
-        selectedMaterialSlug,
       ].filter(Boolean);
 
       await createInventoryItem({
@@ -228,7 +220,7 @@ export function InventoryManager() {
             </span>
           </div>
           <p className="text-xs text-zinc-400 mt-1">
-            3-Tier Namespaced Faceted Taxonomy (Discipline • Process • Material) & Macro-Lab Assignments
+            2-Tier Namespaced Faceted Taxonomy (Discipline • Process) & Macro-Lab Assignments
           </p>
         </div>
 
@@ -241,8 +233,8 @@ export function InventoryManager() {
         </button>
       </div>
 
-      {/* 3-Tier Multi-Faceted Filter Bar */}
-      <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pb-6 border-b border-[#262626]">
+      {/* 2-Tier Multi-Faceted Filter Bar */}
+      <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pb-6 border-b border-[#262626]">
         {/* Macro Facility Lab Filter */}
         <div>
           <label className="text-[10px] text-zinc-500 uppercase block mb-1 font-bold">Facility Lab</label>
@@ -309,23 +301,6 @@ export function InventoryManager() {
           </select>
         </div>
 
-        {/* 3. MATERIAL Filter */}
-        <div>
-          <label className="text-[10px] text-[#E6007E] uppercase block mb-1 font-bold">3. Material</label>
-          <select
-            value={selectedMaterial}
-            onChange={(e) => setSelectedMaterial(e.target.value)}
-            className="w-full bg-[#0D0D0D] border border-[#E6007E]/30 text-white text-xs rounded-xl p-2.5 outline-none font-bold"
-          >
-            <option value="ALL">All Materials</option>
-            {facetedTags.materials.map((t) => (
-              <option key={t.slug} value={t.slug}>
-                {t.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
         {/* Search */}
         <div>
           <label className="text-[10px] text-zinc-500 uppercase block mb-1 font-bold">Search</label>
@@ -384,20 +359,16 @@ export function InventoryManager() {
                           const tag = it.tag;
                           const isDiscipline = tag.facet === "DISCIPLINE";
                           const isProcess = tag.facet === "PROCESS";
-                          const isMaterial = tag.facet === "MATERIAL";
 
                           return (
                             <span
                               key={tag.id}
-                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                                isDiscipline
+                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${isDiscipline
                                   ? "bg-[#FFED00]/10 text-[#FFED00] border-[#FFED00]/30"
                                   : isProcess
-                                  ? "bg-[#009FE3]/10 text-[#009FE3] border-[#009FE3]/30"
-                                  : isMaterial
-                                  ? "bg-[#E6007E]/10 text-[#E6007E] border-[#E6007E]/30"
-                                  : "bg-zinc-800 text-zinc-300 border-zinc-700"
-                              }`}
+                                    ? "bg-[#009FE3]/10 text-[#009FE3] border-[#009FE3]/30"
+                                    : "bg-zinc-800 text-zinc-300 border-zinc-700"
+                                }`}
                             >
                               {tag.name}
                             </span>
@@ -416,13 +387,12 @@ export function InventoryManager() {
                     {/* Status */}
                     <td className="py-3 px-3">
                       <span
-                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                          item.operationalStatus === "AVAILABLE"
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${item.operationalStatus === "AVAILABLE"
                             ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                             : item.operationalStatus === "MAINTENANCE"
-                            ? "bg-[#FFED00]/20 text-[#FFED00] border border-[#FFED00]/30"
-                            : "bg-[#E6007E]/20 text-[#E6007E] border border-[#E6007E]/30"
-                        }`}
+                              ? "bg-[#FFED00]/20 text-[#FFED00] border border-[#FFED00]/30"
+                              : "bg-[#E6007E]/20 text-[#E6007E] border border-[#E6007E]/30"
+                          }`}
                       >
                         {item.operationalStatus}
                       </span>
@@ -551,7 +521,7 @@ export function InventoryManager() {
                   />
                 </div>
 
-                {/* 3-Tier Faceted Taxonomy Selectors */}
+                {/* 2-Tier Faceted Taxonomy Selectors */}
                 <div className="p-3.5 bg-[#0D0D0D] border border-[#262626] rounded-2xl space-y-3">
                   <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                     Faceted Taxonomy Dimensions
@@ -563,7 +533,7 @@ export function InventoryManager() {
                       <label className="text-[#FFED00] font-bold">1. Discipline (Domain/Zone)</label>
                       <button
                         type="button"
-                        onClick={() => setShowNewTagModal(TagFacet.DISCIPLINE)}
+                        onClick={() => setShowNewTagModal("DISCIPLINE")}
                         className="text-[10px] text-zinc-400 hover:text-[#FFED00]"
                       >
                         + Add New
@@ -589,7 +559,7 @@ export function InventoryManager() {
                       <label className="text-[#009FE3] font-bold">2. Process (Hardware Technique)</label>
                       <button
                         type="button"
-                        onClick={() => setShowNewTagModal(TagFacet.PROCESS)}
+                        onClick={() => setShowNewTagModal("PROCESS")}
                         className="text-[10px] text-zinc-400 hover:text-[#009FE3]"
                       >
                         + Add New
@@ -602,32 +572,6 @@ export function InventoryManager() {
                     >
                       <option value="">-- None --</option>
                       {facetedTags.processes.map((t) => (
-                        <option key={t.slug} value={t.slug}>
-                          {t.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* 3. MATERIAL */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-[#E6007E] font-bold">3. Material (Substrate / Consumable)</label>
-                      <button
-                        type="button"
-                        onClick={() => setShowNewTagModal(TagFacet.MATERIAL)}
-                        className="text-[10px] text-zinc-400 hover:text-[#E6007E]"
-                      >
-                        + Add New
-                      </button>
-                    </div>
-                    <select
-                      value={selectedMaterialSlug}
-                      onChange={(e) => setSelectedMaterialSlug(e.target.value)}
-                      className="w-full bg-[#141414] border border-[#262626] text-white rounded-xl p-2 outline-none font-bold"
-                    >
-                      <option value="">-- None --</option>
-                      {facetedTags.materials.map((t) => (
                         <option key={t.slug} value={t.slug}>
                           {t.name}
                         </option>

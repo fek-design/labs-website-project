@@ -1,9 +1,4 @@
-# makerspace-machine-hub Specification
-
-## Purpose
-Provides a dedicated non-rental dashboard for Zealand Makerspace static machines, operational status, safety manuals, technical specifications, and maintenance repair logs.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Makerspace Machine Catalog and Manuals
 The system SHALL present static machine workstations with a dedicated machine search bar, direct access to a centralized catalog of authentic PDF user manuals supporting Many-to-Many associations across machines, verified technical specifications without fake placeholder data, and operational readiness, without student loan or rental workflows.
@@ -23,10 +18,3 @@ The system SHALL present static machine workstations with a dedicated machine se
 #### Scenario: Unlinking a manual from a machine
 - **WHEN** a technician unlinks a manual from a machine
 - **THEN** the system removes the association while preserving the manual in the central catalog for other machines
-
-### Requirement: Machine Maintenance and Repair Logging
-The system SHALL allow technicians to update machine operational status (`AVAILABLE`, `MAINTENANCE`, `BROKEN`) and create structured `RepairLog` entries.
-
-#### Scenario: Logging machine maintenance
-- **WHEN** a technician flags a 3D printer for nozzle replacement
-- **THEN** the system updates its operational status to `MAINTENANCE`, writes a `RepairLog` record, and logs an audit trail

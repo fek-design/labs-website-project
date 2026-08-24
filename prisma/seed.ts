@@ -10,6 +10,8 @@ async function main() {
   await prisma.repairLog.deleteMany();
   await prisma.loan.deleteMany();
   await prisma.inventoryTag.deleteMany();
+  await prisma.inventoryManual.deleteMany();
+  await prisma.manual.deleteMany();
   await prisma.inventory.deleteMany();
   await prisma.tag.deleteMany();
   await prisma.patron.deleteMany();
@@ -97,15 +99,6 @@ async function main() {
     { name: "Wireless Audio", slug: "wireless-audio", facet: TagFacet.PROCESS },
     { name: "Studio Lighting", slug: "studio-lighting", facet: TagFacet.PROCESS },
     { name: "VR & Spatial Computing", slug: "vr-spatial-computing", facet: TagFacet.PROCESS },
-
-    // MATERIAL (Consumable / substrate)
-    { name: "Cotton/Polyester", slug: "cotton-polyester", facet: TagFacet.MATERIAL },
-    { name: "PLA/PETG Filament", slug: "pla-petg-filament", facet: TagFacet.MATERIAL },
-    { name: "Cast Acrylic", slug: "cast-acrylic", facet: TagFacet.MATERIAL },
-    { name: "Photopolymer Resin", slug: "photopolymer-resin", facet: TagFacet.MATERIAL },
-    { name: "Heat Transfer Vinyl", slug: "heat-transfer-vinyl", facet: TagFacet.MATERIAL },
-    { name: "Lead-Free Solder", slug: "lead-free-solder", facet: TagFacet.MATERIAL },
-    { name: "UHS-II V90 SD Media", slug: "v90-sd-media", facet: TagFacet.MATERIAL },
   ];
 
   const tags: Record<string, any> = {};
@@ -237,32 +230,27 @@ async function main() {
     },
   });
 
-  // 6. Connect Inventory with 3-Tier Faceted Tags
+  // 6. Connect Inventory with 2-Tier Faceted Tags
   const tagMappings = [
     // Bambu Lab X1C
     { inventoryId: bambuX1C.id, tagId: tags["3d-fabrication"].id },
     { inventoryId: bambuX1C.id, tagId: tags["fdm-3d-printing"].id },
-    { inventoryId: bambuX1C.id, tagId: tags["pla-petg-filament"].id },
 
     // Laser Cutter
     { inventoryId: laserCutter.id, tagId: tags["rapid-prototyping"].id },
     { inventoryId: laserCutter.id, tagId: tags["laser-cutting"].id },
-    { inventoryId: laserCutter.id, tagId: tags["cast-acrylic"].id },
 
     // Brother GTX Pro Textile
     { inventoryId: brotherGTX.id, tagId: tags["textile"].id },
     { inventoryId: brotherGTX.id, tagId: tags["direct-to-garment"].id },
-    { inventoryId: brotherGTX.id, tagId: tags["cotton-polyester"].id },
 
     // Weller Soldering
     { inventoryId: solderingStation.id, tagId: tags["electronics"].id },
     { inventoryId: solderingStation.id, tagId: tags["soldering-smd"].id },
-    { inventoryId: solderingStation.id, tagId: tags["lead-free-solder"].id },
 
     // Sony FX30
     { inventoryId: sonyFX30.id, tagId: tags["medialab-av"].id },
     { inventoryId: sonyFX30.id, tagId: tags["cinema-4k-recording"].id },
-    { inventoryId: sonyFX30.id, tagId: tags["v90-sd-media"].id },
 
     // RØDE Wireless PRO
     { inventoryId: rodeWirelessPro.id, tagId: tags["medialab-av"].id },
@@ -282,6 +270,86 @@ async function main() {
       data: mapping,
     });
   }
+
+  // 7. Seed Centralized Manuals Catalog & Many-to-Many Machine Links
+  console.log("Creating Centralized Manuals Catalog...");
+
+  const bambuManual = await prisma.manual.create({
+    data: {
+      title: "Bambu Lab X1-Carbon Operation & Maintenance Guide",
+      fileName: "Bambu_X1C_User_Guide.pdf",
+      fileUrl: "https://wiki.bambulab.com/en/x1",
+      fileSize: 4194304,
+      description: "Official Bambu Lab hardware calibration, AMS multi-color setup, and preventative maintenance.",
+    },
+  });
+
+  const laserManual = await prisma.manual.create({
+    data: {
+      title: "Flux Beambox Pro 50W Laser Cutter Technical Manual",
+      fileName: "Flux_Beambox_Pro_Manual.pdf",
+      fileUrl: "https://support.flux3dp.com/hc/en-us/categories/360001717316-Beambox",
+      fileSize: 6291456,
+      description: "Mirror alignment, focal distance calculation, rotary attachment usage, and Beam Studio workflows.",
+    },
+  });
+
+  const brotherManual = await prisma.manual.create({
+    data: {
+      title: "Brother GTX Pro Direct-to-Garment Operation Manual",
+      fileName: "Brother_GTX_Pro_Operation_Manual.pdf",
+      fileUrl: "https://www.brother-ism.com",
+      fileSize: 5242880,
+      description: "Innobella ink maintenance routines, pretreatment spray techniques, and platen height calibration.",
+    },
+  });
+
+  const safetySop = await prisma.manual.create({
+    data: {
+      title: "Zealand Makerspace Universal Safety SOP & Emergency Protocol v2.4",
+      fileName: "Makerspace_Universal_Safety_SOP_v2.pdf",
+      fileUrl: "/uploads/manuals/Makerspace_Universal_Safety_SOP_v2.pdf",
+      fileSize: 1572864,
+      description: "Mandatory PPE guidelines, emergency stop switches, ventilation protocols, and thermal hazard procedures.",
+    },
+  });
+
+  const orcaSlicerPresets = await prisma.manual.create({
+    data: {
+      title: "Zealand Lab OrcaSlicer & Bambu Studio Verified Presets",
+      fileName: "OrcaSlicer_Zealand_Presets.pdf",
+      fileUrl: "https://github.com/SoftFever/OrcaSlicer/wiki",
+      fileSize: 2097152,
+      description: "Optimal print profiles, flow calibrations, support interfaces, and infill settings for PLA & PETG.",
+    },
+  });
+
+  // Link Many-to-Many Manuals across machines
+  const manualMappings = [
+    // Bambu X1-Carbon has 3 manuals (User guide + Shared Safety SOP + Slicer Presets)
+    { inventoryId: bambuX1C.id, manualId: bambuManual.id },
+    { inventoryId: bambuX1C.id, manualId: safetySop.id },
+    { inventoryId: bambuX1C.id, manualId: orcaSlicerPresets.id },
+
+    // Laser Cutter has 2 manuals (Beambox manual + Shared Safety SOP)
+    { inventoryId: laserCutter.id, manualId: laserManual.id },
+    { inventoryId: laserCutter.id, manualId: safetySop.id },
+
+    // Brother GTX Pro has 2 manuals (Brother manual + Shared Safety SOP)
+    { inventoryId: brotherGTX.id, manualId: brotherManual.id },
+    { inventoryId: brotherGTX.id, manualId: safetySop.id },
+
+    // Soldering Station has Shared Safety SOP
+    { inventoryId: solderingStation.id, manualId: safetySop.id },
+  ];
+
+  for (const m of manualMappings) {
+    await prisma.inventoryManual.create({
+      data: m,
+    });
+  }
+
+  console.log("Centralized manuals and Many-to-Many machine links seeded.");
 
   // 7. Seed Sample Patrons
   const patron1 = await prisma.patron.create({
@@ -316,7 +384,7 @@ async function main() {
   });
 
   console.log("Seeded sample active loan for Sony FX30.");
-  console.log("✅ 3-Tier Faceted Taxonomy seed completed successfully!");
+  console.log("✅ 2-Tier Faceted Taxonomy seed completed successfully!");
 }
 
 main()

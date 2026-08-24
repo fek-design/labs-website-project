@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { getInventoryWithFilters, updateInventoryItem } from "@/app/actions/inventory";
-import { uploadMachineManual, deleteMachineManual, replaceMachineManual } from "@/app/actions/upload";
+import { unassignManualFromMachine } from "@/app/actions/manuals";
 import { OperationalStatus, HardwareType } from "@prisma/client";
-import { motion, AnimatePresence } from "motion/react";
+import { ManualsCatalogModal } from "./ManualsCatalogModal";
 
 export function MakerspaceMachineHub() {
   const [machines, setMachines] = useState<any[]>([]);
@@ -12,13 +12,9 @@ export function MakerspaceMachineHub() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTag, setSelectedTag] = useState<string>("ALL");
 
-  // PDF Upload / Replace State
-  const [uploadingMachineId, setUploadingMachineId] = useState<string | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const activeMachineForUpload = useRef<string | null>(null);
-  const isReplacingRef = useRef<boolean>(false);
+  // Catalog Modal State
+  const [showCatalogModal, setShowCatalogModal] = useState(false);
+  const [focusMachine, setFocusMachine] = useState<{ id: string; name: string } | null>(null);
 
   const fetchMachines = useCallback(async () => {
     try {
@@ -53,78 +49,30 @@ export function MakerspaceMachineHub() {
     }
   };
 
-  const handleTriggerUpload = (machineId: string, isReplacing: boolean = false) => {
-    activeMachineForUpload.current = machineId;
-    isReplacingRef.current = isReplacing;
-    setUploadError(null);
-    setUploadSuccess(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    const machineId = activeMachineForUpload.current;
-    if (!file || !machineId) return;
-
-    if (file.type !== "application/pdf" && !file.name.endsWith(".pdf")) {
-      setUploadError("Please select a valid PDF manual document.");
-      setTimeout(() => setUploadError(null), 4000);
+  const handleQuickUnlink = async (machineId: string, manualId: string, title: string) => {
+    if (!confirm(`Unlink "${title}" from this machine? The manual will stay in the central catalog.`)) {
       return;
     }
-
     try {
-      setUploadingMachineId(machineId);
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("machineId", machineId);
-
-      const res = isReplacingRef.current
-        ? await replaceMachineManual(formData)
-        : await uploadMachineManual(formData);
-
-      if (res.success) {
-        setUploadSuccess(`PDF "${file.name}" attached successfully!`);
-        fetchMachines();
-        setTimeout(() => setUploadSuccess(null), 4000);
-      }
+      await unassignManualFromMachine({ inventoryId: machineId, manualId });
+      fetchMachines();
     } catch (err: any) {
-      setUploadError(err.message || "Failed to upload manual.");
-      setTimeout(() => setUploadError(null), 4000);
-    } finally {
-      setUploadingMachineId(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      alert(err.message || "Failed to unlink manual.");
     }
   };
 
-  const handleDeleteManual = async (machineId: string) => {
-    if (!confirm("Are you sure you want to delete this PDF manual?")) return;
-    try {
-      setUploadingMachineId(machineId);
-      await deleteMachineManual(machineId);
-      setUploadSuccess("Manual removed successfully.");
-      fetchMachines();
-      setTimeout(() => setUploadSuccess(null), 4000);
-    } catch (err: any) {
-      setUploadError(err.message || "Failed to delete manual.");
-      setTimeout(() => setUploadError(null), 4000);
-    } finally {
-      setUploadingMachineId(null);
-    }
+  const openCatalogForMachine = (machine: { id: string; name: string }) => {
+    setFocusMachine(machine);
+    setShowCatalogModal(true);
+  };
+
+  const openGlobalCatalog = () => {
+    setFocusMachine(null);
+    setShowCatalogModal(true);
   };
 
   return (
     <div className="bg-[#141414] border border-[#262626] rounded-3xl p-6 shadow-2xl font-mono text-white">
-      {/* Hidden File Input for PDF Manuals */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileSelected}
-        accept="application/pdf"
-        className="hidden"
-      />
-
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#262626]">
         <div>
@@ -137,41 +85,25 @@ export function MakerspaceMachineHub() {
             </span>
           </div>
           <p className="text-xs text-zinc-400 mt-1">
-            Static rapid prototyping machinery, official user manual repository, and maintenance records (Non-Rental)
+            Static rapid prototyping machinery, centralized Many-to-Many user manuals library, and maintenance records
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-zinc-500">Facility Policy:</span>
-          <span className="px-3 py-1 bg-[#0D0D0D] border border-emerald-500/30 text-emerald-400 rounded-full font-bold">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={openGlobalCatalog}
+            className="px-5 py-2.5 bg-[#FFED00] hover:bg-[#ffe600] text-black font-bold text-xs rounded-full shadow-lg shadow-[#FFED00]/20 flex items-center gap-2 transition-transform hover:scale-[1.02]"
+          >
+            <span>📚</span>
+            <span>Manuals Library Catalog</span>
+          </button>
+
+          <span className="px-3 py-1 bg-[#0D0D0D] border border-emerald-500/30 text-emerald-400 rounded-full font-bold text-xs hidden sm:inline-block">
             ✓ In-situ Station Use Only
           </span>
         </div>
       </div>
-
-      {/* Upload Feedback Toast Alerts */}
-      <AnimatePresence>
-        {uploadError && (
-          <motion.div
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="mt-4 p-3 bg-[#E6007E]/10 border border-[#E6007E]/30 rounded-2xl text-xs text-[#E6007E] font-bold"
-          >
-            {uploadError}
-          </motion.div>
-        )}
-        {uploadSuccess && (
-          <motion.div
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-xs text-emerald-400 font-bold"
-          >
-            {uploadSuccess}
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Machine Search & Filter Bar */}
       <div className="mt-5 grid grid-cols-1 sm:grid-cols-12 gap-3 pb-6 border-b border-[#262626]">
@@ -225,16 +157,18 @@ export function MakerspaceMachineHub() {
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
         {machines.length === 0 ? (
           <div className="col-span-2 text-center py-16 text-zinc-500 text-xs">
-            No static machines match the search query "{searchQuery}".
+            {isLoading
+              ? "Loading workstations..."
+              : `No static machines match the search query "${searchQuery}".`}
           </div>
         ) : (
           machines.map((machine) => {
             const isAvailable = machine.operationalStatus === "AVAILABLE";
             const isMaintenance = machine.operationalStatus === "MAINTENANCE";
-            const isUploading = uploadingMachineId === machine.id;
-            const manualUrl = machine.customFields?.manualUrl;
-            const manualFileName = machine.customFields?.manualFileName;
             const machineTags = machine.tags || [];
+            const attachedManuals = (machine.manuals || [])
+              .map((im: any) => im.manual)
+              .filter(Boolean);
 
             return (
               <div
@@ -273,14 +207,13 @@ export function MakerspaceMachineHub() {
                     </span>
                   </div>
 
-                  {/* 3-Tier Faceted Tags */}
+                  {/* 2-Tier Faceted Tags */}
                   {machineTags.length > 0 && (
                     <div className="mt-3 flex flex-wrap items-center gap-1.5">
                       {machineTags.map((it: any) => {
                         const tag = it.tag;
                         const isDiscipline = tag.facet === "DISCIPLINE";
                         const isProcess = tag.facet === "PROCESS";
-                        const isMaterial = tag.facet === "MATERIAL";
 
                         return (
                           <span
@@ -290,8 +223,6 @@ export function MakerspaceMachineHub() {
                                 ? "bg-[#FFED00]/10 text-[#FFED00] border-[#FFED00]/30"
                                 : isProcess
                                 ? "bg-[#009FE3]/10 text-[#009FE3] border-[#009FE3]/30"
-                                : isMaterial
-                                ? "bg-[#E6007E]/10 text-[#E6007E] border-[#E6007E]/30"
                                 : "bg-zinc-800 text-zinc-300 border-zinc-700"
                             }`}
                           >
@@ -321,63 +252,79 @@ export function MakerspaceMachineHub() {
                   )}
                 </div>
 
-                {/* PDF Manual Documents & Action Controls */}
+                {/* Many-to-Many Manuals Library Section */}
                 <div className="mt-6 pt-4 border-t border-[#262626] space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    {/* Manual Link or View Button */}
-                    {manualUrl ? (
-                      <div className="flex items-center gap-2">
-                        <a
-                          href={manualUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#009FE3]/10 border border-[#009FE3]/30 text-[#009FE3] hover:bg-[#009FE3]/20 rounded-full text-xs font-bold transition-colors"
-                        >
-                          <span>📄 {manualFileName || "View PDF Manual"}</span>
-                          <span>↗</span>
-                        </a>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                        <span>📕 Attached Manuals & SOPs</span>
+                        <span className="bg-[#009FE3]/10 text-[#009FE3] text-[10px] px-1.5 py-0.2 rounded-full border border-[#009FE3]/30">
+                          {attachedManuals.length}
+                        </span>
+                      </span>
 
-                        {/* Replace Manual */}
-                        <button
-                          type="button"
-                          disabled={isUploading}
-                          onClick={() => handleTriggerUpload(machine.id, true)}
-                          className="px-2.5 py-1 bg-[#141414] hover:bg-[#262626] border border-[#262626] text-zinc-300 hover:text-white rounded-full text-[10px] font-bold"
-                          title="Replace attached PDF manual"
-                        >
-                          🔄 Replace
-                        </button>
+                      <button
+                        type="button"
+                        onClick={() => openCatalogForMachine({ id: machine.id, name: machine.name })}
+                        className="text-[11px] font-bold text-[#FFED00] hover:underline flex items-center gap-1"
+                      >
+                        <span>+ Link / Manage</span>
+                      </button>
+                    </div>
 
-                        {/* Delete Manual */}
-                        <button
-                          type="button"
-                          disabled={isUploading}
-                          onClick={() => handleDeleteManual(machine.id)}
-                          className="px-2.5 py-1 bg-[#E6007E]/10 hover:bg-[#E6007E]/20 border border-[#E6007E]/30 text-[#E6007E] rounded-full text-[10px] font-bold"
-                          title="Delete PDF manual"
-                        >
-                          🗑 Delete
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-between w-full">
-                        <span className="text-zinc-600 italic text-[11px]">
-                          No manual PDF attached
+                    {attachedManuals.length === 0 ? (
+                      <div className="p-3 bg-[#141414] border border-dashed border-[#262626] rounded-2xl text-center">
+                        <span className="text-xs text-zinc-500 italic block mb-1">
+                          No manuals or SOPs linked to this workstation yet.
                         </span>
                         <button
                           type="button"
-                          disabled={isUploading}
-                          onClick={() => handleTriggerUpload(machine.id, false)}
-                          className="px-3 py-1.5 bg-[#141414] hover:bg-[#262626] border border-[#262626] text-zinc-300 hover:text-white rounded-full text-[11px] font-bold transition-colors"
+                          onClick={() => openCatalogForMachine({ id: machine.id, name: machine.name })}
+                          className="text-[10px] text-[#009FE3] hover:underline font-bold"
                         >
-                          {isUploading ? "Uploading PDF..." : "📤 Upload PDF Manual"}
+                          Attach from Library Catalog ↗
                         </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {attachedManuals.map((man: any) => (
+                          <div
+                            key={man.id}
+                            className="flex items-center justify-between gap-2 p-2 bg-[#141414] border border-[#262626] rounded-xl hover:border-zinc-700 transition-colors"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-xs text-rose-400">📄</span>
+                              <span className="text-xs font-bold text-zinc-200 truncate">
+                                {man.title}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <a
+                                href={man.fileUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="px-2 py-0.5 bg-[#009FE3]/10 hover:bg-[#009FE3]/20 text-[#009FE3] text-[10px] font-bold rounded border border-[#009FE3]/30"
+                              >
+                                View ↗
+                              </a>
+                              <button
+                                type="button"
+                                title={`Unlink from ${machine.name}`}
+                                onClick={() => handleQuickUnlink(machine.id, man.id, man.title)}
+                                className="p-1 text-zinc-500 hover:text-rose-400 text-xs rounded"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
 
                   {/* Status Switcher */}
-                  <div className="flex items-center justify-between pt-2 border-t border-[#262626]/50 text-xs">
+                  <div className="flex items-center justify-between pt-3 border-t border-[#262626]/50 text-xs">
                     <span className="text-zinc-500 text-[10px]">Operational State:</span>
                     <div className="flex items-center gap-1.5">
                       {(["AVAILABLE", "MAINTENANCE", "BROKEN"] as const).map((st) => (
@@ -406,6 +353,19 @@ export function MakerspaceMachineHub() {
           })
         )}
       </div>
+
+      {/* Central Manuals Catalog Modal */}
+      <ManualsCatalogModal
+        isOpen={showCatalogModal}
+        onClose={() => {
+          setShowCatalogModal(false);
+          setFocusMachine(null);
+        }}
+        focusMachineId={focusMachine?.id}
+        focusMachineName={focusMachine?.name}
+        machinesList={machines}
+        onRefresh={fetchMachines}
+      />
     </div>
   );
 }

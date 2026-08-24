@@ -81,7 +81,7 @@ export async function generateAssetTag(params: {
 }
 
 /**
- * 1. Get filtered inventory with Multi-Faceted (Discipline, Process, Material) & Location filtering
+ * 1. Get filtered inventory with Multi-Faceted (Discipline, Process) & Location filtering
  */
 export async function getInventoryWithFilters(filters: {
   labSlug?: string;
@@ -90,7 +90,6 @@ export async function getInventoryWithFilters(filters: {
   tagSlug?: string;
   disciplineSlug?: string;
   processSlug?: string;
-  materialSlug?: string;
   searchQuery?: string;
 }) {
   const where: any = {};
@@ -132,14 +131,6 @@ export async function getInventoryWithFilters(filters: {
     });
   }
 
-  if (filters.materialSlug && filters.materialSlug !== "ALL") {
-    andConditions.push({
-      tags: {
-        some: { tag: { slug: filters.materialSlug, facet: TagFacet.MATERIAL } },
-      },
-    });
-  }
-
   if (andConditions.length > 0) {
     where.AND = andConditions;
   }
@@ -158,6 +149,7 @@ export async function getInventoryWithFilters(filters: {
     include: {
       lab: true,
       tags: { include: { tag: true } },
+      manuals: { include: { manual: true } },
       loans: {
         where: { status: "ACTIVE" },
         include: { patron: true },
@@ -181,7 +173,7 @@ export async function getLabsList() {
 }
 
 /**
- * 3. Get all taxonomy tags, grouped by 3-Tier Facet
+ * 3. Get all taxonomy tags, grouped by 2-Tier Facet
  */
 export async function getTagsList() {
   return await prisma.tag.findMany({
@@ -197,7 +189,6 @@ export async function getFacetedTags() {
   return {
     disciplines: allTags.filter((t) => t.facet === TagFacet.DISCIPLINE),
     processes: allTags.filter((t) => t.facet === TagFacet.PROCESS),
-    materials: allTags.filter((t) => t.facet === TagFacet.MATERIAL),
   };
 }
 
