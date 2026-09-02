@@ -1,19 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  /* Brand CMYK */
+  /* Brand CMYK Telemetry */
   --color-brand-black: #000000;
   --color-brand-yellow: #FFED00;
   --color-brand-pink: #E6007E;
   --color-brand-cyan: #009FE3;
 
-  /* Surfaces */
-  --color-surface-dark: #0D0D0D;
-  --color-surface-card: #141414;
+  /* Surfaces & Elevation */
+  --color-surface-pure: #000000;
+  --color-surface-dark: #09090b;
+  --color-surface-card: #0e0e11;
+  --color-surface-elevated: #141416;
   --color-surface-border: #262626;
 
   /* Typography & Geometry */
-  --font-sans: "Stack Sans Notch", system-ui, sans-serif;
+  --font-sans: "Stack Sans Text", system-ui, -apple-system, sans-serif;
+  --font-notch: "Stack Sans Notch", system-ui, -apple-system, sans-serif;
+  --font-headline: "Stack Sans Headline", system-ui, -apple-system, sans-serif;
+  --font-text: "Stack Sans Text", system-ui, -apple-system, sans-serif;
   --radius-pill: 9999px;
   --radius-bento: 1.25rem;
 }

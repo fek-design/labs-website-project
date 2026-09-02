@@ -3,9 +3,11 @@
 ## I. Core Infrastructure (The Engine)
 This platform operates on a strict "Zero Cloud Dependency" mandate to ensure institutional longevity.
 * **Frontend:** Next.js (App Router), React, Tailwind CSS.
-* **Animation Engines (Dual-Stack):**
-  * `motion/react`: Dedicated to local component UI micro-interactions and layout state transitions.
+* **Animation Engines & Agency Visual Toolkits (Dual-Stack):**
+  * `motion/react`: Dedicated to local component UI micro-interactions, layout state transitions, and deliberate spring physics via `lib/motion.ts`.
   * `gsap` & `@gsap/react`: Dedicated to macro-level viewport orchestration, scroll-scrubbing, and complex SVG path rendering.
+* **Design & Visual Reference:**
+  * OpenSpec mockups library in `openspec/mockups/` (.pdf, .png, .svg) defines the visual contract for pixel-accurate recreation.
 * **Database:** Local MySQL Server accessed exclusively via Prisma ORM.
 * **Authentication:** Local NextAuth.js (Credentials Provider). **Admin only.** Zero student accounts.
 

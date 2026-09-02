@@ -10,9 +10,11 @@ context: |
   Open Spec Design System (Visual Contract):
   - Base Floor: #000000 (Brand Black). No white/light backgrounds globally unless for strict pattern breaking.
   - Accents (CMYK): #FFED00 (Yellow), #E6007E (Pink), #009FE3 (Cyan). Used for telemetry and active states.
-  - Surfaces: #141414 (Card base), #262626 (Border).
-  - Typography: 'Stack Sans Notch'. Hero headers use massive scaling (text-6xl+) and mix-blend-mode overlay.
-  - Geometry: Buttons are full pill (rounded-full). Cards use 1.25rem radius (rounded-3xl).
+  - Surfaces: #09090b (Dock), #0e0e11 (Card base), #141416 (Elevated), #262626 (Border).
+  - Typography: 'Stack Sans Notch' (primary headers), 'Stack Sans Headline' (subheaders), 'Stack Sans Text' (body).
+  - Geometry: Buttons are full pill (rounded-full) or rounded-lg. Cards use 1.25rem radius (rounded-2xl / rounded-3xl).
+  - Motion: Strict agency physics via lib/motion.ts (springSnappy, springGentle, diagonal wave staggers).
+  - Mockups Reference: Visual UI mockups and design assets are located in openspec/mockups/ for exact recreation.
 
 rules:
   components:
