@@ -1,10 +1,28 @@
 /**
  * Zealand Labs - Agency Motion & Visual Toolkit
- * Dedicated agency-grade physics presets, diagonal coordinate matrix animators, and layout morphs.
- * Built for motion/react and GSAP macro-telemetry.
+ * Dedicated agency-grade physics presets, diagonal coordinate matrix animators, layout morphs,
+ * and Anime.js SVG path drawing / numeric tickers.
+ * Built for motion/react, GSAP macro-telemetry, and Anime.js.
  */
 
 import { Transition, Variants } from "motion/react";
+
+// ==========================================
+// 0. ANIME.JS AGENCY HELPERS RE-EXPORT
+// ==========================================
+export {
+  animate,
+  createTimeline,
+  stagger,
+  svg,
+  drawSvgPath,
+  animateCounter,
+  staggerElements,
+  useAnime,
+  type DrawSvgPathOptions,
+  type AnimateCounterOptions,
+  type StaggerElementsOptions,
+} from "./anime";
 
 // ==========================================
 // 1. AGENCY SPRING PHYSICS (Deliberate Easing)

@@ -3,11 +3,14 @@
 ## I. Core Infrastructure (The Engine)
 This platform operates on a strict "Zero Cloud Dependency" mandate to ensure institutional longevity.
 * **Frontend:** Next.js (App Router), React, Tailwind CSS.
-* **Animation Engines & Agency Visual Toolkits (Dual-Stack):**
+* **Animation Engines & Agency Visual Toolkits (Tri-Stack):**
   * `motion/react`: Dedicated to local component UI micro-interactions, layout state transitions, and deliberate spring physics via `lib/motion.ts`.
-  * `gsap` & `@gsap/react`: Dedicated to macro-level viewport orchestration, scroll-scrubbing, and complex SVG path rendering.
+  * `gsap` & `@gsap/react`: Dedicated to macro-level viewport orchestration, scroll-scrubbing, and long-scroll narrative telemetry.
+  * `anime.js`: Dedicated to SVG stroke line/blueprint drawing, live numeric counters/tickers, path morphing, and character staggers via `lib/anime.ts`.
 * **Design & Visual Reference:**
+  * Figma MCP Server (`get_figma_data`, `download_figma_images`) provides live inspection of layout tokens and local asset downloading.
   * OpenSpec mockups library in `openspec/mockups/` (.pdf, .png, .svg) defines the visual contract for pixel-accurate recreation.
+  * **Mockup UI vs. UX Engineering Rule**: Figma provides the static visual mockup (UI tokens and framing); all interactive UX (hover states, validation, loading skeletons, error feedback) is deliberately engineered in code.
 * **Database:** Local MySQL Server accessed exclusively via Prisma ORM.
 * **Authentication:** Local NextAuth.js (Credentials Provider). **Admin only.** Zero student accounts.
 

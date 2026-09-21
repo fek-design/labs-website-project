@@ -1,26 +1,34 @@
 schema: spec-driven
 
 context: |
-  Tech Stack: Next.js (App Router), React, Tailwind CSS, Prisma ORM (local MySQL), NextAuth (Credentials).
-  Animation: motion/react (micro-interactions), gsap & @gsap/react (macro/scroll telemetry).
+  Tech Stack: Next.js (App Router), React 19, Tailwind CSS v4, Prisma ORM (local MySQL), NextAuth (Credentials).
+  Animation: Tri-Stack Architecture: motion/react (micro-interactions & layoutId), gsap & @gsap/react (macro/scroll telemetry), anime.js (SVG path/blueprint drawing & numeric tickers via lib/anime.ts). See openspec/core/animation-architecture.md.
   Domain: Zealand Labs Infrastructure (Makerspace & Medialab POS System).
   Mandate: Strict "Zero Cloud Dependency". All data, images, and logic run on a local network.
   Security: Zero student accounts. Admins only.
   
-  Open Spec Design System (Visual Contract):
+  Figma Integration & Visual Contract:
+  - Figma MCP Server: figma-developer-mcp (via stdio). Use get_figma_data for live layout and token inspection, and download_figma_images for asset extraction.
+  - Mockups Reference: Visual UI mockups and design assets are located in openspec/mockups/ and public/images/ for exact recreation.
+  - The Mockup UI vs. UX Engineering Rule: Figma is strictly a static visual mockup, not an interactive prototype. Replicate the visual UI (tokens, geometry, typography) from Figma with high fidelity, while deliberately engineering the missing UX (interactive micro-states, loading skeletons, error boundaries, optimistic UI, keyboard navigation, and form feedback) in code.
+
+  Open Spec Design System (Visual Tokens):
   - Base Floor: #000000 (Brand Black). No white/light backgrounds globally unless for strict pattern breaking.
   - Accents (CMYK): #FFED00 (Yellow), #E6007E (Pink), #009FE3 (Cyan). Used for telemetry and active states.
   - Surfaces: #09090b (Dock), #0e0e11 (Card base), #141416 (Elevated), #262626 (Border).
   - Typography: 'Stack Sans Notch' (primary headers), 'Stack Sans Headline' (subheaders), 'Stack Sans Text' (body).
   - Geometry: Buttons are full pill (rounded-full) or rounded-lg. Cards use 1.25rem radius (rounded-2xl / rounded-3xl).
-  - Motion: Strict agency physics via lib/motion.ts (springSnappy, springGentle, diagonal wave staggers).
-  - Mockups Reference: Visual UI mockups and design assets are located in openspec/mockups/ for exact recreation.
+  - Motion: Strict agency physics via lib/motion.ts and lib/anime.ts (springSnappy, springGentle, diagonal wave staggers, SVG draw, counter tickers).
 
 rules:
   components:
     - Never use standard hex codes in inline styles; rely strictly on the @theme variables defined in app/globals.css.
     - Buttons must flip CMYK pairs on hover.
     - Grid layouts must use Tailwind CSS for asymmetrical bento structures.
+  design_system:
+    - Always verify layout geometry, dimensions, and typography tokens against the Figma MCP server when implementing screens matching Figma frames.
+    - Never link to external Figma cloud images. Always download vector and raster assets locally to /public/images or openspec/mockups/ using download_figma_images to enforce Zero Cloud Dependency.
+    - Treat Figma frames strictly as static visual mockups (UI). Never omit UX engineering (hover transitions, loading fallbacks, error toasts, keyboard accessibility) simply because Figma does not illustrate interactive flows.
   database_actions:
     - All Prisma mutations must be executed strictly within Next.js Server Actions ('use server').
     - Every Server Action must enforce a NextAuth Admin session check before executing logic.
@@ -31,5 +39,6 @@ rules:
 operations:
   apply:
     guidance:
+      - Query Figma MCP server for the target node ID to confirm exact flexbox layout, padding, gap, and color codes before writing UI components.
       - Validate that no cloud services are accidentally imported.
       - Ensure strict separation between UI client components and secured server actions.

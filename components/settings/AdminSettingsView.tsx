@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { getAdminProfile, updateAdminCredentials } from "@/app/actions/settings";
 import { motion } from "motion/react";
+import { NodeTelemetryVisualizer } from "./NodeTelemetryVisualizer";
 
 export function AdminSettingsView() {
   const [profile, setProfile] = useState<any | null>(null);
@@ -143,6 +144,9 @@ export function AdminSettingsView() {
           </button>
         </div>
       </form>
+
+      {/* Anime.js Diagnostics & Vector Blueprint Telemetry Visualizer */}
+      <NodeTelemetryVisualizer />
     </div>
   );
 }
