@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# local agent and MCP configs containing tokens/secrets
+.agents/mcp_config.json
+
 # vercel
 .vercel
 
