@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState } from "react";
 
-export type CampusKey = "køge" | "roskilde";
+export type CampusKey = "køge" | "roskilde" | "næstved" | "holbæk";
 
 export interface LabInfo {
   id: string;
@@ -120,11 +120,71 @@ export const CAMPUS_DATA: Record<CampusKey, { name: string; labs: LabInfo[] }> =
       },
     ],
   },
+  næstved: {
+    name: "Næstved",
+    labs: [
+      {
+        id: "makerspace",
+        name: "Makerspace",
+        bullets: [
+          "3D print og lasergravering",
+          "Prototyper til undervisning og projekter",
+          "Faglig vejledning og materialer",
+        ],
+        spotlightText:
+          "I Næstved Makerspace understøtter vi kreative produktioner med 3D printere, folieskæring og materialeværksted. Kom forbi og gør din idé håndgribelig.",
+        accentColor: "#009FE3",
+      },
+      {
+        id: "medialab",
+        name: "Medialab",
+        bullets: [
+          "Podcast-studie og lydoptagelser",
+          "Kamera- og videoudstyr",
+          "Plakatprint og grafisk rådgivning",
+        ],
+        spotlightText:
+          "I Næstved Medialab kan du producere podcasts, optage video i studiomiljøer og udskrive store grafiske formater til præsentationer.",
+        accentColor: "#E6007E",
+      },
+    ],
+  },
+  holbæk: {
+    name: "Holbæk",
+    labs: [
+      {
+        id: "makerspace",
+        name: "Makerspace",
+        bullets: [
+          "Prototyping og hurtig visualisering",
+          "3D print og vinylskæring",
+          "Åbent værksted for studerende",
+        ],
+        spotlightText:
+          "I Holbæk Makerspace stiller vi faciliteter til hurtig fremstilling af fysiske prototyper, lasercut og mockups til rådighed for studerende.",
+        accentColor: "#009FE3",
+      },
+      {
+        id: "medialab",
+        name: "Medialab",
+        bullets: [
+          "Videokit og mobil optagelse",
+          "Mikrofoner og lysopsætning",
+          "Designfeedback og posterprint",
+        ],
+        spotlightText:
+          "I Holbæk Medialab finder du optageudstyr, mikrofoner og redigeringsfaciliteter til dine studieprojekter og præsentationer.",
+        accentColor: "#E6007E",
+      },
+    ],
+  },
 };
+
+export const STORAGE_KEY_CAMPUS = "zealand_labs_campus_selected";
 
 interface CampusContextType {
   campus: CampusKey;
-  setCampus: (c: CampusKey) => void;
+  setCampus: (c: CampusKey, persist?: boolean) => void;
   activeLabId: string;
   setActiveLabId: (id: string) => void;
   currentLabs: LabInfo[];
@@ -141,11 +201,29 @@ export function CampusProvider({ children }: { children: React.ReactNode }) {
     // Initialize passive touchstart listener on window to enable immediate :active states on iOS Safari
     const onTouchStart = () => {};
     window.addEventListener("touchstart", onTouchStart, { passive: true });
+
+    // Restore saved campus from localStorage if present
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_CAMPUS);
+      if (saved && (saved in CAMPUS_DATA)) {
+        setCampusState(saved as CampusKey);
+      }
+    } catch {
+      // localStorage may fail in private window or strict iframe sandbox
+    }
+
     return () => window.removeEventListener("touchstart", onTouchStart);
   }, []);
 
-  const setCampus = (newCampus: CampusKey) => {
+  const setCampus = (newCampus: CampusKey, persist = true) => {
     setCampusState(newCampus);
+    if (persist) {
+      try {
+        localStorage.setItem(STORAGE_KEY_CAMPUS, newCampus);
+      } catch {
+        // ignore
+      }
+    }
     // ensure activeLabId is valid for newly selected campus
     const newLabs = CAMPUS_DATA[newCampus].labs;
     if (!newLabs.some((l) => l.id === activeLabId)) {

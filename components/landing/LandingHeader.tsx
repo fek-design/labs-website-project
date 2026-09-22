@@ -76,30 +76,23 @@ export function LandingHeader() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 5 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 mt-2 w-36 max-w-[calc(100vw-32px)] bg-[#121214] border border-white/12 rounded-lg shadow-xl p-1.5 z-50 font-sans text-xs"
+                    className="absolute right-0 mt-2 w-40 max-w-[calc(100vw-32px)] bg-[#121214] border border-white/12 rounded-lg shadow-xl p-1.5 z-50 font-sans text-xs"
                   >
-                    <button
-                      type="button"
-                      onClick={() => toggleCampus("køge")}
-                      className={`w-full text-left px-3 py-2.5 min-h-[40px] rounded-lg transition-colors flex items-center justify-between cursor-pointer touch-manipulation ${campus === "køge"
-                          ? "bg-brand-cyan/20 text-brand-cyan font-bold"
-                          : "text-white/80 hover:bg-white/10"
+                    {(["køge", "roskilde", "næstved", "holbæk"] as CampusKey[]).map((cKey) => (
+                      <button
+                        key={cKey}
+                        type="button"
+                        onClick={() => toggleCampus(cKey)}
+                        className={`w-full text-left px-3 py-2.5 min-h-[40px] rounded-lg transition-colors flex items-center justify-between cursor-pointer touch-manipulation capitalize ${
+                          campus === cKey
+                            ? "bg-brand-cyan/20 text-brand-cyan font-bold"
+                            : "text-white/80 hover:bg-white/10"
                         }`}
-                    >
-                      <span>Køge</span>
-                      {campus === "køge" && <span className="text-[10px]">●</span>}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toggleCampus("roskilde")}
-                      className={`w-full text-left px-3 py-2.5 min-h-[40px] rounded-lg transition-colors flex items-center justify-between cursor-pointer touch-manipulation ${campus === "roskilde"
-                          ? "bg-brand-cyan/20 text-brand-cyan font-bold"
-                          : "text-white/80 hover:bg-white/10"
-                        }`}
-                    >
-                      <span>Roskilde</span>
-                      {campus === "roskilde" && <span className="text-[10px]">●</span>}
-                    </button>
+                      >
+                        <span>{cKey}</span>
+                        {campus === cKey && <span className="text-[10px]">●</span>}
+                      </button>
+                    ))}
                   </motion.div>
                 )}
               </AnimatePresence>

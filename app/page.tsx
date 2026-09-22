@@ -1,6 +1,7 @@
 import React from "react";
 import { prisma } from "@/lib/prisma";
 import { CampusProvider } from "@/components/landing/CampusContext";
+import { FirstTimeCampusGate } from "@/components/landing/FirstTimeCampusGate";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { MarqueeRibbon } from "@/components/landing/MarqueeRibbon";
@@ -38,6 +39,9 @@ export default async function LandingPage() {
 
   return (
     <CampusProvider>
+      {/* First-time onboarding location gate (Figma Frame 144:462) */}
+      <FirstTimeCampusGate />
+
       <div className="min-h-screen bg-black text-white selection:bg-brand-pink/30 selection:text-white flex flex-col justify-between overflow-x-hidden">
         {/* Fixed/Overlay Navigation with Campus Switcher */}
         <LandingHeader />
