@@ -78,7 +78,7 @@ export function LandingHeader() {
                     transition={{ duration: 0.15 }}
                     className="absolute right-0 mt-2 w-40 max-w-[calc(100vw-32px)] bg-[#121214] border border-white/12 rounded-lg shadow-xl p-1.5 z-50 font-sans text-xs"
                   >
-                    {(["køge", "roskilde", "næstved", "holbæk"] as CampusKey[]).map((cKey) => (
+                    {(["køge", "roskilde"] as CampusKey[]).map((cKey) => (
                       <button
                         key={cKey}
                         type="button"

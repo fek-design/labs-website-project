@@ -110,8 +110,8 @@ async function main() {
   }
   console.log(`Faceted taxonomy tags created: ${Object.keys(tags).length}`);
 
-  // 4. Seed Verified Makerspace Static Machines (Clean Authentic Specs)
-  console.log("Creating Verified Makerspace Machines...");
+  // 4. Seed Verified Makerspace Static Machines (Køge)
+  console.log("Creating Verified Makerspace Machines (Køge)...");
 
   const bambuX1C = await prisma.inventory.create({
     data: {
@@ -122,6 +122,7 @@ async function main() {
       operationalStatus: OperationalStatus.AVAILABLE,
       imageUrl: "/uploads/bambu-x1c.webp",
       notes: "0.4mm hardened steel nozzle. AMS automated material system with 4 filament slots.",
+      location: "Køge - Makerspace 3D Zone",
       customFields: {
         manualUrl: "https://wiki.bambulab.com/en/x1",
         manualFileName: "Bambu_X1C_User_Guide.pdf",
@@ -139,6 +140,7 @@ async function main() {
       operationalStatus: OperationalStatus.AVAILABLE,
       imageUrl: "/uploads/beambox-pro.webp",
       notes: "CO2 glass laser tube with integrated air assist and smart camera alignment.",
+      location: "Køge - Laser Zone",
       customFields: {
         manualUrl: "https://support.flux3dp.com/hc/en-us/categories/360001717316-Beambox",
         manualFileName: "Flux_Beambox_Pro_Manual.pdf",
@@ -156,6 +158,7 @@ async function main() {
       operationalStatus: OperationalStatus.AVAILABLE,
       imageUrl: "/uploads/brother-gtx.webp",
       notes: "Industrial DTG printer for organic cotton textiles and polyester blends with Innobella textile inks.",
+      location: "Køge - Tekstil Lab",
       customFields: {
         manualUrl: "https://www.brother-ism.com",
         manualFileName: "Brother_GTX_Pro_Operation_Manual.pdf",
@@ -173,14 +176,36 @@ async function main() {
       operationalStatus: OperationalStatus.AVAILABLE,
       imageUrl: "/uploads/weller-soldering.webp",
       notes: "Digital temperature controlled iron with ESD-safe bench mat and HEPA fume extraction.",
+      location: "Køge - Elektronikbord",
       customFields: {
         safetyGuide: "Always wear safety goggles and keep fume extraction hood positioned over work.",
       },
     },
   });
 
-  // 5. Seed Verified Medialab Borrowable Gear
-  console.log("Creating Verified Medialab Borrowable Gear...");
+  const kogeAdditionalMachines = [
+    { assetTag: "MK-3DP-0002", name: "Original Prusa MK4 Nextruder", location: "Køge - Makerspace 3D Zone", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "MK-3DP-0003", name: "Prusa XL 5-Toolhead 3D Printer", location: "Køge - Makerspace 3D Zone", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "MK-3DP-0004", name: "Formlabs Form 4 SLA 3D Printer", location: "Køge - Precision Resin Lab", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.MAINTENANCE },
+    { assetTag: "MK-3DP-0005", name: "Ultimaker S5 Dual Extruder", location: "Køge - Makerspace 3D Zone", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "MK-LSR-0002", name: "Epilog Zing 24 Laser Cutter 40W", location: "Køge - Laser Zone", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "MK-TEX-0002", name: "Roland TrueVIS SG-300 Vinyl Cutter", location: "Køge - Tekstil Lab", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "MK-RPD-0001", name: "Mayku FormBox Desktop Vacuum Former", location: "Køge - Rapid Prototyping", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "MK-RPD-0002", name: "Shaper Origin Handheld CNC Router", location: "Køge - Træ & Fræs", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "MK-RPD-0003", name: "Graphtec CE7000-60 Cutting Plotter", location: "Køge - Rapid Prototyping", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+  ];
+
+  for (const m of kogeAdditionalMachines) {
+    await prisma.inventory.create({
+      data: {
+        ...m,
+        labId: makerspaceKoge.id,
+      },
+    });
+  }
+
+  // 5. Seed Verified Medialab Borrowable Gear (Køge)
+  console.log("Creating Verified Medialab Borrowable Gear (Køge)...");
 
   const sonyFX30 = await prisma.inventory.create({
     data: {
@@ -190,6 +215,7 @@ async function main() {
       hardwareType: HardwareType.BORROWABLE_GEAR,
       operationalStatus: OperationalStatus.AVAILABLE,
       imageUrl: "/uploads/sony-fx30.webp",
+      location: "Køge - Medialab Udlån",
       notes: "Includes top handle XLR unit, 2x batteries, dual charger, and 128GB V90 SD card.",
     },
   });
@@ -202,6 +228,7 @@ async function main() {
       hardwareType: HardwareType.BORROWABLE_GEAR,
       operationalStatus: OperationalStatus.AVAILABLE,
       imageUrl: "/uploads/rode-wireless-pro.webp",
+      location: "Køge - Lydkuffert",
       notes: "2x Transmitters, 1x Receiver, 2x Lavalier II mics, smart charging case.",
     },
   });
@@ -214,6 +241,7 @@ async function main() {
       hardwareType: HardwareType.BORROWABLE_GEAR,
       operationalStatus: OperationalStatus.AVAILABLE,
       imageUrl: "/uploads/amaran-200d.webp",
+      location: "Køge - Lysstudie",
       notes: "Bowens Mount 200W Daylight LED with Hyper Reflector and AC power supply.",
     },
   });
@@ -226,9 +254,82 @@ async function main() {
       hardwareType: HardwareType.BORROWABLE_GEAR,
       operationalStatus: OperationalStatus.AVAILABLE,
       imageUrl: "/uploads/quest3.webp",
+      location: "Køge - XR Station",
       notes: "Includes 2x Touch Plus controllers, silicone facial interface, and charger.",
     },
   });
+
+  const kogeAdditionalGear = [
+    { assetTag: "ML-CAM-0002", name: "Sony Alpha A7 IV Full-Frame Kit", location: "Køge - Medialab Udlån", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "ML-CAM-0003", name: "Canon EOS R6 Mark II Video Kit", location: "Køge - Medialab Udlån", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "ML-AUD-0002", name: "Shure SM7B Studio Podcast Mic", location: "Køge - Podcast Studio", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "ML-AUD-0003", name: "Blackmagic ATEM Mini Pro Switcher", location: "Køge - Livestream Rack", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "ML-LGT-0002", name: "Nanlite Forza 60B II Bi-color LED", location: "Køge - Lysstudie", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "ML-CAM-0004", name: "DJI Ronin RS 3 Pro Gimbal", location: "Køge - Medialab Udlån", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "ML-AUD-0004", name: "Zoom H6 Essential Handy Recorder", location: "Køge - Lydkuffert", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+  ];
+
+  for (const g of kogeAdditionalGear) {
+    await prisma.inventory.create({
+      data: {
+        ...g,
+        labId: medialabKoge.id,
+      },
+    });
+  }
+
+  // 5.5 Seed Authentic Roskilde Lab Inventory (Makerspace, Medialab, Dimselab)
+  console.log("Creating Verified Roskilde Lab Inventory...");
+
+  const roskildeInventoryData = [
+    // Roskilde Makerspace Static Machines
+    { assetTag: "RK-3DP-0001", name: "Original Prusa MK4 3D Printer", location: "Roskilde - Makerspace", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-3DP-0002", name: "Bambu Lab P1S Combo (AMS)", location: "Roskilde - Makerspace", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-3DP-0003", name: "Ultimaker S3 Dual Extruder", location: "Roskilde - Makerspace", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-LSR-0001", name: "Glowforge Pro HD CO2 Laser", location: "Roskilde - Makerspace", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-LSR-0002", name: "Dremel DigiLab LC40 Laser Cutter", location: "Roskilde - Makerspace", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-3DP-0004", name: "Formlabs Form 3+ Resin SLA", location: "Roskilde - Makerspace", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.MAINTENANCE },
+    { assetTag: "RK-TEX-0001", name: "Secabo TC7 SMART Heat Press", location: "Roskilde - Makerspace", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-3DP-0005", name: "Prusa MINI+ Compact 3D Printer", location: "Roskilde - Makerspace", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-3DP-0006", name: "Elegoo Saturn 3 Ultra 12K", location: "Roskilde - Makerspace", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-RPD-0001", name: "Cricut Venture Wide Smart Cutter", location: "Roskilde - Makerspace", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-LSR-0003", name: "Creality Falcon2 22W Diode Laser", location: "Roskilde - Makerspace", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+
+    // Roskilde Medialab Borrowable Gear
+    { assetTag: "RK-CAM-0001", name: "Panasonic Lumix S5 II Cinema Kit", location: "Roskilde - Medialab", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-CAM-0002", name: "Sony FX3 Full-Frame Cinema Camera", location: "Roskilde - Medialab", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-AUD-0001", name: "RØDECaster Pro II Podcast Station", location: "Roskilde - Medialab", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-AUD-0002", name: "Shure MV7 USB/XLR Podcast Mic Kit", location: "Roskilde - Medialab", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-AUD-0003", name: "Sennheiser MKE 600 Shotgun Mic", location: "Roskilde - Medialab", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-LGT-0001", name: "Godox SL60W Video Studio LED", location: "Roskilde - Medialab", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-AUD-0004", name: "DJI Mic 2 Wireless Dual Lavalier", location: "Roskilde - Medialab", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-AUD-0005", name: "Elgato Stream Deck XL Studio Console", location: "Roskilde - Medialab", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-VRX-0001", name: "Apple iPad Pro 12.9 M2 Procreate Kit", location: "Roskilde - Medialab", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-CAM-0003", name: "Insta360 X4 8K 360 Camera", location: "Roskilde - Medialab", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-CAM-0004", name: "Manfrotto 504X Fluid Video Tripod", location: "Roskilde - Medialab", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+
+    // Roskilde Dimselab Workstations & Hardware
+    { assetTag: "RK-ELC-0001", name: "Hakko FX-888D Digital Soldering Station", location: "Roskilde - Dimselab", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-ELC-0002", name: "Rigol DS1054Z 4CH Digital Oscilloscope", location: "Roskilde - Dimselab", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-ELC-0003", name: "Korad KD3005D Precision DC Power Supply", location: "Roskilde - Dimselab", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-ELC-0004", name: "Quick 861DW Hot Air SMD Rework Station", location: "Roskilde - Dimselab", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-ELC-0005", name: "Saleae Logic 8 USB Logic Analyzer", location: "Roskilde - Dimselab", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-ELC-0006", name: "Arduino Mega 2560 Advanced IoT Kit", location: "Roskilde - Dimselab", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-ELC-0007", name: "Raspberry Pi 5 8GB Prototyping Kit", location: "Roskilde - Dimselab", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-ELC-0008", name: "ESP32-S3 AI & Vision Dev Board Kit", location: "Roskilde - Dimselab", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-ELC-0009", name: "Pinecil V2 Portable Soldering Pen", location: "Roskilde - Dimselab", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-ELC-0010", name: "Thermaltronics TMT-2000S Fume Extractor", location: "Roskilde - Dimselab", hardwareType: HardwareType.STATIC_MACHINE, operationalStatus: OperationalStatus.AVAILABLE },
+    { assetTag: "RK-ELC-0011", name: "Fluke 117 True RMS Digital Multimeter", location: "Roskilde - Dimselab", hardwareType: HardwareType.BORROWABLE_GEAR, operationalStatus: OperationalStatus.AVAILABLE },
+  ];
+
+  for (const item of roskildeInventoryData) {
+    await prisma.inventory.create({
+      data: {
+        ...item,
+        labId: roskildeLab.id,
+      },
+    });
+  }
 
   // 6. Connect Inventory with 2-Tier Faceted Tags
   const tagMappings = [

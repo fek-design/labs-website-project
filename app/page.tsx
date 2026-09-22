@@ -8,39 +8,120 @@ import { MarqueeRibbon } from "@/components/landing/MarqueeRibbon";
 import { PrototypeCarousel } from "@/components/landing/PrototypeCarousel";
 import { HotspotShowcase } from "@/components/landing/HotspotShowcase";
 import { CampusLabExplorer } from "@/components/landing/CampusLabExplorer";
-import { MachineTelemetrySection } from "@/components/landing/MachineTelemetrySection";
+import {
+  MachineTelemetrySection,
+  CampusTelemetryCatalog,
+  MachineItem,
+} from "@/components/landing/MachineTelemetrySection";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 
 export default async function LandingPage() {
-  let machineCount = 10;
-  let machines: { id: string; name: string; location?: string | null; operationalStatus?: string | null }[] = [];
+  const catalog: CampusTelemetryCatalog = {
+    køge: {
+      makerspace: { count: 0, items: [] },
+      medialab: { count: 0, items: [] },
+      dimselab: { count: 0, items: [] },
+    },
+    roskilde: {
+      makerspace: { count: 0, items: [] },
+      medialab: { count: 0, items: [] },
+      dimselab: { count: 0, items: [] },
+    },
+  };
+
+  let fallbackMachineCount = 10;
+  let fallbackMachines: MachineItem[] = [];
 
   try {
-    const [dbMachineCount, dbMachines] = await Promise.all([
-      prisma.inventory.count({ where: { hardwareType: "STATIC_MACHINE" } }),
-      prisma.inventory.findMany({
-        where: { hardwareType: "STATIC_MACHINE" },
-        select: {
-          id: true,
-          name: true,
-          location: true,
-          operationalStatus: true,
+    const allDbInventory = await prisma.inventory.findMany({
+      select: {
+        id: true,
+        name: true,
+        location: true,
+        operationalStatus: true,
+        hardwareType: true,
+        imageUrl: true,
+        lab: {
+          select: {
+            slug: true,
+            campus: true,
+          },
         },
-        orderBy: { name: "asc" },
-      }),
-    ]);
-    if (dbMachineCount > 0) {
-      machineCount = dbMachineCount;
-      machines = dbMachines;
+        tags: {
+          select: {
+            tag: {
+              select: {
+                slug: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { name: "asc" },
+    });
+
+    for (const item of allDbInventory) {
+      const isRoskilde =
+        item.lab.campus.toLowerCase().includes("roskilde") ||
+        item.lab.slug === "roskilde";
+      const campusKey = isRoskilde ? "roskilde" : "køge";
+
+      let labKey: "makerspace" | "medialab" | "dimselab" = "makerspace";
+
+      if (isRoskilde) {
+        const loc = item.location?.toLowerCase() || "";
+        const tagSlugs = item.tags.map((t) => t.tag.slug.toLowerCase());
+        const isDimse =
+          loc.includes("dimse") ||
+          tagSlugs.includes("electronics") ||
+          tagSlugs.includes("soldering-smd");
+        const isMedia =
+          item.hardwareType === "BORROWABLE_GEAR" ||
+          loc.includes("media") ||
+          tagSlugs.some((s) => s.includes("media") || s.includes("audio") || s.includes("camera") || s.includes("lighting"));
+
+        if (isDimse) {
+          labKey = "dimselab";
+        } else if (isMedia) {
+          labKey = "medialab";
+        } else {
+          labKey = "makerspace";
+        }
+      } else {
+        // Køge
+        if (
+          item.lab.slug === "medialab" ||
+          item.hardwareType === "BORROWABLE_GEAR"
+        ) {
+          labKey = "medialab";
+        } else {
+          labKey = "makerspace";
+        }
+      }
+
+      const cleanItem: MachineItem = {
+        id: item.id,
+        name: item.name,
+        location: item.location,
+        operationalStatus: item.operationalStatus,
+        hardwareType: item.hardwareType,
+        imageUrl: item.imageUrl,
+      };
+
+      catalog[campusKey][labKey].items.push(cleanItem);
+      catalog[campusKey][labKey].count += 1;
     }
+
+    fallbackMachineCount = catalog.køge.makerspace.count;
+    fallbackMachines = catalog.køge.makerspace.items;
   } catch (error) {
-    console.warn("Database machine query falling back to static defaults:", error);
+    console.warn("Database inventory query falling back to static defaults:", error);
   }
 
   return (
     <CampusProvider>
-      {/* First-time onboarding location gate (Figma Frame 144:462) */}
-      <FirstTimeCampusGate />
+      {/* Location picker intro gate (always shown on load) */}
+      <FirstTimeCampusGate forceShow={true} />
 
       <div className="min-h-screen bg-black text-white selection:bg-brand-pink/30 selection:text-white flex flex-col justify-between overflow-x-hidden">
         {/* Fixed/Overlay Navigation with Campus Switcher */}
@@ -63,7 +144,11 @@ export default async function LandingPage() {
           <CampusLabExplorer />
 
           {/* Real-time Hardware Telemetry & Machines (Autoscrolling Clipped 3-Card List) */}
-          <MachineTelemetrySection machineCount={machineCount} machines={machines} />
+          <MachineTelemetrySection
+            machineCount={fallbackMachineCount}
+            machines={fallbackMachines}
+            catalog={catalog}
+          />
         </main>
 
         {/* Brand Cyan Footer */}
