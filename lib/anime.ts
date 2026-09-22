@@ -58,7 +58,7 @@ export function drawSvgPath(
     ease,
     loop,
     alternate,
-    onComplete,
+    ...(onComplete ? { onComplete } : {}),
   });
 }
 
@@ -127,7 +127,7 @@ export function animateCounter(
         : Math.round(state.value).toLocaleString();
       element.textContent = `${prefix}${formatted}${suffix}`;
     },
-    onComplete,
+    ...(onComplete ? { onComplete } : {}),
   });
 }
 

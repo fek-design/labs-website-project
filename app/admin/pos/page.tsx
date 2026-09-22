@@ -8,7 +8,18 @@ export const metadata = {
 };
 
 export default async function AdminPOSPage() {
-  const initialStats = await getPosStats("medialab");
+  let initialStats = {
+    activeLoansCount: 0,
+    overdueLoansCount: 0,
+    availableGearCount: 0,
+    totalGearCount: 0,
+  };
+
+  try {
+    initialStats = await getPosStats("medialab");
+  } catch (error) {
+    console.warn("Could not load initial POS stats:", error);
+  }
 
   return <AdminConsoleClient initialStats={initialStats} />;
 }

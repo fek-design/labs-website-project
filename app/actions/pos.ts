@@ -575,40 +575,50 @@ export async function getActiveLoans(labSlug: string = "medialab") {
 export async function getPosStats(labSlug: string = "medialab") {
   const now = new Date();
 
-  const [activeLoansCount, overdueLoansCount, availableGearCount, totalGearCount] = await Promise.all([
-    prisma.loan.count({
-      where: {
-        status: LoanStatus.ACTIVE,
-        inventory: { lab: { slug: labSlug } },
-      },
-    }),
-    prisma.loan.count({
-      where: {
-        status: LoanStatus.ACTIVE,
-        expectedReturn: { lt: now },
-        inventory: { lab: { slug: labSlug } },
-      },
-    }),
-    prisma.inventory.count({
-      where: {
-        lab: { slug: labSlug },
-        hardwareType: HardwareType.BORROWABLE_GEAR,
-        operationalStatus: OperationalStatus.AVAILABLE,
-        loans: { none: { status: LoanStatus.ACTIVE } },
-      },
-    }),
-    prisma.inventory.count({
-      where: {
-        lab: { slug: labSlug },
-        hardwareType: HardwareType.BORROWABLE_GEAR,
-      },
-    }),
-  ]);
+  try {
+    const [activeLoansCount, overdueLoansCount, availableGearCount, totalGearCount] = await Promise.all([
+      prisma.loan.count({
+        where: {
+          status: LoanStatus.ACTIVE,
+          inventory: { lab: { slug: labSlug } },
+        },
+      }),
+      prisma.loan.count({
+        where: {
+          status: LoanStatus.ACTIVE,
+          expectedReturn: { lt: now },
+          inventory: { lab: { slug: labSlug } },
+        },
+      }),
+      prisma.inventory.count({
+        where: {
+          lab: { slug: labSlug },
+          hardwareType: HardwareType.BORROWABLE_GEAR,
+          operationalStatus: OperationalStatus.AVAILABLE,
+          loans: { none: { status: LoanStatus.ACTIVE } },
+        },
+      }),
+      prisma.inventory.count({
+        where: {
+          lab: { slug: labSlug },
+          hardwareType: HardwareType.BORROWABLE_GEAR,
+        },
+      }),
+    ]);
 
-  return {
-    activeLoansCount,
-    overdueLoansCount,
-    availableGearCount,
-    totalGearCount,
-  };
+    return {
+      activeLoansCount,
+      overdueLoansCount,
+      availableGearCount,
+      totalGearCount,
+    };
+  } catch (error) {
+    console.warn("Database connection unavailable in getPosStats, using fallback metrics:", error);
+    return {
+      activeLoansCount: 0,
+      overdueLoansCount: 0,
+      availableGearCount: 0,
+      totalGearCount: 0,
+    };
+  }
 }

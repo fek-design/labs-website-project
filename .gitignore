@@ -34,7 +34,12 @@ yarn-error.log*
 .env*
 
 # local agent and MCP configs containing tokens/secrets
-.agents/mcp_config.json
+.agent/
+.agents/
+.cursor/
+*mcp*.json
+*.secret*
+*.token*
 
 # vercel
 .vercel

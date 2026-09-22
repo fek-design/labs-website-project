@@ -14,11 +14,21 @@
   --color-surface-elevated: #141416;
   --color-surface-border: #262626;
 
+  /* Light Section Tokens */
+  --color-surface-light: #ffffff;
+  --color-surface-light-card: #f4f4f5;
+  --color-surface-light-card-hover: #ebebee;
+  --color-surface-light-border: #e4e4e7;
+  --color-surface-light-border-strong: #d4d4d8;
+  --color-text-light-primary: #09090b;
+  --color-text-light-secondary: #52525b;
+  --color-text-light-muted: #71717a;
+
   /* Typography & Geometry */
-  --font-sans: "Stack Sans Text", system-ui, -apple-system, sans-serif;
-  --font-notch: "Stack Sans Notch", system-ui, -apple-system, sans-serif;
-  --font-headline: "Stack Sans Headline", system-ui, -apple-system, sans-serif;
-  --font-text: "Stack Sans Text", system-ui, -apple-system, sans-serif;
+  --font-sans: "Stack Sans Text", var(--font-inter), "Inter", system-ui, -apple-system, sans-serif;
+  --font-notch: "Stack Sans Notch", var(--font-space-grotesk), "Space Grotesk", system-ui, -apple-system, sans-serif;
+  --font-headline: "Stack Sans Headline", var(--font-space-grotesk), "Space Grotesk", system-ui, -apple-system, sans-serif;
+  --font-text: "Stack Sans Text", var(--font-inter), "Inter", system-ui, -apple-system, sans-serif;
   --radius-pill: 9999px;
   --radius-bento: 1.25rem;
 }
@@ -27,11 +37,82 @@
   body {
     @apply bg-brand-black text-white font-sans antialiased overflow-x-hidden;
   }
+
   ::selection {
     @apply bg-brand-pink/30 text-white;
   }
+
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #000000; }
-::-webkit-scrollbar-thumb { background: #262626; border-radius: 4px; }
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #262626;
+  border-radius: 4px;
+}
+
+/* Hide scrollbars cleanly on carousels and smooth-scrolling tracks */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes marquee-track {
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee-track {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  animation: marquee-track 28s linear infinite;
+}
+
+.animate-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes telemetry-vertical {
+  0% {
+    transform: translateY(0%);
+  }
+
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+.animate-telemetry-vertical {
+  display: flex;
+  flex-direction: column;
+  animation: telemetry-vertical 22s linear infinite;
+}
+
+.animate-telemetry-vertical:hover {
+  animation-play-state: paused;
+}
