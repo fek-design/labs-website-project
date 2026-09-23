@@ -1,19 +1,62 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import { useCampus, LAB_CMYK_TOKENS } from "./CampusContext";
 
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
 export function CampusLabExplorer() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const { currentLabs, activeLabId, setActiveLabId, activeLab, campus } = useCampus();
   const activeCmyk = LAB_CMYK_TOKENS[activeLab.id] || LAB_CMYK_TOKENS.makerspace;
   const isLightAccent = activeLab.id === "dimselab" || activeLab.id === "makerspace";
 
+  useGSAP(
+    () => {
+      // Header and bullets reveal
+      gsap.from(".gsap-explorer-header", {
+        scrollTrigger: {
+          trigger: ".gsap-explorer-header",
+          start: "top 85%",
+          toggleActions: "play none none none",
+        },
+        y: 24,
+        opacity: 0,
+        duration: 0.85,
+        ease: "power2.out",
+      });
+
+      // Spotlight card reveal
+      gsap.from(".gsap-explorer-spotlight", {
+        scrollTrigger: {
+          trigger: ".gsap-explorer-spotlight",
+          start: "top 88%",
+          toggleActions: "play none none none",
+        },
+        y: 28,
+        opacity: 0,
+        duration: 0.85,
+        ease: "power2.out",
+      });
+    },
+    { scope: containerRef }
+  );
+
   return (
-    <div id="support-pillars" className="w-full bg-black text-white py-12 sm:py-16 transition-colors duration-300">
+    <div
+      ref={containerRef}
+      id="support-pillars"
+      className="w-full bg-black text-white py-12 sm:py-16 transition-colors duration-300"
+    >
       {/* Prototyping & Understøttelse Section */}
       <section className="w-full px-4 sm:px-6 max-w-7xl mx-auto space-y-6 sm:space-y-8">
-        <div className="space-y-5 sm:space-y-6 max-w-2xl">
+        <div className="gsap-explorer-header space-y-5 sm:space-y-6 max-w-2xl">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span
@@ -92,7 +135,7 @@ export function CampusLabExplorer() {
       </section>
 
       {/* Synchronized Spotlight Card with Lab CMYK Color */}
-      <section className="w-full pt-6 sm:pt-8 px-4 sm:px-6 max-w-7xl mx-auto">
+      <section className="gsap-explorer-spotlight w-full pt-6 sm:pt-8 px-4 sm:px-6 max-w-7xl mx-auto">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={activeLab.id}

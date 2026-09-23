@@ -11,7 +11,7 @@ interface FirstTimeCampusGateProps {
 
 const CAMPUSES: CampusKey[] = ["køge", "roskilde"];
 
-export function FirstTimeCampusGate({ forceShow = true, onEnter }: FirstTimeCampusGateProps) {
+export function FirstTimeCampusGate({ forceShow = false, onEnter }: FirstTimeCampusGateProps) {
   const { campus, setCampus } = useCampus();
   const [selectedCampus, setSelectedCampus] = useState<CampusKey>(
     campus in CAMPUS_DATA ? campus : "køge"
@@ -21,19 +21,43 @@ export function FirstTimeCampusGate({ forceShow = true, onEnter }: FirstTimeCamp
 
   useEffect(() => {
     setHasMounted(true);
-    setIsOpen(true);
 
     try {
       const stored = localStorage.getItem(STORAGE_KEY_CAMPUS);
       if (stored && stored in CAMPUS_DATA) {
         setSelectedCampus(stored as CampusKey);
+        if (forceShow) {
+          setIsOpen(true);
+        } else {
+          setIsOpen(false);
+        }
       } else {
         setSelectedCampus("køge");
+        setIsOpen(true);
       }
     } catch {
-      // ignore
+      setIsOpen(true);
     }
   }, [forceShow]);
+
+  // Lock background scrolling while modal is open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      document.body.style.touchAction = originalTouchAction;
+    };
+  }, [isOpen]);
 
   // Synchronize internal selection if context changes
   useEffect(() => {

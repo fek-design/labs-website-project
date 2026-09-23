@@ -1,9 +1,13 @@
 import React from "react";
 import Link from "next/link";
 
-export function LandingFooter() {
+interface LandingFooterProps {
+  className?: string;
+}
+
+export function LandingFooter({ className = "mt-8 sm:mt-12" }: LandingFooterProps) {
   return (
-    <footer className="w-full bg-brand-cyan text-white py-12 sm:py-16 px-4 sm:px-6 mt-8 sm:mt-12">
+    <footer className={`w-full bg-brand-cyan text-white py-12 sm:py-16 px-4 sm:px-6 ${className}`}>
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-8 sm:gap-12">
         {/* Left Brand info */}
         <div className="space-y-2 sm:space-y-3 max-w-sm">

@@ -1,8 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 interface HotspotProps {
   x: number; // percentage from left
@@ -84,11 +91,37 @@ function HotspotBeacon({ x, y, title, category, linkHref, defaultActive = false 
 }
 
 export function HotspotShowcase() {
+  const containerRef = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      const blocks = gsap.utils.toArray<HTMLElement>(".gsap-showcase-block");
+      blocks.forEach((block) => {
+        gsap.from(block, {
+          scrollTrigger: {
+            trigger: block,
+            start: "top 85%",
+            toggleActions: "play none none none",
+          },
+          y: 28,
+          opacity: 0,
+          duration: 0.85,
+          ease: "power2.out",
+        });
+      });
+    },
+    { scope: containerRef }
+  );
+
   return (
-    <section id="showcase" className="w-full bg-white text-zinc-950 pt-10 sm:pt-16 md:pt-20 pb-16 sm:pb-24 transition-colors duration-300">
+    <section
+      ref={containerRef}
+      id="showcase"
+      className="w-full bg-white text-zinc-950 pt-10 sm:pt-16 md:pt-20 pb-16 sm:pb-24 transition-colors duration-300"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-4 sm:space-y-6">
         {/* Row 1 (1x1): Primary Feature Card: Textile Print */}
-        <div className="relative w-full h-[360px] sm:h-[500px] md:h-[580px] rounded-none group border border-[#DFDFDF] shadow-none">
+        <div className="gsap-showcase-block relative w-full h-[360px] sm:h-[500px] md:h-[580px] rounded-none group border border-[#DFDFDF] shadow-none">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <Image
               src="/images/landing/showcase-textile.jpg"
@@ -113,11 +146,11 @@ export function HotspotShowcase() {
 
           {/* Hotspots */}
           <HotspotBeacon x={58} y={15} title="Print på Kasket" category="Makerspace" linkHref="#support-pillars" />
-          <HotspotBeacon x={54} y={54} title="Print på T-Shirt" category="Makerspace" linkHref="#support-pillars" defaultActive={true} />
+          <HotspotBeacon x={54} y={54} title="Print på T-Shirt" category="Makerspace" linkHref="/craft/t-shirt" defaultActive={true} />
         </div>
 
         {/* Row 2 (1x2): Two Column Grid: Medialab Posters & Cameras */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-6">
+        <div className="gsap-showcase-block grid grid-cols-2 gap-3 sm:gap-6">
           {/* Poster Print */}
           <div className="relative h-[220px] sm:h-[340px] md:h-[380px] rounded-none group border border-[#DFDFDF] shadow-none">
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -168,7 +201,7 @@ export function HotspotShowcase() {
         </div>
 
         {/* Row 3 (1x1): 3D Print Card matching Row 1 scale */}
-        <div className="relative w-full h-[360px] sm:h-[500px] md:h-[580px] rounded-none group border border-[#DFDFDF] shadow-none">
+        <div className="gsap-showcase-block relative w-full h-[360px] sm:h-[500px] md:h-[580px] rounded-none group border border-[#DFDFDF] shadow-none">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <Image
               src="/images/landing/showcase-3dprint.jpg"

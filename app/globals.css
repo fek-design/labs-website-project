@@ -90,10 +90,12 @@
   display: flex;
   flex-shrink: 0;
   align-items: center;
+  will-change: transform;
   animation: marquee-track 28s linear infinite;
 }
 
-.animate-marquee-track:hover {
+.group:hover .animate-marquee-track,
+.marquee-container:hover .animate-marquee-track {
   animation-play-state: paused;
 }
 

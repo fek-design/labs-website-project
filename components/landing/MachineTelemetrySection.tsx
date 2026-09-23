@@ -1,8 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import Image from "next/image";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import { useCampus } from "./CampusContext";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export interface MachineItem {
   id: string;
@@ -114,7 +121,52 @@ export function MachineTelemetrySection({
   machines = [],
   catalog,
 }: MachineTelemetryProps) {
+  const containerRef = useRef<HTMLElement>(null);
   const { campus, activeLabId } = useCampus();
+
+  useGSAP(
+    () => {
+      // Header reveal
+      gsap.from(".gsap-telemetry-header", {
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top 85%",
+          toggleActions: "play none none none",
+        },
+        y: 24,
+        opacity: 0,
+        duration: 0.85,
+        ease: "power2.out",
+      });
+
+      // Left stat block reveal
+      gsap.from(".gsap-telemetry-stat", {
+        scrollTrigger: {
+          trigger: ".gsap-telemetry-stat",
+          start: "top 88%",
+          toggleActions: "play none none none",
+        },
+        y: 28,
+        opacity: 0,
+        duration: 0.85,
+        ease: "power2.out",
+      });
+
+      // Right viewport reveal
+      gsap.from(".gsap-telemetry-viewport", {
+        scrollTrigger: {
+          trigger: ".gsap-telemetry-viewport",
+          start: "top 88%",
+          toggleActions: "play none none none",
+        },
+        y: 28,
+        opacity: 0,
+        duration: 0.85,
+        ease: "power2.out",
+      });
+    },
+    { scope: containerRef }
+  );
 
   // Determine the active semantics (Makerspace vs Medialab vs Dimselab)
   const semantics = LAB_SEMANTICS[activeLabId] || LAB_SEMANTICS.makerspace;
@@ -158,11 +210,12 @@ export function MachineTelemetrySection({
 
   return (
     <section
+      ref={containerRef}
       id="machines"
       className="w-full bg-black text-white py-12 sm:py-16 px-4 sm:px-6 max-w-7xl mx-auto space-y-8 sm:space-y-10 transition-all duration-300"
     >
       {/* Dynamic Headings based on Active Lab */}
-      <div className="space-y-3 sm:space-y-4 max-w-2xl">
+      <div className="gsap-telemetry-header space-y-3 sm:space-y-4 max-w-2xl">
         <h2 className="font-notch text-2xl sm:text-4xl md:text-5xl font-light text-white tracking-tight leading-tight">
           {semantics.headline}
         </h2>
@@ -174,7 +227,7 @@ export function MachineTelemetrySection({
       {/* Grid: Stat Counter on Left, Clipped Autoscrolling Cards on Right */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-center">
         {/* Left Stat Counter */}
-        <div className="md:col-span-4 flex flex-col justify-center">
+        <div className="gsap-telemetry-stat md:col-span-4 flex flex-col justify-center">
           <span className="font-sans text-xs sm:text-base font-semibold text-white/80">
             {semantics.statLabel}
           </span>
@@ -187,7 +240,7 @@ export function MachineTelemetrySection({
         </div>
 
         {/* Right Machine Status Viewport - Fixed 3 Cards Height (~270px), Clipped, Autoscrolling */}
-        <div className="md:col-span-8 relative h-[270px] overflow-hidden rounded-xl border border-[#262626] bg-[#0c0c0e]/80 p-2 shadow-2xl">
+        <div className="gsap-telemetry-viewport md:col-span-8 relative h-[270px] overflow-hidden rounded-xl border border-[#262626] bg-[#0c0c0e]/80 p-2 shadow-2xl">
           {/* Top & bottom edge gradient fades */}
           <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-[#0c0c0e] to-transparent z-10" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-[#0c0c0e] to-transparent z-10" />

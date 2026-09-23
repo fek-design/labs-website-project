@@ -1,7 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import { motion, type Variants } from "motion/react";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 
 const containerVariants: Variants = {
   hidden: { opacity: 1 },
@@ -34,11 +36,46 @@ const letterVariants: Variants = {
 };
 
 export function HeroSection() {
+  const containerRef = useRef<HTMLElement>(null);
   const line1Words = ["Zealands", "Kreative"];
   const line2Words = ["hjørne"];
 
+  useGSAP(
+    () => {
+      const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+
+      tl.from(".gsap-hero-bg", {
+        opacity: 0,
+        scale: 1.04,
+        duration: 1.1,
+      })
+      .from(
+        ".gsap-hero-content",
+        {
+          opacity: 0,
+          y: 20,
+          duration: 0.85,
+        },
+        "-=0.6"
+      )
+      .from(
+        ".gsap-hero-action",
+        {
+          opacity: 0,
+          y: 16,
+          duration: 0.65,
+        },
+        "-=0.3"
+      );
+    },
+    { scope: containerRef }
+  );
+
   return (
-    <section className="relative w-full h-[92dvh] min-h-[520px] sm:min-h-[600px] flex items-end justify-center overflow-hidden pb-14 sm:pb-20 px-4 sm:px-6">
+    <section
+      ref={containerRef}
+      className="relative w-full h-[92dvh] min-h-[520px] sm:min-h-[600px] flex items-end justify-center overflow-hidden pb-14 sm:pb-20 px-4 sm:px-6"
+    >
       {/* Background Video - Ambient, looping, muted, playsInline for mobile compatibility */}
       <video
         autoPlay
@@ -47,7 +84,7 @@ export function HeroSection() {
         playsInline
         preload="auto"
         aria-hidden="true"
-        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
+        className="gsap-hero-bg absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
       >
         <source src="/images/landing/bg.mp4" type="video/mp4" />
       </video>
@@ -56,7 +93,7 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
 
       {/* Hero Content */}
-      <div className="relative z-10 flex flex-col items-center text-center max-w-xl mx-auto space-y-6">
+      <div className="gsap-hero-content relative z-10 flex flex-col items-center text-center max-w-xl mx-auto space-y-6">
         {/* Bouncing Headline Animated Letter by Letter with Motion.js */}
         <motion.h1
           variants={containerVariants}
@@ -105,12 +142,8 @@ export function HeroSection() {
           </span>
         </motion.h1>
 
-        {/* Action Button - Enters smoothly following the letter bounce */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.95, duration: 0.55, type: "spring", stiffness: 220, damping: 20 }}
-        >
+        {/* Action Button - Enters deliberately via GSAP timeline */}
+        <div className="gsap-hero-action">
           <motion.a
             href="#prototypes"
             whileHover={{ scale: 1.025, backgroundColor: "#f4f4f5" }}
@@ -119,7 +152,7 @@ export function HeroSection() {
           >
             UDFORSK
           </motion.a>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

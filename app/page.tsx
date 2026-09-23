@@ -120,8 +120,8 @@ export default async function LandingPage() {
 
   return (
     <CampusProvider>
-      {/* Location picker intro gate (always shown on load) */}
-      <FirstTimeCampusGate forceShow={true} />
+      {/* Location picker intro gate (shown on first visit) */}
+      <FirstTimeCampusGate />
 
       <div className="min-h-screen bg-black text-white selection:bg-brand-pink/30 selection:text-white flex flex-col justify-between overflow-x-hidden">
         {/* Fixed/Overlay Navigation with Campus Switcher */}

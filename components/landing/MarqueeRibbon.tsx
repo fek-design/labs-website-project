@@ -14,9 +14,9 @@ const LAB_ITEMS = [
 
 export function MarqueeRibbon() {
   return (
-    <div className="w-full bg-black border-y border-white/10 py-3.5 overflow-hidden select-none relative flex">
+    <div className="group marquee-container w-full bg-black border-y border-white/10 py-3.5 overflow-hidden select-none relative flex cursor-default touch-pan-y">
       {/* Dual Track A & B for seamless infinite looping without gaps */}
-      <div className="animate-marquee-track flex items-center gap-8 whitespace-nowrap text-white font-notch text-xs sm:text-sm tracking-widest font-semibold uppercase pr-8" aria-hidden="false">
+      <div className="animate-marquee-track flex items-center gap-8 whitespace-nowrap text-white font-notch text-xs sm:text-sm tracking-widest font-semibold uppercase pr-8 pointer-events-none" aria-hidden="false">
         {LAB_ITEMS.map((item, index) => (
           <span key={`a-${index}`} className="flex items-center gap-8">
             <span>{item}</span>
@@ -25,7 +25,7 @@ export function MarqueeRibbon() {
         ))}
       </div>
 
-      <div className="animate-marquee-track flex items-center gap-8 whitespace-nowrap text-white font-notch text-xs sm:text-sm tracking-widest font-semibold uppercase pr-8" aria-hidden="true">
+      <div className="animate-marquee-track flex items-center gap-8 whitespace-nowrap text-white font-notch text-xs sm:text-sm tracking-widest font-semibold uppercase pr-8 pointer-events-none" aria-hidden="true">
         {LAB_ITEMS.map((item, index) => (
           <span key={`b-${index}`} className="flex items-center gap-8">
             <span>{item}</span>
