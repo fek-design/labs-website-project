@@ -12,18 +12,21 @@ import { CraftInspirationGallery } from "@/components/craft/CraftInspirationGall
 import { CraftManualsSection } from "@/components/craft/CraftManualsSection";
 import { MarqueeRibbon } from "@/components/landing/MarqueeRibbon";
 
+import { getCraftArticles } from "@/app/actions/crafts";
+
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
 export async function generateStaticParams() {
-  const slugs = getAllCraftSlugs();
-  return slugs.map((slug) => ({ slug }));
+  const items = await getCraftArticles();
+  return items.map((i) => ({ slug: i.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const item = getCraftItem(slug);
+  const items = await getCraftArticles();
+  const item = items.find((i) => i.slug.toLowerCase() === slug.toLowerCase()) || getCraftItem(slug);
 
   if (!item) {
     return {
@@ -39,7 +42,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function CraftItemPage({ params }: PageProps) {
   const { slug } = await params;
-  const item = getCraftItem(slug);
+  const items = await getCraftArticles();
+  const item = items.find((i) => i.slug.toLowerCase() === slug.toLowerCase()) || getCraftItem(slug);
 
   if (!item) {
     notFound();

@@ -6,6 +6,7 @@ import { InventoryManager } from "@/components/inventory/InventoryManager";
 import { MakerspaceMachineHub } from "@/components/makerspace/MakerspaceMachineHub";
 import { AuditHistoryView } from "@/components/history/AuditHistoryView";
 import { AdminSettingsView } from "@/components/settings/AdminSettingsView";
+import { CraftItemsManager } from "@/components/admin/CraftItemsManager";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { logoutAdmin } from "@/app/actions/auth";
 import Link from "next/link";
@@ -21,7 +22,7 @@ interface AdminConsoleClientProps {
 
 export function AdminConsoleClient({ initialStats }: AdminConsoleClientProps) {
   const [mainNav, setMainNav] = useState<
-    "FRONT_DESK" | "INVENTORY" | "MAKERSPACE" | "HISTORY" | "SETTINGS"
+    "FRONT_DESK" | "INVENTORY" | "MAKERSPACE" | "CRAFTS" | "HISTORY" | "SETTINGS"
   >("FRONT_DESK");
 
   const handleLogout = async () => {
@@ -60,6 +61,7 @@ export function AdminConsoleClient({ initialStats }: AdminConsoleClientProps) {
                   { id: "FRONT_DESK", label: "Front Desk & Calendar" },
                   { id: "INVENTORY", label: "Inventory & Catalog" },
                   { id: "MAKERSPACE", label: "Makerspace Machines" },
+                  { id: "CRAFTS", label: "Crafts & Artikler" },
                   { id: "HISTORY", label: "Audit Logs" },
                   { id: "SETTINGS", label: "Settings" },
                 ] as const
@@ -74,6 +76,8 @@ export function AdminConsoleClient({ initialStats }: AdminConsoleClientProps) {
                         ? "bg-[#FFED00] text-black shadow-lg shadow-[#FFED00]/20"
                         : tab.id === "INVENTORY"
                         ? "bg-[#009FE3] text-black shadow-lg shadow-[#009FE3]/20"
+                        : tab.id === "CRAFTS"
+                        ? "bg-[#E6007E] text-white shadow-lg shadow-[#E6007E]/20"
                         : tab.id === "HISTORY"
                         ? "bg-[#E6007E] text-white shadow-lg shadow-[#E6007E]/20"
                         : "bg-white text-black shadow-lg shadow-white/20"
@@ -113,6 +117,8 @@ export function AdminConsoleClient({ initialStats }: AdminConsoleClientProps) {
           {mainNav === "INVENTORY" && <InventoryManager />}
 
           {mainNav === "MAKERSPACE" && <MakerspaceMachineHub />}
+
+          {mainNav === "CRAFTS" && <CraftItemsManager />}
 
           {mainNav === "HISTORY" && <AuditHistoryView />}
 

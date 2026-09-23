@@ -22,8 +22,8 @@ const prototypeItems: PrototypeItem[] = [
   { id: "tshirt", name: "T-Shirt", image: "/images/landing/carousel-tshirt.png", href: "/craft/t-shirt" },
   { id: "kop", name: "Kop", image: "/images/landing/carousel-kop.png", href: "/craft/kop" },
   { id: "mulepose", name: "Mulepose", image: "/images/landing/carousel-mulepose.png", href: "/craft/mulepose" },
-  { id: "3dprint", name: "3D Print", image: "/images/landing/showcase-3dprint.jpg", href: "/craft/kop" },
-  { id: "plakat", name: "Plakat", image: "/images/landing/showcase-poster.jpg", href: "/craft/t-shirt" },
+  { id: "3dprint", name: "3D Print", image: "/images/landing/showcase-3dprint.jpg", href: "/craft/3d-print" },
+  { id: "plakat", name: "Plakat", image: "/images/landing/showcase-poster.jpg", href: "/craft/plakat" },
 ];
 
 export function PrototypeCarousel() {
