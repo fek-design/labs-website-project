@@ -13,6 +13,7 @@ import {
 } from "@/app/actions/inventory";
 import { HardwareType, OperationalStatus, TagFacet } from "@prisma/client";
 import { motion, AnimatePresence } from "motion/react";
+import { Buildings, Check, PencilSimple, X } from "@phosphor-icons/react";
 
 export function InventoryManager() {
   const [items, setItems] = useState<any[]>([]);
@@ -379,8 +380,9 @@ export function InventoryManager() {
 
                     {/* Facility Lab */}
                     <td className="py-3 px-3">
-                      <span className="px-2.5 py-1 bg-[#0D0D0D] border border-[#262626] rounded-full text-[11px] text-zinc-300 font-bold">
-                        🏛️ {item.lab?.name}
+                      <span className="px-2.5 py-1 bg-[#0D0D0D] border border-[#262626] rounded-full text-[11px] text-zinc-300 font-bold inline-flex items-center gap-1.5">
+                        <Buildings size={14} weight="regular" aria-hidden="true" />
+                        <span>{item.lab?.name}</span>
                       </span>
                     </td>
 
@@ -410,7 +412,10 @@ export function InventoryManager() {
                           </div>
                         </div>
                       ) : item.hardwareType === "BORROWABLE_GEAR" ? (
-                        <span className="text-emerald-400 text-[11px] font-bold">✓ Ready for checkout</span>
+                        <span className="text-emerald-400 text-[11px] font-bold inline-flex items-center gap-1.5">
+                          <Check size={14} weight="bold" aria-hidden="true" />
+                          <span>Ready for checkout</span>
+                        </span>
                       ) : (
                         <span className="text-zinc-500 text-[11px]">Static Workstation</span>
                       )}
@@ -421,9 +426,10 @@ export function InventoryManager() {
                       <button
                         type="button"
                         onClick={() => setEditingItem(item)}
-                        className="px-3.5 py-1.5 bg-[#0D0D0D] hover:bg-[#262626] border border-[#262626] rounded-full text-zinc-300 hover:text-white font-bold transition-colors"
+                        className="px-3.5 py-1.5 bg-[#0D0D0D] hover:bg-[#262626] border border-[#262626] rounded-full text-zinc-300 hover:text-white font-bold transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                       >
-                        ✎ Edit
+                        <PencilSimple size={14} weight="regular" aria-hidden="true" />
+                        <span>Edit</span>
                       </button>
                     </td>
                   </tr>
@@ -452,9 +458,10 @@ export function InventoryManager() {
                 <button
                   type="button"
                   onClick={() => setShowAddDrawer(false)}
-                  className="text-zinc-500 hover:text-white"
+                  aria-label="Luk modal"
+                  className="text-zinc-500 hover:text-white cursor-pointer"
                 >
-                  ✕
+                  <X size={16} weight="bold" aria-hidden="true" />
                 </button>
               </div>
 
@@ -630,9 +637,10 @@ export function InventoryManager() {
                 <button
                   type="button"
                   onClick={() => setShowNewTagModal(null)}
-                  className="text-zinc-500 hover:text-white"
+                  aria-label="Luk modal"
+                  className="text-zinc-500 hover:text-white cursor-pointer"
                 >
-                  ✕
+                  <X size={16} weight="bold" aria-hidden="true" />
                 </button>
               </div>
 
@@ -688,9 +696,10 @@ export function InventoryManager() {
                 <button
                   type="button"
                   onClick={() => setEditingItem(null)}
-                  className="text-zinc-500 hover:text-white"
+                  aria-label="Luk modal"
+                  className="text-zinc-500 hover:text-white cursor-pointer"
                 >
-                  ✕
+                  <X size={16} weight="bold" aria-hidden="true" />
                 </button>
               </div>
 

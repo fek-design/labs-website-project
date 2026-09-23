@@ -2,7 +2,7 @@ schema: spec-driven
 
 context: |
   Tech Stack: Next.js (App Router), React 19, Tailwind CSS v4, Prisma ORM (local MySQL), NextAuth (Credentials).
-  Animation: Tri-Stack Architecture: motion/react (micro-interactions & layoutId), gsap & @gsap/react (macro/scroll telemetry), anime.js (SVG path/blueprint drawing & numeric tickers via lib/anime.ts). See openspec/core/animation-architecture.md.
+  Animation: Dual-Stack Architecture: motion/react (micro-interactions & layoutId), gsap & @gsap/react (macro/scroll telemetry). See openspec/core/animation-architecture.md.
   Domain: Zealand Labs Infrastructure (Makerspace & Medialab POS System).
   Mandate: Strict "Zero Cloud Dependency". All data, images, and logic run on a local network.
   Security: Zero student accounts. Admins only.
@@ -18,7 +18,7 @@ context: |
   - Surfaces: #09090b (Dock), #0e0e11 (Card base), #141416 (Elevated), #262626 (Border).
   - Typography: 'Stack Sans Notch' (primary headers), 'Stack Sans Headline' (subheaders), 'Stack Sans Text' (body).
   - Geometry: Buttons are full pill (rounded-full) or rounded-lg. Cards use 1.25rem radius (rounded-2xl / rounded-3xl).
-  - Motion: Strict agency physics via lib/motion.ts and lib/anime.ts (springSnappy, springGentle, diagonal wave staggers, SVG draw, counter tickers).
+  - Motion: Strict agency physics via lib/motion.ts (springSnappy, springGentle, diagonal wave staggers).
 
 rules:
   components:

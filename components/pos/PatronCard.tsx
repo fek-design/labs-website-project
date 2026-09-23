@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { X } from "@phosphor-icons/react";
 
 interface PatronCardProps {
   patron: {
@@ -45,9 +46,10 @@ export function PatronCard({ patron, onClear }: PatronCardProps) {
               e.stopPropagation();
               onClear();
             }}
-            className="text-zinc-400 hover:text-white transition-colors text-xs px-3.5 py-1.5 rounded-full border border-[#262626] hover:border-zinc-500 bg-[#0D0D0D] font-bold"
+            className="text-zinc-400 hover:text-white transition-colors text-xs px-3.5 py-1.5 rounded-full border border-[#262626] hover:border-zinc-500 bg-[#0D0D0D] font-bold inline-flex items-center gap-1.5 cursor-pointer"
           >
-            ✕ Detach Patron
+            <X size={14} weight="bold" aria-hidden="true" />
+            <span>Detach Patron</span>
           </button>
         )}
       </div>

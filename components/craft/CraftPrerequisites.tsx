@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion } from "motion/react";
+import { Warning, Timer, GraduationCap } from "@phosphor-icons/react";
 
 interface CraftPrerequisitesProps {
   prerequisites: {
@@ -37,19 +38,19 @@ export function CraftPrerequisites({ prerequisites }: CraftPrerequisitesProps) {
 
           <ul className="space-y-3.5 sm:space-y-4 font-sans text-sm sm:text-base font-medium">
             <li className="flex items-start gap-3">
-              <span className="text-xl leading-none flex-shrink-0">⚠️</span>
+              <Warning size={20} weight="bold" className="shrink-0 text-white mt-0.5" aria-hidden="true" />
               <span className="leading-snug text-white/95">
                 {prerequisites.materials}
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-xl leading-none flex-shrink-0">⏱️</span>
+              <Timer size={20} weight="bold" className="shrink-0 text-white mt-0.5" aria-hidden="true" />
               <span className="leading-snug text-white/95">
                 {prerequisites.estimatedTime}
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-xl leading-none flex-shrink-0">🎓</span>
+              <GraduationCap size={20} weight="bold" className="shrink-0 text-white mt-0.5" aria-hidden="true" />
               <span className="leading-snug text-white/95">
                 {prerequisites.difficulty}
               </span>

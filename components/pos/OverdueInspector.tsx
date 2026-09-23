@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { returnEquipment } from "@/app/actions/pos";
+import { ArrowsClockwise, Check } from "@phosphor-icons/react";
 
 interface OverdueInspectorProps {
   overdueLoans: any[];
@@ -44,9 +45,10 @@ export function OverdueInspector({ overdueLoans, onRefresh }: OverdueInspectorPr
         <button
           type="button"
           onClick={onRefresh}
-          className="text-xs font-mono text-zinc-400 hover:text-white px-3 py-1.5 rounded-full border border-[#262626] bg-[#0D0D0D]"
+          className="text-xs font-mono text-zinc-400 hover:text-white px-3 py-1.5 rounded-full border border-[#262626] bg-[#0D0D0D] inline-flex items-center gap-1.5 cursor-pointer transition-colors"
         >
-          ↻ Refresh Queries
+          <ArrowsClockwise size={14} weight="bold" aria-hidden="true" />
+          <span>Refresh Queries</span>
         </button>
       </div>
 
@@ -55,7 +57,7 @@ export function OverdueInspector({ overdueLoans, onRefresh }: OverdueInspectorPr
         {overdueLoans.length === 0 ? (
           <div className="text-center py-12 text-zinc-500 font-mono text-xs">
             <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto mb-2 font-bold">
-              ✓
+              <Check size={20} weight="bold" aria-hidden="true" />
             </div>
             All loan returns are currently in good standing! No overdue items.
           </div>

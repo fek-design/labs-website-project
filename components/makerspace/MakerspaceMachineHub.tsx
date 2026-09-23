@@ -5,6 +5,18 @@ import { getInventoryWithFilters, updateInventoryItem } from "@/app/actions/inve
 import { unassignManualFromMachine } from "@/app/actions/manuals";
 import { OperationalStatus, HardwareType } from "@prisma/client";
 import { ManualsCatalogModal } from "./ManualsCatalogModal";
+import {
+  Books,
+  Check,
+  MagnifyingGlass,
+  Buildings,
+  Warning,
+  BookBookmark,
+  Plus,
+  FileText,
+  ArrowUpRight,
+  X,
+} from "@phosphor-icons/react";
 
 export function MakerspaceMachineHub() {
   const [machines, setMachines] = useState<any[]>([]);
@@ -93,14 +105,15 @@ export function MakerspaceMachineHub() {
           <button
             type="button"
             onClick={openGlobalCatalog}
-            className="px-5 py-2.5 bg-[#FFED00] hover:bg-[#ffe600] text-black font-bold text-xs rounded-full shadow-lg shadow-[#FFED00]/20 flex items-center gap-2 transition-transform hover:scale-[1.02]"
+            className="px-5 py-2.5 bg-[#FFED00] hover:bg-[#ffe600] text-black font-bold text-xs rounded-full shadow-lg shadow-[#FFED00]/20 flex items-center gap-2 transition-transform hover:scale-[1.02] cursor-pointer"
           >
-            <span>📚</span>
+            <Books size={16} weight="bold" aria-hidden="true" />
             <span>Manuals Library Catalog</span>
           </button>
 
-          <span className="px-3 py-1 bg-[#0D0D0D] border border-emerald-500/30 text-emerald-400 rounded-full font-bold text-xs hidden sm:inline-block">
-            ✓ In-situ Station Use Only
+          <span className="px-3 py-1 bg-[#0D0D0D] border border-emerald-500/30 text-emerald-400 rounded-full font-bold text-xs hidden sm:inline-flex items-center gap-1.5">
+            <Check size={14} weight="bold" aria-hidden="true" />
+            <span>In-situ Station Use Only</span>
           </span>
         </div>
       </div>
@@ -112,7 +125,8 @@ export function MakerspaceMachineHub() {
           <label className="text-[10px] text-zinc-500 uppercase block mb-1 font-bold">
             Machine Search (Name, Tag, or Category)
           </label>
-          <div className="relative">
+          <div className="relative flex items-center">
+            <MagnifyingGlass size={16} weight="bold" className="absolute left-3 text-zinc-500 pointer-events-none" aria-hidden="true" />
             <input
               type="text"
               placeholder="Search 3D printers, laser cutters, CNCs, textiles..."
@@ -120,14 +134,14 @@ export function MakerspaceMachineHub() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-[#0D0D0D] border border-[#262626] focus:border-[#FFED00] text-white text-xs rounded-xl p-3 outline-none pl-9 font-bold"
             />
-            <span className="absolute left-3 top-3 text-zinc-500 text-xs">🔍</span>
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-3 text-zinc-500 hover:text-white text-xs"
+                aria-label="Ryd søgning"
+                className="absolute right-3 text-zinc-500 hover:text-white text-xs cursor-pointer p-0.5"
               >
-                ✕
+                <X size={14} weight="bold" aria-hidden="true" />
               </button>
             )}
           </div>
@@ -187,8 +201,9 @@ export function MakerspaceMachineHub() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-[#FFED00]">[{machine.assetTag}]</span>
-                        <span className="text-[11px] text-zinc-400 font-bold">
-                          🏛️ {machine.lab?.name || "Makerspace (Køge)"}
+                        <span className="text-[11px] text-zinc-400 font-bold inline-flex items-center gap-1.5">
+                          <Buildings size={14} weight="regular" aria-hidden="true" />
+                          <span>{machine.lab?.name || "Makerspace (Køge)"}</span>
                         </span>
                       </div>
                       <h3 className="text-lg font-bold text-white mt-1">{machine.name}</h3>
@@ -246,7 +261,7 @@ export function MakerspaceMachineHub() {
                   {/* Safety Protocols */}
                   {machine.customFields?.safetyGuide && (
                     <div className="mt-3 p-3 bg-[#E6007E]/5 border border-[#E6007E]/20 rounded-2xl text-[11px] text-zinc-300 flex items-start gap-2">
-                      <span className="text-[#E6007E] font-bold">⚠️</span>
+                      <Warning size={16} weight="bold" className="text-[#E6007E] shrink-0 mt-0.5" aria-hidden="true" />
                       <span>{machine.customFields.safetyGuide}</span>
                     </div>
                   )}
@@ -257,7 +272,8 @@ export function MakerspaceMachineHub() {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
-                        <span>📕 Attached Manuals & SOPs</span>
+                        <BookBookmark size={14} weight="bold" className="text-rose-400" aria-hidden="true" />
+                        <span>Attached Manuals & SOPs</span>
                         <span className="bg-[#009FE3]/10 text-[#009FE3] text-[10px] px-1.5 py-0.2 rounded-full border border-[#009FE3]/30">
                           {attachedManuals.length}
                         </span>
@@ -266,9 +282,10 @@ export function MakerspaceMachineHub() {
                       <button
                         type="button"
                         onClick={() => openCatalogForMachine({ id: machine.id, name: machine.name })}
-                        className="text-[11px] font-bold text-[#FFED00] hover:underline flex items-center gap-1"
+                        className="text-[11px] font-bold text-[#FFED00] hover:underline flex items-center gap-1 cursor-pointer"
                       >
-                        <span>+ Link / Manage</span>
+                        <Plus size={12} weight="bold" aria-hidden="true" />
+                        <span>Link / Manage</span>
                       </button>
                     </div>
 
@@ -280,9 +297,10 @@ export function MakerspaceMachineHub() {
                         <button
                           type="button"
                           onClick={() => openCatalogForMachine({ id: machine.id, name: machine.name })}
-                          className="text-[10px] text-[#009FE3] hover:underline font-bold"
+                          className="text-[10px] text-[#009FE3] hover:underline font-bold inline-flex items-center gap-1 cursor-pointer"
                         >
-                          Attach from Library Catalog ↗
+                          <span>Attach from Library Catalog</span>
+                          <ArrowUpRight size={12} weight="bold" aria-hidden="true" />
                         </button>
                       </div>
                     ) : (
@@ -293,7 +311,7 @@ export function MakerspaceMachineHub() {
                             className="flex items-center justify-between gap-2 p-2 bg-[#141414] border border-[#262626] rounded-xl hover:border-zinc-700 transition-colors"
                           >
                             <div className="flex items-center gap-2 min-w-0">
-                              <span className="text-xs text-rose-400">📄</span>
+                              <FileText size={16} weight="regular" className="text-rose-400 shrink-0" aria-hidden="true" />
                               <span className="text-xs font-bold text-zinc-200 truncate">
                                 {man.title}
                               </span>
@@ -304,17 +322,19 @@ export function MakerspaceMachineHub() {
                                 href={man.fileUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="px-2 py-0.5 bg-[#009FE3]/10 hover:bg-[#009FE3]/20 text-[#009FE3] text-[10px] font-bold rounded border border-[#009FE3]/30"
+                                className="px-2 py-0.5 bg-[#009FE3]/10 hover:bg-[#009FE3]/20 text-[#009FE3] text-[10px] font-bold rounded border border-[#009FE3]/30 inline-flex items-center gap-1"
                               >
-                                View ↗
+                                <span>View</span>
+                                <ArrowUpRight size={10} weight="bold" aria-hidden="true" />
                               </a>
                               <button
                                 type="button"
                                 title={`Unlink from ${machine.name}`}
+                                aria-label={`Unlink ${man.title} from ${machine.name}`}
                                 onClick={() => handleQuickUnlink(machine.id, man.id, man.title)}
-                                className="p-1 text-zinc-500 hover:text-rose-400 text-xs rounded"
+                                className="p-1 text-zinc-500 hover:text-rose-400 text-xs rounded cursor-pointer"
                               >
-                                ✕
+                                <X size={14} weight="bold" aria-hidden="true" />
                               </button>
                             </div>
                           </div>

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { LabSlug } from "@/lib/craft-data";
+import { MagnifyingGlass, X } from "@phosphor-icons/react";
 
 interface CatalogueFilterBarProps {
   searchQuery: string;
@@ -37,19 +38,12 @@ export function CatalogueFilterBar({
       {/* Search Bar - Figma node 144:351: #383838 background, sharp corners, rounded-none */}
       <div className="w-full bg-[#383838] p-3 sm:p-4 rounded-none border border-white/5 transition-all focus-within:border-[#009FE3]/60 focus-within:ring-1 focus-within:ring-[#009FE3]/40">
         <div className="relative flex items-center">
-          <svg
-            className="w-5 h-5 text-zinc-400 shrink-0 ml-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={1.8}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-            />
-          </svg>
+          <MagnifyingGlass
+            size={18}
+            weight="bold"
+            className="text-zinc-400 shrink-0 ml-2"
+            aria-hidden="true"
+          />
           <input
             type="text"
             value={searchQuery}
@@ -64,9 +58,7 @@ export function CatalogueFilterBar({
               className="p-1 text-zinc-400 hover:text-white transition-colors mr-1 cursor-pointer"
               aria-label="Ryd søgning"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X size={14} weight="bold" aria-hidden="true" />
             </button>
           )}
         </div>
@@ -159,9 +151,7 @@ export function CatalogueFilterBar({
               className="text-[#009FE3] hover:text-[#009FE3]/80 hover:underline flex items-center gap-1 cursor-pointer transition-colors"
             >
               <span>Nulstil filtre</span>
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X size={12} weight="bold" aria-hidden="true" />
             </button>
           )}
         </div>

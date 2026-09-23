@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { returnEquipment, modifyLoan } from "@/app/actions/pos";
 import { motion } from "motion/react";
+import { Buildings, PencilSimple, X } from "@phosphor-icons/react";
 
 interface LoanDetailModalProps {
   loan: any | null;
@@ -138,9 +139,10 @@ export function LoanDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-zinc-500 hover:text-white transition-colors"
+            aria-label="Luk dialog"
+            className="text-zinc-500 hover:text-white transition-colors cursor-pointer"
           >
-            ✕
+            <X size={16} weight="bold" aria-hidden="true" />
           </button>
         </div>
 
@@ -152,7 +154,10 @@ export function LoanDetailModal({
             <div className="text-base font-bold text-white mt-0.5">{loan.inventory?.name}</div>
             <div className="flex items-center gap-3 text-xs mt-1">
               <span className="text-[#009FE3] font-bold">Tag: [{loan.inventory?.assetTag}]</span>
-              <span className="text-zinc-400 text-[11px] font-bold">🏛️ {loan.inventory?.lab?.name || "MediaLab (Køge)"}</span>
+              <span className="text-zinc-400 text-[11px] font-bold inline-flex items-center gap-1.5">
+                <Buildings size={14} weight="regular" aria-hidden="true" />
+                <span>{loan.inventory?.lab?.name || "MediaLab (Køge)"}</span>
+              </span>
             </div>
           </div>
 
@@ -303,9 +308,10 @@ export function LoanDetailModal({
               <button
                 type="button"
                 onClick={startEditing}
-                className="px-3.5 py-2 bg-[#0D0D0D] border border-zinc-700 text-zinc-300 hover:text-white rounded-full font-bold"
+                className="px-3.5 py-2 bg-[#0D0D0D] border border-zinc-700 text-zinc-300 hover:text-white rounded-full font-bold inline-flex items-center gap-1.5 cursor-pointer"
               >
-                ✎ Extend / Edit
+                <PencilSimple size={14} weight="regular" aria-hidden="true" />
+                <span>Extend / Edit</span>
               </button>
             )}
           </div>

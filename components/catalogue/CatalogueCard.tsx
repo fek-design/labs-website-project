@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CraftItemData } from "@/lib/craft-data";
+import { ArrowRight } from "@phosphor-icons/react";
 
 interface CatalogueCardProps {
   item: CraftItemData;
@@ -52,15 +53,12 @@ export function CatalogueCard({ item }: CatalogueCardProps) {
 
         {/* Arrow affordance */}
         <div className="shrink-0 w-7 h-7 flex items-center justify-center rounded-none border border-white/20 text-zinc-300 group-hover:border-[#009FE3] group-hover:text-[#009FE3] group-hover:bg-[#009FE3]/10 transition-colors">
-          <svg
-            className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-          </svg>
+          <ArrowRight
+            size={14}
+            weight="bold"
+            className="transition-transform duration-200 group-hover:translate-x-0.5"
+            aria-hidden="true"
+          />
         </div>
       </div>
     </Link>

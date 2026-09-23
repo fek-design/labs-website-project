@@ -44,8 +44,7 @@ export function LandingFooter({ className = "mt-8 sm:mt-12" }: LandingFooterProp
       </div>
 
       <div className="max-w-7xl mx-auto pt-8 sm:pt-10 mt-8 sm:mt-10 border-t border-white/20 flex flex-col sm:flex-row items-start sm:items-center justify-between text-[11px] text-white/80 gap-2">
-        <span>Zealand Labs • Roskilde & Køge Campus</span>
-        <span>Offline-first local infrastructure</span>
+        <span>Zealand Labs</span>
       </div>
     </footer>
   );

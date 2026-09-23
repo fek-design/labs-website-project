@@ -17,6 +17,7 @@ import { ActiveLoansTable } from "./ActiveLoansTable";
 import { OverdueInspector } from "./OverdueInspector";
 import { LoanCalendar } from "./LoanCalendar";
 import { motion, AnimatePresence } from "motion/react";
+import { User, X } from "@phosphor-icons/react";
 
 interface EquipmentPOSProps {
   labSlug?: string;
@@ -317,9 +318,7 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
                 ) : (
                   <div className="bg-[#141414] border border-[#262626] rounded-3xl p-6 text-center text-zinc-400">
                     <div className="w-10 h-10 rounded-full bg-[#0D0D0D] border border-[#262626] flex items-center justify-center mx-auto mb-2 text-[#009FE3]">
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
+                      <User size={20} weight="regular" aria-hidden="true" />
                     </div>
                     <h4 className="text-sm font-bold text-white mb-0.5">No Student Patron Scanned</h4>
                     <p className="text-xs text-zinc-500 max-w-sm mx-auto">
@@ -428,9 +427,10 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
                 <button
                   type="button"
                   onClick={() => setShowNewPatronPrompt(null)}
-                  className="text-zinc-500 hover:text-white"
+                  aria-label="Luk modal"
+                  className="text-zinc-500 hover:text-white transition-colors cursor-pointer"
                 >
-                  ✕
+                  <X size={16} weight="bold" aria-hidden="true" />
                 </button>
               </div>
 

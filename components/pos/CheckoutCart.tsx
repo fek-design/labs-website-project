@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { checkoutEquipment } from "@/app/actions/pos";
 import { motion, AnimatePresence } from "motion/react";
+import { Check, ShoppingCart, Trash, X } from "@phosphor-icons/react";
 
 interface CheckoutCartProps {
   patron: {
@@ -73,7 +74,7 @@ export function CheckoutCart({
 
     // Optimistic Update: Immediately clear cart and notify parent
     onClearCart();
-    setSuccessToast(`✓ Checkout initiated for ${itemsSnapshot.length} item(s)...`);
+    setSuccessToast(`Checkout initiated for ${itemsSnapshot.length} item(s)...`);
     setTimeout(() => setSuccessToast(null), 3000);
 
     // Silent background execution
@@ -119,9 +120,10 @@ export function CheckoutCart({
             <button
               type="button"
               onClick={onClearCart}
-              className="text-zinc-500 hover:text-red-400 text-xs transition-colors"
+              className="text-zinc-500 hover:text-red-400 text-xs transition-colors flex items-center gap-1 cursor-pointer"
             >
-              Clear Cart
+              <Trash size={14} weight="regular" aria-hidden="true" />
+              <span>Clear Cart</span>
             </button>
           )}
         </div>
@@ -130,19 +132,12 @@ export function CheckoutCart({
         <div className="mt-4 space-y-2 max-h-56 overflow-y-auto pr-1">
           {items.length === 0 ? (
             <div className="text-center py-8 text-zinc-500 text-xs">
-              <svg
-                className="w-8 h-8 mx-auto mb-2 text-zinc-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="1.5"
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                />
-              </svg>
+              <ShoppingCart
+                size={32}
+                weight="regular"
+                className="mx-auto mb-2 text-zinc-600"
+                aria-hidden="true"
+              />
               Scan equipment barcodes or click available gear below.
             </div>
           ) : (
@@ -164,12 +159,11 @@ export function CheckoutCart({
                 <button
                   type="button"
                   onClick={() => onRemoveItem(item.id)}
-                  className="text-zinc-500 hover:text-red-400 p-1.5 rounded-full transition-colors"
+                  className="text-zinc-500 hover:text-red-400 p-1.5 rounded-full transition-colors cursor-pointer"
                   title="Remove"
+                  aria-label="Fjern vare"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <X size={14} weight="bold" aria-hidden="true" />
                 </button>
               </motion.div>
             ))
@@ -233,9 +227,10 @@ export function CheckoutCart({
               <button
                 type="button"
                 onClick={() => setErrorToast(null)}
-                className="text-zinc-500 hover:text-white ml-2"
+                aria-label="Luk fejlbesked"
+                className="text-zinc-500 hover:text-white ml-2 cursor-pointer"
               >
-                ✕
+                <X size={14} weight="bold" aria-hidden="true" />
               </button>
             </motion.div>
           )}
@@ -245,9 +240,10 @@ export function CheckoutCart({
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="mb-3 text-xs text-[#009FE3] bg-[#009FE3]/10 border border-[#009FE3]/30 rounded-xl p-2.5 text-center font-bold"
+              className="mb-3 text-xs text-[#009FE3] bg-[#009FE3]/10 border border-[#009FE3]/30 rounded-xl p-2.5 flex items-center justify-center gap-1.5 font-bold"
             >
-              {successToast}
+              <Check size={16} weight="bold" aria-hidden="true" />
+              <span>{successToast}</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -257,15 +253,13 @@ export function CheckoutCart({
           type="button"
           disabled={items.length === 0 || !patron}
           onClick={handleCheckout}
-          className={`w-full py-3.5 rounded-full text-sm font-bold tracking-wide transition-all shadow-lg flex items-center justify-center gap-2 ${
+          className={`w-full py-3.5 rounded-full text-sm font-bold tracking-wide transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer ${
             items.length === 0 || !patron
-              ? "bg-[#262626] text-zinc-500 cursor-not-allowed"
+              ? "bg-[#262626] text-zinc-500 !cursor-not-allowed"
               : "bg-[#FFED00] hover:bg-[#ffe600] text-black shadow-[#FFED00]/20 hover:scale-[1.01] active:scale-[0.99]"
           }`}
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
+          <Check size={16} weight="bold" aria-hidden="true" />
           <span>Confirm checkout</span>
         </button>
       </div>

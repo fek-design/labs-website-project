@@ -9,6 +9,15 @@ import {
   unassignManualFromMachine,
   deleteManual,
 } from "@/app/actions/manuals";
+import {
+  Books,
+  Plus,
+  X,
+  FileText,
+  BookBookmark,
+  ArrowUpRight,
+  Trash,
+} from "@phosphor-icons/react";
 
 interface ManualsCatalogModalProps {
   isOpen: boolean;
@@ -168,7 +177,7 @@ export function ManualsCatalogModal({
         <div className="p-6 border-b border-[#262626] flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0d0d0d]">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xl">📚</span>
+              <Books size={22} weight="bold" className="text-[#FFED00]" aria-hidden="true" />
               <h3 className="text-lg font-bold text-white tracking-tight">
                 Centralized Manuals & SOP Catalog
               </h3>
@@ -192,7 +201,7 @@ export function ManualsCatalogModal({
               <button
                 type="button"
                 onClick={() => setActiveTab("BROWSE")}
-                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer ${
                   activeTab === "BROWSE"
                     ? "bg-[#FFED00] text-black shadow-md shadow-[#FFED00]/20"
                     : "text-zinc-400 hover:text-white"
@@ -203,22 +212,24 @@ export function ManualsCatalogModal({
               <button
                 type="button"
                 onClick={() => setActiveTab("UPLOAD")}
-                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer inline-flex items-center gap-1 ${
                   activeTab === "UPLOAD"
                     ? "bg-[#FFED00] text-black shadow-md shadow-[#FFED00]/20"
                     : "text-zinc-400 hover:text-white"
                 }`}
               >
-                + Upload PDF
+                <Plus size={14} weight="bold" aria-hidden="true" />
+                <span>Upload PDF</span>
               </button>
             </div>
 
             <button
               type="button"
               onClick={onClose}
-              className="p-2 text-zinc-400 hover:text-white hover:bg-[#262626] rounded-full transition-colors"
+              aria-label="Luk modal"
+              className="p-2 text-zinc-400 hover:text-white hover:bg-[#262626] rounded-full transition-colors cursor-pointer"
             >
-              ✕
+              <X size={16} weight="bold" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -337,15 +348,16 @@ export function ManualsCatalogModal({
                 </div>
               ) : manuals.length === 0 ? (
                 <div className="text-center py-16 border border-dashed border-[#262626] rounded-2xl p-6">
-                  <span className="text-3xl block mb-2">📄</span>
+                  <FileText size={36} weight="regular" className="text-zinc-600 mx-auto mb-2" aria-hidden="true" />
                   <p className="text-zinc-400 text-xs font-bold">No manuals found in catalog.</p>
                   <p className="text-zinc-600 text-[11px] mt-1">Upload a PDF manual to start building the library.</p>
                   <button
                     type="button"
                     onClick={() => setActiveTab("UPLOAD")}
-                    className="mt-4 px-4 py-2 bg-[#FFED00] text-black font-bold text-xs rounded-full"
+                    className="mt-4 px-4 py-2 bg-[#FFED00] text-black font-bold text-xs rounded-full inline-flex items-center gap-1 cursor-pointer"
                   >
-                    + Upload First Manual
+                    <Plus size={14} weight="bold" aria-hidden="true" />
+                    <span>Upload First Manual</span>
                   </button>
                 </div>
               ) : (
@@ -368,8 +380,8 @@ export function ManualsCatalogModal({
                         <div>
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-start gap-2.5">
-                              <span className="text-2xl p-2 bg-[#141414] border border-[#262626] rounded-xl text-rose-400">
-                                📕
+                              <span className="p-2 bg-[#141414] border border-[#262626] rounded-xl flex items-center justify-center shrink-0">
+                                <BookBookmark size={20} weight="bold" className="text-rose-400" aria-hidden="true" />
                               </span>
                               <div>
                                 <h4 className="font-bold text-white text-xs leading-snug">
@@ -390,7 +402,7 @@ export function ManualsCatalogModal({
                               className="px-2.5 py-1 bg-[#009FE3]/10 hover:bg-[#009FE3]/20 text-[#009FE3] text-[10px] font-bold rounded-lg border border-[#009FE3]/30 flex items-center gap-1 shrink-0"
                             >
                               <span>View</span>
-                              <span>↗</span>
+                              <ArrowUpRight size={10} weight="bold" aria-hidden="true" />
                             </a>
                           </div>
 
@@ -431,10 +443,11 @@ export function ManualsCatalogModal({
                                       <button
                                         type="button"
                                         title={`Unlink from ${inv.name}`}
+                                        aria-label={`Unlink from ${inv.name}`}
                                         onClick={() => handleToggleLink(manual.id, true, inv.id)}
-                                        className="hover:text-rose-400 ml-0.5"
+                                        className="hover:text-rose-400 ml-0.5 cursor-pointer inline-flex items-center"
                                       >
-                                        ✕
+                                        <X size={10} weight="bold" aria-hidden="true" />
                                       </button>
                                     </span>
                                   );
@@ -452,13 +465,25 @@ export function ManualsCatalogModal({
                               type="button"
                               onClick={() => handleToggleLink(manual.id, isLinkedToFocusedMachine)}
                               disabled={isPending}
-                              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+                              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                                 isLinkedToFocusedMachine
                                   ? "bg-rose-500/10 text-rose-400 border border-rose-500/30 hover:bg-rose-500/20"
                                   : "bg-[#FFED00] text-black hover:bg-[#ffe600] shadow-md shadow-[#FFED00]/10"
                               }`}
                             >
-                              <span>{isLinkedToFocusedMachine ? "✕ Unlink Machine" : "+ Link to Workstation"}</span>
+                              <span className="inline-flex items-center gap-1.5">
+                                {isLinkedToFocusedMachine ? (
+                                  <>
+                                    <X size={14} weight="bold" aria-hidden="true" />
+                                    <span>Unlink Machine</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Plus size={14} weight="bold" aria-hidden="true" />
+                                    <span>Link to Workstation</span>
+                                  </>
+                                )}
+                              </span>
                             </button>
                           ) : (
                             /* General Mode Machine Linker Dropdown */
@@ -483,7 +508,7 @@ export function ManualsCatalogModal({
                                     type="button"
                                     onClick={() => handleAssignToSelectedMachine(manual.id)}
                                     disabled={!targetMachineId || isPending}
-                                    className="px-2.5 py-1.5 bg-[#009FE3] text-black font-bold text-[11px] rounded-xl disabled:opacity-40"
+                                    className="px-2.5 py-1.5 bg-[#009FE3] text-black font-bold text-[11px] rounded-xl disabled:opacity-40 cursor-pointer"
                                   >
                                     Link
                                   </button>
@@ -493,18 +518,20 @@ export function ManualsCatalogModal({
                                       setLinkingManualId(null);
                                       setTargetMachineId("");
                                     }}
-                                    className="px-2 py-1.5 text-zinc-500 hover:text-white text-[11px]"
+                                    aria-label="Annuller linking"
+                                    className="px-2 py-1.5 text-zinc-500 hover:text-white text-[11px] cursor-pointer inline-flex items-center"
                                   >
-                                    ✕
+                                    <X size={12} weight="bold" aria-hidden="true" />
                                   </button>
                                 </div>
                               ) : (
                                 <button
                                   type="button"
                                   onClick={() => setLinkingManualId(manual.id)}
-                                  className="text-[10px] text-zinc-400 hover:text-[#FFED00] font-bold flex items-center gap-1"
+                                  className="text-[10px] text-zinc-400 hover:text-[#FFED00] font-bold flex items-center gap-1 cursor-pointer"
                                 >
-                                  <span>+ Link to Another Machine</span>
+                                  <Plus size={12} weight="bold" aria-hidden="true" />
+                                  <span>Link to Another Machine</span>
                                 </button>
                               )}
                             </div>
@@ -516,9 +543,10 @@ export function ManualsCatalogModal({
                             onClick={() => handleDeleteManual(manual.id, manual.title)}
                             disabled={isPending}
                             title="Delete manual from catalog"
-                            className="p-1.5 text-zinc-600 hover:text-rose-400 transition-colors rounded-lg hover:bg-rose-500/10"
+                            aria-label={`Slet ${manual.title}`}
+                            className="p-1.5 text-zinc-600 hover:text-rose-400 transition-colors rounded-lg hover:bg-rose-500/10 cursor-pointer inline-flex items-center"
                           >
-                            🗑️
+                            <Trash size={16} weight="regular" aria-hidden="true" />
                           </button>
                         </div>
                       </div>

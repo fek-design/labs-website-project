@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useCampus, CampusKey, CAMPUS_DATA, STORAGE_KEY_CAMPUS } from "./CampusContext";
+import { ArrowRight } from "@phosphor-icons/react";
 
 interface FirstTimeCampusGateProps {
   forceShow?: boolean;
@@ -203,18 +204,15 @@ export function FirstTimeCampusGate({ forceShow = false, onEnter }: FirstTimeCam
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               onClick={handleEnter}
-              className="w-full sm:w-auto px-8 py-3 bg-white text-black font-semibold text-sm sm:text-base tracking-wider uppercase rounded-none shadow-xl hover:bg-zinc-200 transition-all cursor-pointer flex items-center justify-center gap-2.5 touch-manipulation border border-white"
+              className="w-full sm:w-auto px-8 py-3 bg-white text-black font-semibold text-sm sm:text-base tracking-wider uppercase rounded-none shadow-xl hover:bg-zinc-200 transition-all cursor-pointer flex items-center justify-center gap-2.5 touch-manipulation border border-white group"
             >
               <span>TRÆD IND</span>
-              <svg
-                className="w-4 h-4 transition-transform group-hover:translate-x-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2.5"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-              </svg>
+              <ArrowRight
+                size={16}
+                weight="bold"
+                className="transition-transform group-hover:translate-x-1"
+                aria-hidden="true"
+              />
             </motion.button>
           </footer>
         </motion.div>

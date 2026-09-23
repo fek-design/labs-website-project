@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { useCampus, CampusKey } from "./CampusContext";
+import { MapPin, ArrowUpRight } from "@phosphor-icons/react";
 
 export function LandingHeader() {
   const [isOpen, setIsOpen] = useState(false);
@@ -54,18 +55,7 @@ export function LandingHeader() {
                 aria-label="Skift lokation"
               >
                 <span className="capitalize">{campus}</span>
-                <svg
-                  className="w-3.5 h-3.5 text-white/80"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
+                <MapPin size={14} weight="bold" className="text-white/80 shrink-0" aria-hidden="true" />
               </button>
 
               {/* Campus Dropdown */}
@@ -165,7 +155,8 @@ export function LandingHeader() {
                   onClick={() => setIsOpen(false)}
                   className="inline-flex items-center gap-2 text-base font-sans font-bold text-brand-yellow hover:underline py-2"
                 >
-                  Admin Portal ↗
+                  <span>Admin Portal</span>
+                  <ArrowUpRight size={16} weight="bold" aria-hidden="true" />
                 </Link>
               </div>
             </nav>

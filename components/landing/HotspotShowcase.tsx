@@ -65,7 +65,7 @@ function HotspotBeacon({ x, y, title, category, linkHref, defaultActive = false 
             className={`absolute ${tooltipAlignClass} bottom-full mb-3 z-30 pointer-events-auto w-60 sm:w-64 max-w-[calc(100vw-48px)]`}
           >
             <a
-              href={linkHref || "#support-pillars"}
+              href={linkHref || "#labs"}
               className="block bg-white text-black p-4 sm:p-5 shadow-2xl border border-[#DFDFDF] rounded-none group/card hover:border-black/40 transition-all active:scale-[0.98] cursor-pointer"
             >
               <div className="space-y-2">

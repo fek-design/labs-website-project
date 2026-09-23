@@ -3,10 +3,9 @@
 ## I. Core Infrastructure (The Engine)
 This platform operates on a strict "Zero Cloud Dependency" mandate to ensure institutional longevity.
 * **Frontend:** Next.js (App Router), React, Tailwind CSS.
-* **Animation Engines & Agency Visual Toolkits (Tri-Stack):**
+* **Animation Engines & Agency Visual Toolkits (Dual-Stack):**
   * `motion/react`: Dedicated to local component UI micro-interactions, layout state transitions, and deliberate spring physics via `lib/motion.ts`.
-  * `gsap` & `@gsap/react`: Dedicated to macro-level viewport orchestration, scroll-scrubbing, and long-scroll narrative telemetry.
-  * `anime.js`: Dedicated to SVG stroke line/blueprint drawing, live numeric counters/tickers, path morphing, and character staggers via `lib/anime.ts`.
+  * `gsap` & `@gsap/react`: Dedicated to macro-level viewport orchestration, scroll-scrubbing, pinned sections, and infinite marquee ribbons.
 * **Design & Visual Reference:**
   * Figma MCP Server (`get_figma_data`, `download_figma_images`) provides live inspection of layout tokens and local asset downloading.
   * OpenSpec mockups library in `openspec/mockups/` (.pdf, .png, .svg) defines the visual contract for pixel-accurate recreation.

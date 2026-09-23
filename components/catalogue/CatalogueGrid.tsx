@@ -6,6 +6,7 @@ import { CraftItemData, LabSlug, getAllCraftItems } from "@/lib/craft-data";
 import { getCraftArticles } from "@/app/actions/crafts";
 import { CatalogueCard } from "./CatalogueCard";
 import { CatalogueFilterBar } from "./CatalogueFilterBar";
+import { SmileySad } from "@phosphor-icons/react";
 
 const BATCH_SIZE = 8;
 const BATCH_INCREMENT = 4;
@@ -201,14 +202,7 @@ export function CatalogueGrid({ initialItems }: CatalogueGridProps) {
         /* Empty Fallback State */
         <div className="w-full py-16 px-4 text-center border border-zinc-800 bg-zinc-950/60 rounded-none flex flex-col items-center justify-center space-y-4">
           <div className="w-12 h-12 rounded-none border border-zinc-700 flex items-center justify-center text-zinc-500">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+            <SmileySad size={28} weight="regular" aria-hidden="true" />
           </div>
           <div>
             <h4 className="font-headline text-lg text-white font-medium">Ingen resultater fundet</h4>

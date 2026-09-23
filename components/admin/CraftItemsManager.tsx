@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { Check, Plus, X } from "@phosphor-icons/react";
 import {
   CraftItemData,
   CampusKey,
@@ -278,9 +279,11 @@ export function CraftItemsManager() {
           <button
             type="button"
             onClick={() => setFeedback(null)}
-            className="hover:underline cursor-pointer"
+            aria-label="Luk meddelelse"
+            className="hover:underline cursor-pointer inline-flex items-center gap-1"
           >
-            Luk ✕
+            <span>Luk</span>
+            <X size={12} weight="bold" aria-hidden="true" />
           </button>
         </div>
       )}
@@ -454,9 +457,10 @@ export function CraftItemsManager() {
                         <button
                           type="button"
                           onClick={() => setDeleteConfirmSlug(null)}
-                          className="px-1.5 py-1 text-[10px] text-zinc-400 hover:text-white"
+                          aria-label="Annuller sletning"
+                          className="px-1.5 py-1 text-zinc-400 hover:text-white cursor-pointer inline-flex items-center"
                         >
-                          ✕
+                          <X size={12} weight="bold" aria-hidden="true" />
                         </button>
                       </div>
                     ) : (
@@ -489,9 +493,10 @@ export function CraftItemsManager() {
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="text-zinc-400 hover:text-white text-base cursor-pointer"
+                aria-label="Luk modal"
+                className="text-zinc-400 hover:text-white text-base cursor-pointer p-1"
               >
-                ✕
+                <X size={16} weight="bold" aria-hidden="true" />
               </button>
             </div>
 
@@ -579,7 +584,14 @@ export function CraftItemsManager() {
                             : "bg-[#181818] border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700"
                         }`}
                       >
-                        {isSelected ? `✓ ${tag}` : `+ ${tag}`}
+                        <span className="inline-flex items-center gap-1">
+                          {isSelected ? (
+                            <Check size={12} weight="bold" aria-hidden="true" />
+                          ) : (
+                            <Plus size={12} weight="bold" aria-hidden="true" />
+                          )}
+                          <span>{tag}</span>
+                        </span>
                       </button>
                     );
                   })}
@@ -862,9 +874,10 @@ export function CraftItemsManager() {
               <button
                 type="button"
                 onClick={() => setShowAssetModal(false)}
+                aria-label="Luk filvælger"
                 className="text-zinc-400 hover:text-white text-base cursor-pointer p-1"
               >
-                ✕
+                <X size={16} weight="bold" aria-hidden="true" />
               </button>
             </div>
 
