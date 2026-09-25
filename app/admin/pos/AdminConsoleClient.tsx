@@ -35,19 +35,24 @@ export function AdminConsoleClient({ initialStats }: AdminConsoleClientProps) {
   const currentNav = ADMIN_NAV_ITEMS.find((item) => item.id === mainNav);
 
   const labPillOptions = [
-    { slug: "medialab" as const, label: "Medialab", color: "#009FE3" },
-    { slug: "makerspace" as const, label: "Makerspace", color: "#FFED00" },
-    { slug: "dimselab" as const, label: "Dimselab", color: "#E6007E" },
+    { slug: "makerspace" as const, label: "Makerspace", color: "#009FE3" },
+    { slug: "medialab" as const, label: "Medialab", color: "#E6007E" },
+    { slug: "dimselab" as const, label: "Dimselab", color: "#FFED00" },
   ];
 
   return (
     <AuthGate>
-      <div
-        className={`min-h-screen bg-[#000000] text-white flex flex-col font-mono selection:bg-[#E6007E]/30 selection:text-white transition-[padding] duration-300 ease-in-out ${
-          isExpanded ? "pl-64" : "pl-20"
-        }`}
-      >
-        {/* Docked Left-Hand Navigation with Expandable Drawer & Clickable Labs */}
+      <div className="min-h-screen bg-[#000000] text-white flex flex-col font-mono selection:bg-[#E6007E]/30 selection:text-white pl-20">
+        {/* Backdrop Scrim when Sidebar is Expanded as an Overlay */}
+        {isExpanded && (
+          <div
+            onClick={() => setIsExpanded(false)}
+            className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-40 cursor-pointer transition-opacity duration-300"
+            aria-label="Luk sidepanel"
+          />
+        )}
+
+        {/* Docked Left-Hand Navigation with Expandable Overlay Drawer */}
         <AdminSidebarNav
           activeTab={mainNav}
           onSelectTab={setMainNav}

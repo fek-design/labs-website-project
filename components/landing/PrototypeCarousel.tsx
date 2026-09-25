@@ -120,22 +120,21 @@ export function PrototypeCarousel() {
             href="/katalog"
             className="gsap-carousel-card relative flex-shrink-0 w-48 sm:w-60 h-48 sm:h-60 bg-[#09090b] text-white border border-[#262626] rounded-none p-4 sm:p-5 flex flex-col justify-between snap-start hover:border-white/50 hover:bg-[#141416] transition-all group cursor-pointer block select-none"
           >
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-[10px] sm:text-xs uppercase tracking-widest text-zinc-400 font-bold">
-                KATALOG
-              </span>
-              <span className="text-[10px] font-mono text-zinc-500">SE ALLE</span>
-            </div>
-
-            <div className="space-y-1 my-auto">
-              <h3 className="font-notch text-base sm:text-xl font-bold tracking-tight text-white leading-tight">
+            <div className="flex items-start justify-between gap-2">
+              <span className="font-notch text-base sm:text-lg font-bold tracking-tight text-white leading-tight">
                 Udforsk hele
                 <br />
                 kataloget
-              </h3>
-              <p className="font-sans text-[11px] sm:text-xs text-zinc-400 line-clamp-2">
-                Se alle prototyper, maskiner og udstyr
-              </p>
+              </span>
+              <span className="text-[10px] font-mono text-zinc-400 group-hover:text-white transition-colors shrink-0 pt-0.5">
+                SE ALLE
+              </span>
+            </div>
+
+            <div className="my-auto">
+              <span className="inline-block px-2.5 py-1 rounded bg-white/5 border border-white/10 text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-widest group-hover:border-white/20 transition-colors">
+                Zealand Labs
+              </span>
             </div>
 
             <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-xs font-semibold text-white">

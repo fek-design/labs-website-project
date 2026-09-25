@@ -22,6 +22,23 @@ interface HotspotProps {
 
 function HotspotBeacon({ x, y, title, category, linkHref, defaultActive = false }: HotspotProps) {
   const [active, setActive] = useState(defaultActive);
+  const beaconRef = useRef<HTMLDivElement>(null);
+
+  // Close when clicking outside of the active hotspot beacon/popover
+  React.useEffect(() => {
+    if (!active) return;
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      if (beaconRef.current && !beaconRef.current.contains(e.target as Node)) {
+        setActive(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+    };
+  }, [active]);
 
   // Prevent tooltips near screen edges from clipping on narrow mobile screens
   const tooltipAlignClass =
@@ -33,14 +50,14 @@ function HotspotBeacon({ x, y, title, category, linkHref, defaultActive = false 
 
   return (
     <div
+      ref={beaconRef}
       className="absolute z-20"
       style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}
     >
-      {/* Beacon Trigger with 44px Touch Target */}
+      {/* Beacon Trigger with 44px Touch Target (Click / Tap Only) */}
       <button
         type="button"
         onClick={() => setActive(!active)}
-        onMouseEnter={() => setActive(true)}
         className="relative group flex items-center justify-center w-11 h-11 -m-1.5 rounded-full focus:outline-none cursor-pointer touch-manipulation"
         aria-label={`Inspect ${title}`}
       >

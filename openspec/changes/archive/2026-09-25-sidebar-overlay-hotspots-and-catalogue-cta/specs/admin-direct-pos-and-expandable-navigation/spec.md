@@ -1,31 +1,4 @@
-# admin-direct-pos-and-expandable-navigation Specification
-
-## Purpose
-Streamlines the administrative entry workflow directly to the operational POS console (eliminating intermediate prepages), removes visual clutter from active tab icons, introduces an expandable detailed navigation drawer, and enables interactive lab switching.
-
-## Requirements
-
-### Requirement: Direct Authentication to POS Console Journey
-The system SHALL route authenticated administrators directly to the administrative POS console (`/admin`), eliminating the intermediate landing prepage.
-
-#### Scenario: Navigating to /admin renders the POS console directly
-- **WHEN** an authenticated administrator accesses `/admin`
-- **THEN** the system SHALL immediately render the active operational console (`AdminConsoleClient`) without displaying an intermediate bento card landing page.
-
-#### Scenario: Handling legacy /admin/pos references
-- **WHEN** a user or internal link navigates to `/admin/pos`
-- **THEN** the system SHALL seamlessly route to or display the `/admin` operational console without 404 errors or layout breaks.
-
-### Requirement: Clean Borderless Active Tab Highlighting
-The left navigation bar (`AdminSidebarNav.tsx`) SHALL present active navigation tabs with minimalist icon illumination, without enclosing square borders or adjacent accent color strips.
-
-#### Scenario: Active tab visual rendering
-- **WHEN** a category tab is active in the navigation bar
-- **THEN** the system SHALL highlight the icon using its designated category color without rendering an enclosing bounding square box or a vertical accent side strip.
-
-#### Scenario: Inactive tab hover feedback
-- **WHEN** an administrator hovers over an inactive tab
-- **THEN** the icon SHALL illuminate subtly without box borders, preserving a light, uncluttered visual rhythm.
+## MODIFIED Requirements
 
 ### Requirement: Expandable Detailed Navigation Drawer
 The navigation sidebar SHALL support expanding from a compact icon-only dock (`80px` / `w-20`) to an elevated detailed overlay drawer (`256px` / `w-64`) rendered at `z-50`, floating over the operational console without shifting or altering the base page layout padding (`pl-20`).
@@ -48,6 +21,8 @@ The administrative console and expanded drawer SHALL provide interactive lab but
 #### Scenario: Switching active lab context
 - **WHEN** an administrator clicks a lab selector option (e.g. "Makerspace", "Medialab", or "Dimselab")
 - **THEN** the active lab state SHALL update immediately and reflect its corresponding CMYK color accent across both the sidebar and console context header.
+
+## ADDED Requirements
 
 ### Requirement: Spotify-Style Expand Trigger and Zealand Labs Branding
 The navigation sidebar header SHALL eliminate the standalone yellow "ZL" badge logo, replacing the expand trigger with a Spotify-desktop-inspired control that displays a menu/sidebar icon in rest state and reveals an expand chevron on pointer hover; upon expanding, the header SHALL present "ZEALAND LABS" using the front page brand typography.

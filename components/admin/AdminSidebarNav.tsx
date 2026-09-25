@@ -22,9 +22,9 @@ interface AdminSidebarNavProps {
 }
 
 const LAB_OPTIONS = [
-  { slug: "medialab" as const, name: "Medialab", color: "#009FE3" },
-  { slug: "makerspace" as const, name: "Makerspace", color: "#FFED00" },
-  { slug: "dimselab" as const, name: "Dimselab", color: "#E6007E" },
+  { slug: "makerspace" as const, name: "Makerspace", color: "#009FE3" },
+  { slug: "medialab" as const, name: "Medialab", color: "#E6007E" },
+  { slug: "dimselab" as const, name: "Dimselab", color: "#FFED00" },
 ];
 
 export function AdminSidebarNav({
@@ -33,58 +33,71 @@ export function AdminSidebarNav({
   onLogout,
   isExpanded,
   onToggleExpand,
-  activeLab = "medialab",
+  activeLab = "makerspace",
   onSelectLab,
 }: AdminSidebarNavProps) {
   return (
     <aside
       className={`fixed left-0 top-0 bottom-0 z-50 bg-[#121214] border-r border-[#262626] flex flex-col justify-between select-none font-mono transition-all duration-300 ease-in-out ${
-        isExpanded ? "w-64 px-4 py-5" : "w-20 py-6 items-center"
+        isExpanded
+          ? "w-64 px-4 py-5 shadow-2xl shadow-black/80"
+          : "w-20 py-6 items-center"
       }`}
       aria-label="Admin Navigation Sidebar"
     >
       {/* Top Header Block: Brand & Controls */}
       <div className="flex flex-col gap-4 w-full">
-        <div
-          className={`flex items-center ${
-            isExpanded ? "justify-between" : "justify-center"
-          }`}
-        >
-          <div className="flex items-center gap-3">
+        {isExpanded ? (
+          <div className="flex items-center justify-between w-full">
             <Link
               href="/admin"
-              className="w-10 h-10 rounded-xl bg-[#FFED00] hover:bg-[#ffe600] flex items-center justify-center text-black font-extrabold text-xs transition-transform hover:scale-105 shadow-md shadow-[#FFED00]/20 shrink-0"
+              className="flex flex-col min-w-0 group/brand"
               title="Admin Forside"
             >
-              ZL
+              <span className="font-notch font-extrabold text-white text-base tracking-tight truncate group-hover/brand:text-brand-yellow transition-colors">
+                ZEALAND LABS
+              </span>
+              <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono font-bold">
+                Admin POS OS
+              </span>
             </Link>
-            {isExpanded && (
-              <div className="flex flex-col min-w-0">
-                <span className="font-extrabold text-white text-xs tracking-tight truncate">
-                  ZEALAND LABS
-                </span>
-                <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">
-                  Admin POS OS
-                </span>
-              </div>
-            )}
-          </div>
 
-          {/* Expand / Collapse Button */}
-          <button
-            type="button"
-            onClick={onToggleExpand}
-            className="w-8 h-8 rounded-lg bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
-            title={isExpanded ? "Skjul sidepanel" : "Udvid sidepanel"}
-            aria-label={isExpanded ? "Skjul sidepanel" : "Udvid sidepanel"}
-          >
-            {isExpanded ? (
+            {/* Collapse Button */}
+            <button
+              type="button"
+              onClick={onToggleExpand}
+              className="w-8 h-8 rounded-lg bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
+              title="Skjul sidepanel"
+              aria-label="Skjul sidepanel"
+            >
               <CaretLeft size={16} weight="bold" />
-            ) : (
-              <CaretRight size={16} weight="bold" />
-            )}
-          </button>
-        </div>
+            </button>
+          </div>
+        ) : (
+          /* Spotify-style compact expand toggle: Menu/Sidebar icon in rest state swaps to expand arrow on hover */
+          <div className="flex justify-center w-full">
+            <button
+              type="button"
+              onClick={onToggleExpand}
+              className="w-11 h-11 rounded-xl bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800/80 text-zinc-400 hover:text-white flex items-center justify-center transition-all group relative cursor-pointer"
+              title="Udvid sidepanel"
+              aria-label="Udvid sidepanel"
+            >
+              {/* Menu/Sidebar icon in rest state */}
+              <SidebarSimple
+                size={20}
+                weight="bold"
+                className="transition-all duration-200 group-hover:opacity-0 group-hover:scale-75 text-zinc-400"
+              />
+              {/* Expand arrow on hover */}
+              <CaretRight
+                size={20}
+                weight="bold"
+                className="absolute transition-all duration-200 opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 text-white"
+              />
+            </button>
+          </div>
+        )}
 
         {/* Clickable Labs Switcher (when expanded) */}
         {isExpanded && onSelectLab && (
