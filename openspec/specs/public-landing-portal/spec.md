@@ -13,11 +13,11 @@ The system SHALL preserve the staff administration launchpad previously located 
 - **THEN** the system displays the admin console dashboard with active loan statistics, gear counts, overdue counters, and quick links to the POS calendar, machine manuals, and inventory management.
 
 ### Requirement: Hero Section and Navigation
-The system SHALL present a responsive hero section featuring the Zealand Labs header, campus selector, hamburger drawer trigger, and an exploration call-to-action button.
+The system SHALL present a responsive hero section featuring the Zealand Labs header, campus indicator scoped to Køge Campus, hamburger drawer trigger, and an exploration call-to-action button, without presenting a blocking first-time campus gate modal.
 
 #### Scenario: User visits the root landing page
 - **WHEN** a visitor navigates to `/`
-- **THEN** the system displays the top navigation with `LABS` brand, the active campus indicator (defaulting to Køge), and the `Zealands Kreative hjørne` hero banner with the `UDFORSK` button.
+- **THEN** the system displays the top navigation with `LABS` brand, the active campus indicator showing "Køge Campus", and the `Zealands Kreative hjørne` hero banner with the `UDFORSK` button, without displaying a campus selection modal.
 
 ### Requirement: Infinite Lab Marquee
 The system SHALL display an infinite running marquee ribbon transitioning across the lab pillars.
@@ -27,11 +27,11 @@ The system SHALL display an infinite running marquee ribbon transitioning across
 - **THEN** the system continuously scrolls the label sequence `DIMSELAB • MAKERSPACE • MEDIALAB •` with seamless looped animation.
 
 ### Requirement: Prototype Inspiration Carousel
-The system SHALL provide a horizontally scrollable carousel displaying prototype product categories for student inspiration, concluding with a streamlined catalogue navigation card where "Udforsk hele kataloget" serves as the primary header without secondary subtext clutter.
+The system SHALL provide a horizontally scrollable carousel displaying prototype product categories for student inspiration populated with admin-curated featured craft items (up to 5 items) linking to `/craft/[slug]`, concluding with a streamlined catalogue navigation card where "Udforsk hele kataloget" serves as the primary header without secondary subtext clutter.
 
 #### Scenario: Browsing prototype categories
 - **WHEN** the visitor scrolls to the "Din næste prototype starter her" section
-- **THEN** the system displays interactive product category cards (such as Kop, Mulepose, and T-Shirt) that can be horizontally navigated.
+- **THEN** the system displays interactive product category cards dynamically populated from the admin-curated featured craft items (e.g. T-Shirt, Kop, Mulepose, 3D Print, Plakat) that can be horizontally navigated.
 
 #### Scenario: Viewing streamlined catalogue CTA card
 - **WHEN** the visitor navigates to the end of the prototype carousel
@@ -63,11 +63,11 @@ The system SHALL present high-contrast featured lab cards displaying detailed la
 - **THEN** the system presents the high-contrast Cyan (`#009FE3`) surface detailing fabric printing, 3D printing, and laser cutting capabilities.
 
 ### Requirement: Live Hardware Availability Status
-The system SHALL display the total machine inventory and live workstation cards retrieved from local database records.
+The system SHALL display the total machine inventory and live workstation cards retrieved directly from local database records partitioned by macro lab facilities (`makerspace` and `medialab`) without heuristic string parsing or unbacked facility categories.
 
 #### Scenario: Live machine list rendering
 - **WHEN** the hardware availability section loads
-- **THEN** the system queries active static machines and displays the verified machine count (`10+ Maskiner`) alongside individual hardware status cards.
+- **THEN** the system queries active static machines and borrowable items by their foreign key `lab.slug` (`makerspace` and `medialab`) and displays verified machine counts alongside individual hardware status cards.
 
 ### Requirement: Brand Footer and Navigation Directory
 The system SHALL render a branded footer with lab index navigation and operating ethos.

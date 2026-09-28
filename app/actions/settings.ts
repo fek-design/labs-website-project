@@ -6,8 +6,14 @@ import { revalidatePath } from "next/cache";
 
 export async function getAdminProfile() {
   const admin =
-    (await prisma.admin.findFirst({ where: { isActive: true, role: "SUPER_ADMIN" } })) ||
-    (await prisma.admin.findFirst({ where: { isActive: true } }));
+    (await prisma.admin.findFirst({
+      where: { isActive: true, role: "SUPER_ADMIN" },
+      include: { assignedLab: true },
+    })) ||
+    (await prisma.admin.findFirst({
+      where: { isActive: true },
+      include: { assignedLab: true },
+    }));
 
   if (!admin) return null;
 
@@ -15,6 +21,10 @@ export async function getAdminProfile() {
     id: admin.id,
     username: admin.username,
     role: admin.role,
+    assignedCampus: admin.assignedCampus || "Køge Campus",
+    assignedLabId: admin.assignedLabId,
+    assignedLabSlug: admin.assignedLab?.slug || "medialab",
+    assignedLabName: admin.assignedLab?.name || "MediaLab (Køge)",
     createdAt: admin.createdAt,
   };
 }
@@ -23,6 +33,8 @@ export async function updateAdminCredentials(data: {
   adminId?: string;
   newUsername?: string;
   newPassword?: string;
+  assignedCampus?: string;
+  assignedLabSlug?: string;
 }) {
   const admin = data.adminId
     ? await prisma.admin.findUnique({ where: { id: data.adminId } })
@@ -53,9 +65,21 @@ export async function updateAdminCredentials(data: {
     updateData.passwordHash = hash;
   }
 
+  if (data.assignedCampus) {
+    updateData.assignedCampus = data.assignedCampus.trim();
+  }
+
+  if (data.assignedLabSlug) {
+    const lab = await prisma.lab.findUnique({ where: { slug: data.assignedLabSlug } });
+    if (lab) {
+      updateData.assignedLabId = lab.id;
+    }
+  }
+
   const updated = await prisma.admin.update({
     where: { id: admin.id },
     data: updateData,
+    include: { assignedLab: true },
   });
 
   await prisma.auditLog.create({
@@ -66,11 +90,18 @@ export async function updateAdminCredentials(data: {
       targetId: admin.id,
       payloadDelta: {
         username: updated.username,
+        assignedCampus: updated.assignedCampus,
+        assignedLabSlug: updated.assignedLab?.slug,
         passwordChanged: Boolean(data.newPassword),
       },
     },
   });
 
   revalidatePath("/admin/pos");
-  return { success: true, username: updated.username };
+  return {
+    success: true,
+    username: updated.username,
+    assignedCampus: updated.assignedCampus,
+    assignedLabSlug: updated.assignedLab?.slug || "medialab",
+  };
 }

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Check, Plus, X } from "@phosphor-icons/react";
+import { Check, Plus, X, Star } from "@phosphor-icons/react";
 import {
   CraftItemData,
   CampusKey,
@@ -17,6 +17,7 @@ import {
   deleteCraftArticle,
   uploadCraftImage,
   getAvailableCraftAssets,
+  toggleFeatureOnFrontpage,
   CraftAssetItem,
 } from "@/app/actions/crafts";
 
@@ -234,6 +235,49 @@ export function CraftItemsManager() {
     }
   };
 
+  const handleToggleFeature = async (slug: string) => {
+    const targetItem = items.find((i) => i.slug === slug);
+    if (!targetItem) return;
+
+    const currentFeatured = items.filter((i) => i.isFeaturedOnFrontpage);
+    const isAdding = !targetItem.isFeaturedOnFrontpage;
+
+    if (isAdding && currentFeatured.length >= 5) {
+      setFeedback({
+        message: "Der kan maksimalt vises 5 udvalgte prototyper på forsiden. Fjern en anden for at tilføje denne.",
+        type: "error",
+      });
+      return;
+    }
+
+    // Optimistic state
+    setItems((prev) =>
+      prev.map((i) => (i.slug === slug ? { ...i, isFeaturedOnFrontpage: isAdding } : i))
+    );
+
+    try {
+      const res = await toggleFeatureOnFrontpage(slug);
+      if (!res.success) {
+        // Rollback
+        setItems((prev) =>
+          prev.map((i) => (i.slug === slug ? { ...i, isFeaturedOnFrontpage: !isAdding } : i))
+        );
+        setFeedback({ message: res.error || "Kunne ikke ændre forside-status.", type: "error" });
+      } else {
+        setFeedback({
+          message: res.isFeatured
+            ? `"${targetItem.title}" er nu fremhævet på forsiden (${res.count}/5)`
+            : `"${targetItem.title}" er fjernet fra forsiden (${res.count}/5)`,
+          type: "success",
+        });
+        await loadData();
+      }
+    } catch (err: any) {
+      setFeedback({ message: err.message || "Fejl under opdatering.", type: "error" });
+      await loadData();
+    }
+  };
+
   const handleDelete = async (slug: string) => {
     try {
       const res = await deleteCraftArticle(slug);
@@ -264,6 +308,10 @@ export function CraftItemsManager() {
     });
   }, [items, filterCampus, filterLab, searchQuery]);
 
+  const featuredCount = useMemo(() => {
+    return items.filter((i) => i.isFeaturedOnFrontpage).length;
+  }, [items]);
+
   return (
     <div className="space-y-6">
       {/* Toast Notification */}
@@ -293,22 +341,32 @@ export function CraftItemsManager() {
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 bg-[#E6007E]" />
-            <h2 className="font-extrabold text-lg text-white tracking-tight uppercase">
+            <h2 className="font-extrabold text-lg text-white tracking-tight uppercase font-notch">
               Crafts & Prototype Artikler
             </h2>
           </div>
-          <p className="text-xs text-zinc-400 mt-1">
+          <p className="text-xs text-zinc-400 mt-1 font-headline">
             Administrer offentlige vejledninger, prototyper og blogartikler vist på /katalog og /craft/[slug].
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={openNewItemModal}
-          className="px-4 py-2 bg-[#009FE3] hover:bg-[#0080BA] text-black font-bold text-xs uppercase rounded-none transition-colors flex items-center gap-2 cursor-pointer shadow-lg shadow-[#009FE3]/20"
-        >
-          <span>+ Opret Ny Artikel</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-2 bg-[#1b1b1e] border border-[#333333] text-xs">
+            <Star size={14} weight="fill" className={featuredCount > 0 ? "text-[#FFED00]" : "text-zinc-600"} />
+            <span className="text-zinc-400 font-headline uppercase text-[10px]">Forside Showcase:</span>
+            <span className={`font-bold font-notch text-xs ${featuredCount >= 5 ? "text-[#FFED00]" : "text-white"}`}>
+              {featuredCount}/5 fremhævet
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={openNewItemModal}
+            className="px-4 py-2 bg-[#009FE3] hover:bg-[#0080BA] text-black font-bold text-xs uppercase rounded-none transition-colors flex items-center gap-2 cursor-pointer shadow-lg shadow-[#009FE3]/20 font-headline"
+          >
+            <span>+ Opret Ny Artikel</span>
+          </button>
+        </div>
       </div>
 
       {/* Controls Bar: Search & Filters */}
@@ -359,19 +417,20 @@ export function CraftItemsManager() {
               <th className="p-3">Kategori</th>
               <th className="p-3">Campuses & Labs</th>
               <th className="p-3">Tags</th>
+              <th className="p-3 text-center w-28">Forside</th>
               <th className="p-3 text-right">Handlinger</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-900">
             {loading ? (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-zinc-500">
+                <td colSpan={7} className="p-8 text-center text-zinc-500">
                   Indlæser artikler...
                 </td>
               </tr>
             ) : filteredItems.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-zinc-500">
+                <td colSpan={7} className="p-8 text-center text-zinc-500">
                   Ingen artikler fundet matching søgekriterier.
                 </td>
               </tr>
@@ -429,6 +488,31 @@ export function CraftItemsManager() {
                         <span className="text-[9px] text-zinc-500">+{item.tags.length - 4}</span>
                       )}
                     </div>
+                  </td>
+                  <td className="p-3 text-center">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleFeature(item.slug)}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider transition-all border cursor-pointer font-headline ${
+                        item.isFeaturedOnFrontpage
+                          ? "bg-[#FFED00]/15 text-[#FFED00] border-[#FFED00]/50 hover:bg-[#FFED00]/25"
+                          : "bg-zinc-900 text-zinc-500 border-zinc-800 hover:text-zinc-300 hover:border-zinc-700"
+                      }`}
+                      title={
+                        item.isFeaturedOnFrontpage
+                          ? "Fremhævet på forsiden (Klik for at fjerne)"
+                          : featuredCount >= 5
+                          ? "Maks 5 prototyper er allerede fremhævet"
+                          : "Klik for at fremhæve på forsiden"
+                      }
+                    >
+                      <Star
+                        size={12}
+                        weight={item.isFeaturedOnFrontpage ? "fill" : "regular"}
+                        className={item.isFeaturedOnFrontpage ? "text-[#FFED00]" : "text-zinc-500"}
+                      />
+                      <span>{item.isFeaturedOnFrontpage ? "Aktiv" : "Fremhæv"}</span>
+                    </button>
                   </td>
                   <td className="p-3 text-right space-x-2">
                     <Link
@@ -596,6 +680,54 @@ export function CraftItemsManager() {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* Frontpage Feature Toggle */}
+              <div className="p-3.5 bg-[#171719] border border-zinc-800 flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Star
+                      size={14}
+                      weight="fill"
+                      className={formData.isFeaturedOnFrontpage ? "text-[#FFED00]" : "text-zinc-500"}
+                    />
+                    <span className="text-white text-xs font-bold uppercase tracking-wider font-headline">
+                      Fremhæv på forsiden
+                    </span>
+                    {formData.isFeaturedOnFrontpage && (
+                      <span className="px-1.5 py-0.2 bg-[#FFED00]/20 text-[#FFED00] text-[9px] uppercase font-bold border border-[#FFED00]/40">
+                        Aktiv i karrusel
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-zinc-400 mt-1 font-text">
+                    Viser dette kort i &quot;Udforsk Vores Prototyper&quot; karrusellen på forsiden (maks. 5 udvalgte).
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!!formData.isFeaturedOnFrontpage}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      if (checked) {
+                        const currentFeatured = items.filter(
+                          (i) => i.isFeaturedOnFrontpage && i.slug !== formData.slug
+                        ).length;
+                        if (currentFeatured >= 5) {
+                          setFeedback({
+                            message: "Maksimalt 5 prototyper kan være fremhævet på forsiden.",
+                            type: "error",
+                          });
+                          return;
+                        }
+                      }
+                      setFormData({ ...formData, isFeaturedOnFrontpage: checked });
+                    }}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#FFED00]"></div>
+                </label>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

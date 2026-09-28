@@ -46,46 +46,10 @@ export function LandingHeader() {
           </Link>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* Location Indicator Dropdown */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setCampusDropdown(!campusDropdown)}
-                className="flex items-center gap-1.5 text-xs text-white/90 font-medium px-3.5 py-2 min-h-[40px] rounded-full bg-black/50 hover:bg-black/70 backdrop-blur-md border border-white/15 cursor-pointer transition-colors active:scale-95 touch-manipulation"
-                aria-label="Skift lokation"
-              >
-                <span className="capitalize">{campus}</span>
-                <MapPin size={14} weight="bold" className="text-white/80 shrink-0" aria-hidden="true" />
-              </button>
-
-              {/* Campus Dropdown */}
-              <AnimatePresence>
-                {campusDropdown && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 5 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute right-0 mt-2 w-40 max-w-[calc(100vw-32px)] bg-[#121214] border border-white/12 rounded-lg shadow-xl p-1.5 z-50 font-sans text-xs"
-                  >
-                    {(["køge", "roskilde"] as CampusKey[]).map((cKey) => (
-                      <button
-                        key={cKey}
-                        type="button"
-                        onClick={() => toggleCampus(cKey)}
-                        className={`w-full text-left px-3 py-2.5 min-h-[40px] rounded-lg transition-colors flex items-center justify-between cursor-pointer touch-manipulation capitalize ${
-                          campus === cKey
-                            ? "bg-brand-cyan/20 text-brand-cyan font-bold"
-                            : "text-white/80 hover:bg-white/10"
-                        }`}
-                      >
-                        <span>{cKey}</span>
-                        {campus === cKey && <span className="text-[10px]">●</span>}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+            {/* Location Indicator Badge */}
+            <div className="flex items-center gap-1.5 text-xs text-white font-bold px-3.5 py-2 min-h-[40px] rounded-full bg-black/50 backdrop-blur-md border border-white/15 select-none font-headline">
+              <span>Køge Campus</span>
+              <MapPin size={14} weight="bold" className="text-[#009FE3] shrink-0" aria-hidden="true" />
             </div>
 
             {/* Hamburger Menu Toggle with 44px hit target */}

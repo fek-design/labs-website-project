@@ -252,3 +252,73 @@ export async function getAvailableCraftAssets(): Promise<CraftAssetItem[]> {
   return assets;
 }
 
+/**
+ * Toggle whether a craft prototype is featured on the public frontpage carousel (cap: 5)
+ */
+export async function toggleFeatureOnFrontpage(
+  slug: string,
+  adminId?: string
+): Promise<{ success: boolean; isFeatured?: boolean; count?: number; error?: string }> {
+  try {
+    const items = await getCraftArticles();
+    const itemIndex = items.findIndex((i) => i.slug.toLowerCase() === slug.toLowerCase());
+
+    if (itemIndex === -1) {
+      return { success: false, error: "Prototypen blev ikke fundet." };
+    }
+
+    const currentItem = items[itemIndex];
+    const willBeFeatured = !currentItem.isFeaturedOnFrontpage;
+
+    const currentlyFeatured = items.filter((i) => i.isFeaturedOnFrontpage);
+
+    if (willBeFeatured && currentlyFeatured.length >= 5) {
+      return {
+        success: false,
+        error: "Der kan maksimalt vises 5 prototyper på forsiden. Fjern venligst en anden først.",
+      };
+    }
+
+    currentItem.isFeaturedOnFrontpage = willBeFeatured;
+    if (willBeFeatured) {
+      currentItem.featuredOrder = currentlyFeatured.length + 1;
+    } else {
+      delete currentItem.featuredOrder;
+    }
+
+    items[itemIndex] = currentItem;
+
+    await ensureDataDirectory();
+    await fs.writeFile(CRAFTS_FILE_PATH, JSON.stringify(items, null, 2), "utf-8");
+
+    // Audit log
+    try {
+      const actorId = await getActorAdminId(adminId);
+      await prisma.auditLog.create({
+        data: {
+          actorAdminId: actorId,
+          actionType: "UPDATE_CRAFT_ARTICLE",
+          targetTable: "CraftArticle",
+          targetId: slug,
+          payloadDelta: {
+            isFeaturedOnFrontpage: willBeFeatured,
+            featuredOrder: currentItem.featuredOrder ?? null,
+          },
+        },
+      });
+    } catch (auditErr) {
+      console.warn("Could not write audit log for frontpage feature toggle:", auditErr);
+    }
+
+    revalidatePath("/");
+    revalidatePath("/admin");
+    revalidatePath("/admin/pos");
+    revalidatePath("/katalog");
+
+    const newFeaturedCount = items.filter((i) => i.isFeaturedOnFrontpage).length;
+    return { success: true, isFeatured: willBeFeatured, count: newFeaturedCount };
+  } catch (error: any) {
+    console.error("Failed to toggle frontpage feature status:", error);
+    return { success: false, error: error.message || "Kunne ikke opdatere forside-status." };
+  }
+}

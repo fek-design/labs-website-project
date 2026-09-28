@@ -105,12 +105,16 @@ export interface CraftItemData {
   processes: CraftProcess[];
   inspiration: CraftInspirationItem[];
   manuals: CraftManualReference[];
+  isFeaturedOnFrontpage?: boolean;
+  featuredOrder?: number;
 }
 
 export const CRAFT_CATALOG: Record<string, CraftItemData> = {
   "t-shirt": {
     slug: "t-shirt",
     title: "T-SHIRT",
+    isFeaturedOnFrontpage: true,
+    featuredOrder: 1,
     category: "Tekstil & Beklædning",
     tags: ["tekstil", "merch", "folie", "dtg", "varmeoverførsel", "broderi"],
     campuses: ["køge", "roskilde"],
@@ -267,6 +271,8 @@ export const CRAFT_CATALOG: Record<string, CraftItemData> = {
   kop: {
     slug: "kop",
     title: "KOP",
+    isFeaturedOnFrontpage: true,
+    featuredOrder: 2,
     category: "Keramik & Sublimation",
     tags: ["keramik", "sublimation", "krus", "varme", "merch"],
     campuses: ["køge", "roskilde"],
@@ -339,6 +345,8 @@ export const CRAFT_CATALOG: Record<string, CraftItemData> = {
   mulepose: {
     slug: "mulepose",
     title: "MULEPOSE",
+    isFeaturedOnFrontpage: true,
+    featuredOrder: 3,
     category: "Tekstil & Beklædning",
     tags: ["tekstil", "canvas", "tote", "serigrafi", "print", "merch"],
     campuses: ["køge", "roskilde"],
@@ -411,6 +419,8 @@ export const CRAFT_CATALOG: Record<string, CraftItemData> = {
   "3d-print": {
     slug: "3d-print",
     title: "3D PRINT",
+    isFeaturedOnFrontpage: true,
+    featuredOrder: 4,
     category: "3D Print & Prototyping",
     tags: ["3d print", "pla", "prusa", "fdm", "prototype", "cad", "plast"],
     campuses: ["køge", "roskilde"],
@@ -483,6 +493,8 @@ export const CRAFT_CATALOG: Record<string, CraftItemData> = {
   plakat: {
     slug: "plakat",
     title: "PLAKAT",
+    isFeaturedOnFrontpage: true,
+    featuredOrder: 5,
     category: "Print & Storformat",
     tags: ["stortformat", "print", "papir", "grafik", "fotoprint", "plakat"],
     campuses: ["køge"],

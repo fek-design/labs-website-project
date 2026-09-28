@@ -43,12 +43,15 @@ enum TagFacet {
 }
 
 model Admin {
-  id            String     @id @default(uuid())
-  username      String     @unique
-  passwordHash  String
-  role          Role
-  isActive      Boolean    @default(true)
-  createdAt     DateTime   @default(now())
+  id             String     @id @default(uuid())
+  username       String     @unique
+  passwordHash   String
+  role           Role
+  isActive       Boolean    @default(true)
+  assignedCampus String?    @default("Køge Campus")
+  assignedLabId  Int?
+  assignedLab    Lab?       @relation(fields: [assignedLabId], references: [id])
+  createdAt      DateTime   @default(now())
 
   auditLogs     AuditLog[]
   loansCheckout Loan[]     @relation("AdminCheckout")
@@ -85,6 +88,7 @@ model Lab {
   createdAt DateTime    @default(now())
 
   inventory Inventory[]
+  admins    Admin[]
 }
 
 model Inventory {

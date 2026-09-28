@@ -6,6 +6,7 @@ import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { CraftItemData } from "@/lib/craft-data";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -18,7 +19,7 @@ interface PrototypeItem {
   href: string;
 }
 
-const prototypeItems: PrototypeItem[] = [
+const DEFAULT_PROTOTYPES: PrototypeItem[] = [
   { id: "tshirt", name: "T-Shirt", image: "/images/landing/carousel-tshirt.png", href: "/craft/t-shirt" },
   { id: "kop", name: "Kop", image: "/images/landing/carousel-kop.png", href: "/craft/kop" },
   { id: "mulepose", name: "Mulepose", image: "/images/landing/carousel-mulepose.png", href: "/craft/mulepose" },
@@ -26,8 +27,22 @@ const prototypeItems: PrototypeItem[] = [
   { id: "plakat", name: "Plakat", image: "/images/landing/showcase-poster.jpg", href: "/craft/plakat" },
 ];
 
-export function PrototypeCarousel() {
+interface PrototypeCarouselProps {
+  items?: CraftItemData[];
+}
+
+export function PrototypeCarousel({ items }: PrototypeCarouselProps) {
   const containerRef = useRef<HTMLElement>(null);
+
+  const displayItems: PrototypeItem[] =
+    items && items.length > 0
+      ? items.slice(0, 5).map((craft) => ({
+          id: craft.slug,
+          name: craft.title,
+          image: craft.thumbnailImage || craft.heroImage || "/images/landing/carousel-tshirt.png",
+          href: `/craft/${craft.slug}`,
+        }))
+      : DEFAULT_PROTOTYPES;
 
   useGSAP(
     () => {
@@ -83,7 +98,7 @@ export function PrototypeCarousel() {
 
         {/* Horizontal Scroll Carousel with Edge Bleed on Mobile */}
         <div className="gsap-carousel-track -mx-4 px-4 sm:-mx-6 sm:px-6 flex gap-3.5 sm:gap-4 overflow-x-auto pb-4 pt-2 no-scrollbar snap-x scroll-smooth touch-pan-x">
-          {prototypeItems.map((item, idx) => (
+          {displayItems.map((item, idx) => (
             <Link
               key={`${item.id}-${idx}`}
               href={item.href}

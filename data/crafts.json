@@ -2,6 +2,8 @@
   {
     "slug": "t-shirt",
     "title": "T-SHIRT",
+    "isFeaturedOnFrontpage": true,
+    "featuredOrder": 1,
     "category": "Tekstil & Beklædning",
     "tags": [
       "tekstil",
@@ -97,6 +99,8 @@
   {
     "slug": "kop",
     "title": "KOP",
+    "isFeaturedOnFrontpage": true,
+    "featuredOrder": 2,
     "category": "Keramik & Sublimation",
     "tags": [
       "keramik",
@@ -179,6 +183,8 @@
   {
     "slug": "mulepose",
     "title": "MULEPOSE",
+    "isFeaturedOnFrontpage": true,
+    "featuredOrder": 3,
     "category": "Tekstil & Beklædning",
     "tags": [
       "tekstil",
@@ -262,6 +268,8 @@
   {
     "slug": "3d-print",
     "title": "3D PRINT",
+    "isFeaturedOnFrontpage": true,
+    "featuredOrder": 4,
     "category": "3D Print & Prototyping",
     "tags": [
       "3d print",
@@ -346,6 +354,8 @@
   {
     "slug": "plakat",
     "title": "PLAKAT",
+    "isFeaturedOnFrontpage": true,
+    "featuredOrder": 5,
     "category": "Print & Storformat",
     "tags": [
       "stortformat",

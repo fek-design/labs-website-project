@@ -59,7 +59,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     shortTitle: "POS Desk",
     description: "Stregkodescanner, aktivt udlån og reservationskalender",
     icon: CashRegister,
-    accentColor: "#009FE3", // Cyan
+    accentColor: "#FFED00", // Yellow — matches LABS Dashboard
   },
   {
     id: "INVENTORY",
@@ -67,7 +67,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     shortTitle: "Lager",
     description: "Fysisk placering, hylder, tags og udstyrskatalog",
     icon: Package,
-    accentColor: "#FFED00", // Yellow
+    accentColor: "#009FE3", // Cyan — matches LABS Inventar
   },
   {
     id: "MAKERSPACE",
@@ -75,7 +75,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     shortTitle: "Maskiner",
     description: "3D-printere, laserskærere, manualer og driftstatus",
     icon: Cpu,
-    accentColor: "#FFED00", // Yellow
+    accentColor: "#FFED00", // Yellow — matches Makerspace Hub
   },
   {
     id: "CRAFTS",
@@ -83,7 +83,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     shortTitle: "Crafts",
     description: "Offentlige vejledninger, prototyper og blogartikler",
     icon: Article,
-    accentColor: "#E6007E", // Pink
+    accentColor: "#E6007E", // Pink — matches Crafts & Artikler
   },
   {
     id: "HISTORY",
@@ -91,7 +91,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     shortTitle: "Historik",
     description: "Handlingslog, admin-aktiviteter og hardwarehistorik",
     icon: ClockCounterClockwise,
-    accentColor: "#E6007E", // Pink
+    accentColor: "#009FE3", // Cyan — matches Audit Logs
   },
   {
     id: "SETTINGS",
@@ -99,6 +99,6 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     shortTitle: "Opsætning",
     description: "Campusparametre, lokale noder og admin-rettigheder",
     icon: SlidersHorizontal,
-    accentColor: "#FFFFFF",
+    accentColor: "#FFED00", // Yellow — matches LABS Indstillinger
   },
 ];

@@ -18,7 +18,11 @@ import {
   X,
 } from "@phosphor-icons/react";
 
-export function MakerspaceMachineHub() {
+interface MakerspaceMachineHubProps {
+  activeLab?: "makerspace" | "medialab" | string;
+}
+
+export function MakerspaceMachineHub({ activeLab = "makerspace" }: MakerspaceMachineHubProps) {
   const [machines, setMachines] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,22 +32,25 @@ export function MakerspaceMachineHub() {
   const [showCatalogModal, setShowCatalogModal] = useState(false);
   const [focusMachine, setFocusMachine] = useState<{ id: string; name: string } | null>(null);
 
+  const isMediaLab = activeLab === "medialab";
+  const labSlug = isMediaLab ? "medialab" : "makerspace";
+
   const fetchMachines = useCallback(async () => {
     try {
       setIsLoading(true);
       const res = await getInventoryWithFilters({
-        labSlug: "makerspace",
-        hardwareType: HardwareType.STATIC_MACHINE,
+        labSlug,
+        hardwareType: isMediaLab ? undefined : HardwareType.STATIC_MACHINE,
         tagSlug: selectedTag !== "ALL" ? selectedTag : undefined,
         searchQuery,
       });
       setMachines(res);
     } catch (err) {
-      console.error("Failed to load Makerspace machines", err);
+      console.error("Failed to load lab machines/equipment", err);
     } finally {
       setIsLoading(false);
     }
-  }, [selectedTag, searchQuery]);
+  }, [labSlug, isMediaLab, selectedTag, searchQuery]);
 
   useEffect(() => {
     fetchMachines();
@@ -89,15 +96,17 @@ export function MakerspaceMachineHub() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#262626]">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold tracking-tight text-white">
-              Makerspace Machine & Manuals Hub
+            <h2 className="text-2xl font-bold tracking-tight text-white font-notch">
+              {isMediaLab ? "MediaLab Machine & Manuals Hub" : "Makerspace Machine & Manuals Hub"}
             </h2>
-            <span className="bg-[#FFED00] text-black text-xs font-bold px-2.5 py-0.5 rounded-full">
-              In-House Workstations
+            <span className="bg-[#FFED00] text-black text-xs font-bold px-2.5 py-0.5 rounded-full font-headline">
+              {isMediaLab ? "MediaLab (Køge)" : "Makerspace (Køge)"}
             </span>
           </div>
-          <p className="text-xs text-zinc-400 mt-1">
-            Static rapid prototyping machinery, centralized Many-to-Many user manuals library, and maintenance records
+          <p className="text-xs text-zinc-400 mt-1 font-headline">
+            {isMediaLab
+              ? "Udstyr og maskiner, centraliseret manual-bibliotek og driftsstatus for MediaLab Køge"
+              : "Static rapid prototyping machinery, centralized Many-to-Many user manuals library, and maintenance records"}
           </p>
         </div>
 

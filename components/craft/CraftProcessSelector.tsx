@@ -14,7 +14,7 @@ export function CraftProcessSelector({ processes }: CraftProcessSelectorProps) {
   const activeProcess = processes.find((p) => p.id === activeProcessId) || processes[0];
 
   return (
-    <section className="w-full px-4 sm:px-6 max-w-4xl mx-auto space-y-6 sm:space-y-8 pt-4">
+    <section className="w-full px-4 sm:px-6 max-w-4xl mx-auto space-y-6 sm:space-y-8 pt-4 pb-12 sm:pb-16">
       {/* Section Header */}
       <div className="space-y-1">
         <h3 className="font-notch text-2xl sm:text-3xl font-light text-white tracking-tight uppercase">

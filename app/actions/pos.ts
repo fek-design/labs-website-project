@@ -389,6 +389,78 @@ export async function returnEquipment(data: {
 }
 
 /**
+ * 6b. Return Multiple Loans in Batch (Bulk Return)
+ */
+export async function returnMultipleLoans(data: {
+  loanIds: string[];
+  adminId?: string;
+  notes?: string;
+}) {
+  if (!data.loanIds || data.loanIds.length === 0) {
+    throw new Error("Ingen lån valgt til returnering.");
+  }
+
+  const actorId = await getActorAdminId(data.adminId);
+
+  return await prisma.$transaction(async (tx) => {
+    const loans = await tx.loan.findMany({
+      where: {
+        id: { in: data.loanIds },
+      },
+      include: {
+        inventory: true,
+        patron: true,
+      },
+    });
+
+    if (loans.length === 0) {
+      throw new Error("Ingen gyldige lånetransaktioner fundet.");
+    }
+
+    const updatedLoans = [];
+
+    for (const loan of loans) {
+      if (loan.status !== LoanStatus.ACTIVE && loan.status !== LoanStatus.OVERDUE) {
+        continue;
+      }
+
+      const updated = await tx.loan.update({
+        where: { id: loan.id },
+        data: {
+          status: LoanStatus.RETURNED,
+          actualReturn: new Date(),
+          adminIdCheckin: actorId,
+          notes: data.notes
+            ? `${loan.notes ? loan.notes + " | " : ""}Bulk return note: ${data.notes}`
+            : loan.notes,
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          actorAdminId: actorId,
+          actionType: "RETURN_LOAN",
+          targetTable: "Loan",
+          targetId: loan.id,
+          payloadDelta: {
+            status: LoanStatus.RETURNED,
+            assetTag: loan.inventory.assetTag,
+            patronStudentId: loan.patron.studentId,
+            bulk: true,
+            notes: data.notes,
+          },
+        },
+      });
+
+      updatedLoans.push(updated);
+    }
+
+    revalidatePath("/admin/pos");
+    return { success: true, count: updatedLoans.length, loans: updatedLoans };
+  });
+}
+
+/**
  * 7. Modify Active Loan (e.g. Extend Return Date, Edit Notes)
  */
 export async function modifyLoan(data: {

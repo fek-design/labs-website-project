@@ -13,6 +13,11 @@ interface FirstTimeCampusGateProps {
 const CAMPUSES: CampusKey[] = ["køge", "roskilde"];
 
 export function FirstTimeCampusGate({ forceShow = false, onEnter }: FirstTimeCampusGateProps) {
+  // Scoped to Køge: Bypassed to avoid blocking visitors with single-campus selection
+  if (!forceShow) {
+    return null;
+  }
+
   const { campus, setCampus } = useCampus();
   const [selectedCampus, setSelectedCampus] = useState<CampusKey>(
     campus in CAMPUS_DATA ? campus : "køge"
@@ -132,7 +137,7 @@ export function FirstTimeCampusGate({ forceShow = false, onEnter }: FirstTimeCam
               transition={{ delay: 0.15, duration: 0.4 }}
               className="space-y-5 sm:space-y-6"
             >
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-extralight text-zinc-300 tracking-wide font-sans">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-normal text-zinc-300 tracking-wide font-headline">
                 Vælg Campus <br className="sm:hidden" />
                 nærest dig:
               </h1>
@@ -144,7 +149,7 @@ export function FirstTimeCampusGate({ forceShow = false, onEnter }: FirstTimeCam
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="font-sans font-bold text-5xl sm:text-7xl md:text-8xl tracking-tight text-white capitalize drop-shadow-md"
+                  className="font-notch font-black text-5xl sm:text-7xl md:text-8xl tracking-tight text-white capitalize drop-shadow-md"
                 >
                   {CAMPUS_DATA[selectedCampus]?.name || "Køge"}
                 </motion.div>
@@ -204,7 +209,7 @@ export function FirstTimeCampusGate({ forceShow = false, onEnter }: FirstTimeCam
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               onClick={handleEnter}
-              className="w-full sm:w-auto px-8 py-3 bg-white text-black font-semibold text-sm sm:text-base tracking-wider uppercase rounded-none shadow-xl hover:bg-zinc-200 transition-all cursor-pointer flex items-center justify-center gap-2.5 touch-manipulation border border-white group"
+              className="w-full sm:w-auto px-8 py-3 bg-white text-black font-headline font-bold text-sm sm:text-base tracking-wider uppercase rounded-none shadow-xl hover:bg-zinc-200 transition-all cursor-pointer flex items-center justify-center gap-2.5 touch-manipulation border border-white group"
             >
               <span>TRÆD IND</span>
               <ArrowRight

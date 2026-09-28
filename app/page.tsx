@@ -14,6 +14,7 @@ import {
   MachineItem,
 } from "@/components/landing/MachineTelemetrySection";
 import { LandingFooter } from "@/components/landing/LandingFooter";
+import { getCraftArticles } from "@/app/actions/crafts";
 
 export default async function LandingPage() {
   const catalog: CampusTelemetryCatalog = {
@@ -32,8 +33,26 @@ export default async function LandingPage() {
   let fallbackMachineCount = 10;
   let fallbackMachines: MachineItem[] = [];
 
+  let featuredCrafts: any[] = [];
   try {
-    const allDbInventory = await prisma.inventory.findMany({
+    const allCraftArticles = await getCraftArticles();
+    featuredCrafts = allCraftArticles
+      .filter((c) => c.isFeaturedOnFrontpage)
+      .sort((a, b) => (a.featuredOrder || 999) - (b.featuredOrder || 999))
+      .slice(0, 5);
+  } catch (craftErr) {
+    console.warn("Could not fetch featured craft articles:", craftErr);
+  }
+
+  try {
+    const kogeInventory = await prisma.inventory.findMany({
+      where: {
+        lab: {
+          slug: {
+            in: ["makerspace", "medialab"],
+          },
+        },
+      },
       select: {
         id: true,
         name: true,
@@ -47,69 +66,25 @@ export default async function LandingPage() {
             campus: true,
           },
         },
-        tags: {
-          select: {
-            tag: {
-              select: {
-                slug: true,
-              },
-            },
-          },
-        },
       },
       orderBy: { name: "asc" },
     });
 
-    for (const item of allDbInventory) {
-      const isRoskilde =
-        item.lab.campus.toLowerCase().includes("roskilde") ||
-        item.lab.slug === "roskilde";
-      const campusKey = isRoskilde ? "roskilde" : "køge";
+    for (const item of kogeInventory) {
+      const labKey = item.lab.slug as "makerspace" | "medialab";
+      if (labKey === "makerspace" || labKey === "medialab") {
+        const cleanItem: MachineItem = {
+          id: item.id,
+          name: item.name,
+          location: item.location,
+          operationalStatus: item.operationalStatus,
+          hardwareType: item.hardwareType,
+          imageUrl: item.imageUrl,
+        };
 
-      let labKey: "makerspace" | "medialab" | "dimselab" = "makerspace";
-
-      if (isRoskilde) {
-        const loc = item.location?.toLowerCase() || "";
-        const tagSlugs = item.tags.map((t) => t.tag.slug.toLowerCase());
-        const isDimse =
-          loc.includes("dimse") ||
-          tagSlugs.includes("electronics") ||
-          tagSlugs.includes("soldering-smd");
-        const isMedia =
-          item.hardwareType === "BORROWABLE_GEAR" ||
-          loc.includes("media") ||
-          tagSlugs.some((s) => s.includes("media") || s.includes("audio") || s.includes("camera") || s.includes("lighting"));
-
-        if (isDimse) {
-          labKey = "dimselab";
-        } else if (isMedia) {
-          labKey = "medialab";
-        } else {
-          labKey = "makerspace";
-        }
-      } else {
-        // Køge
-        if (
-          item.lab.slug === "medialab" ||
-          item.hardwareType === "BORROWABLE_GEAR"
-        ) {
-          labKey = "medialab";
-        } else {
-          labKey = "makerspace";
-        }
+        catalog.køge[labKey].items.push(cleanItem);
+        catalog.køge[labKey].count += 1;
       }
-
-      const cleanItem: MachineItem = {
-        id: item.id,
-        name: item.name,
-        location: item.location,
-        operationalStatus: item.operationalStatus,
-        hardwareType: item.hardwareType,
-        imageUrl: item.imageUrl,
-      };
-
-      catalog[campusKey][labKey].items.push(cleanItem);
-      catalog[campusKey][labKey].count += 1;
     }
 
     fallbackMachineCount = catalog.køge.makerspace.count;
@@ -136,7 +111,7 @@ export default async function LandingPage() {
 
           {/* Contiguous High-Contrast White Showcase Zone (Prototype Carousel & Image Gallery) */}
           <div className="w-full bg-white text-zinc-950 transition-colors duration-300">
-            <PrototypeCarousel />
+            <PrototypeCarousel items={featuredCrafts} />
             <HotspotShowcase />
           </div>
 
