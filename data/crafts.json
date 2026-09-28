@@ -3,7 +3,6 @@
     "slug": "t-shirt",
     "title": "T-SHIRT",
     "isFeaturedOnFrontpage": true,
-    "featuredOrder": 1,
     "category": "Tekstil & Beklædning",
     "tags": [
       "tekstil",
@@ -94,7 +93,8 @@
         "tag": "Tekstilprint",
         "href": "https://support.flux3dp.com"
       }
-    ]
+    ],
+    "featuredOrder": 5
   },
   {
     "slug": "kop",

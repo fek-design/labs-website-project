@@ -2,18 +2,18 @@ import React from "react";
 import {
   CashRegister,
   Package,
-  Cpu,
-  Article,
   ClockCounterClockwise,
   SlidersHorizontal,
+  Books,
+  GridFour,
   Icon,
 } from "@phosphor-icons/react";
 
 export type AdminNavTabId =
   | "FRONT_DESK"
   | "INVENTORY"
-  | "MAKERSPACE"
-  | "CRAFTS"
+  | "CATALOGUE"
+  | "MANUALS"
   | "HISTORY"
   | "SETTINGS";
 
@@ -23,33 +23,14 @@ export interface AdminNavItem {
   shortTitle: string;
   description: string;
   icon: Icon;
-  accentColor: string; // CMYK / brand color token: #009FE3 (Cyan), #FFED00 (Yellow), #E6007E (Pink), #FFFFFF
+  accentColor: string; // CMYK / brand color token: #009FE3 (Cyan), #FFED00 (Yellow), #E6007E (Pink), #FF9900 (Amber), #FFFFFF
   badge?: string | number;
 }
 
 /**
  * ============================================================================
  * ZEALAND LABS ADMIN NAVIGATION REGISTRY
- * ============================================================================
- * 
- * HOW TO EXTEND THIS LIST FOR UX:
- * 1. Add your new identifier to `AdminNavTabId` (e.g. `| "ANALYTICS"`).
- * 2. Select a Phosphor icon from `@phosphor-icons/react`.
- * 3. Append your new `AdminNavItem` object to `ADMIN_NAV_ITEMS` below:
- *    {
- *      id: "ANALYTICS",
- *      label: "Lab Telemetri & Analyse",
- *      shortTitle: "Telemetri",
- *      description: "Sensorovervågning og maskinudnyttelse",
- *      icon: ChartLineUp,
- *      accentColor: "#009FE3",
- *    }
- * 4. In `AdminConsoleClient.tsx`, render the corresponding view component:
- *    {mainNav === "ANALYTICS" && <AnalyticsView />}
- *
- * The docked vertical sidebar (`AdminSidebarNav.tsx`) will automatically
- * render the new 40x40 icon trigger, hover tooltip, active accent indicator,
- * and view switcher without requiring any manual layout changes.
+ * Canonical 6-Module Operational Navigation Architecture
  * ============================================================================
  */
 export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
@@ -63,27 +44,27 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   },
   {
     id: "INVENTORY",
-    label: "Lager & Katalog",
-    shortTitle: "Lager",
-    description: "Fysisk placering, hylder, tags og udstyrskatalog",
+    label: "Lager & Beholdning",
+    shortTitle: "Inventar",
+    description: "Fysisk placering, maskiner, hylder, tags og udstyrsstatus",
     icon: Package,
     accentColor: "#009FE3", // Cyan — matches LABS Inventar
   },
   {
-    id: "MAKERSPACE",
-    label: "Makerspace Maskiner",
-    shortTitle: "Maskiner",
-    description: "3D-printere, laserskærere, manualer og driftstatus",
-    icon: Cpu,
-    accentColor: "#FFED00", // Yellow — matches Makerspace Hub
+    id: "CATALOGUE",
+    label: "Offentligt Katalog & Crafts",
+    shortTitle: "Katalog",
+    description: "Offentlig udstilling, projektguides, materialer og showcase curation",
+    icon: GridFour,
+    accentColor: "#FF9900", // Amber — distinct from physical inventory
   },
   {
-    id: "CRAFTS",
-    label: "Crafts & Artikler",
-    shortTitle: "Crafts",
-    description: "Offentlige vejledninger, prototyper og blogartikler",
-    icon: Article,
-    accentColor: "#E6007E", // Pink — matches Crafts & Artikler
+    id: "MANUALS",
+    label: "Manualer & Dokumenter",
+    shortTitle: "Manualer",
+    description: "SOP-dokumenter, PDF-manualer og maskintilknytning",
+    icon: Books,
+    accentColor: "#E6007E", // Pink — matches Figma LABS Manualer
   },
   {
     id: "HISTORY",

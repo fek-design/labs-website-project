@@ -23,8 +23,8 @@ import { InventoryItemModal } from "./InventoryItemModal";
 import { InventoryManualsDrawer } from "./InventoryManualsDrawer";
 
 interface InventoryManagerProps {
-  activeLab?: "medialab" | "makerspace" | "roskilde" | string;
-  onSelectLab?: (lab: "medialab" | "makerspace" | "roskilde") => void;
+  activeLab?: "medialab" | "makerspace" | string;
+  onSelectLab?: (lab: "medialab" | "makerspace") => void;
 }
 
 export function InventoryManager({ activeLab, onSelectLab }: InventoryManagerProps = {}) {
@@ -211,7 +211,7 @@ export function InventoryManager({ activeLab, onSelectLab }: InventoryManagerPro
 
   const handleLabChange = (slug: string) => {
     setSelectedLab(slug);
-    if (onSelectLab && (slug === "medialab" || slug === "makerspace" || slug === "roskilde")) {
+    if (onSelectLab && (slug === "medialab" || slug === "makerspace")) {
       onSelectLab(slug);
     }
   };

@@ -19,7 +19,6 @@ async function getActorAdminId(providedAdminId?: string): Promise<string> {
 const LAB_PREFIX_MAP: Record<string, string> = {
   makerspace: "MK",
   medialab: "ML",
-  roskilde: "RK",
 };
 
 const CATEGORY_CODE_MAP: Record<string, string> = {

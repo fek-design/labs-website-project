@@ -13,15 +13,19 @@ The system SHALL provide a filterable audit log viewer displaying actor admin, a
 - **THEN** the system lists all system mutations sorted chronologically with expandable JSON payload deltas
 
 ### Requirement: Admin Credential Settings
-The system SHALL provide a basic authentication login wrapper with default administrator credentials (`admin` / `pass`), manage authentication state, allow administrators to update their credentials, and display accurate node profile telemetry adhering to the canonical project design system tokens without stale hardcoded location strings.
+The system SHALL provide a basic authentication login wrapper with default administrator credentials (`admin` / `pass`), manage authentication state, allow administrators to update their credentials and location assignments safely without runtime crashes or serialization errors, and display accurate node profile telemetry adhering to the canonical project design system tokens without stale hardcoded location strings.
 
 #### Scenario: Basic login verification
 - **WHEN** an unauthenticated administrator enters `admin` and `pass` on the login screen
-- **THEN** the system grants access to the operational console and stores a secure local session
+- **THEN** the system grants access to the operational console and stores a secure local session.
 
 #### Scenario: Updating admin login credentials
-- **WHEN** an administrator submits a new username and password in the Settings view
-- **THEN** the system validates complexity, hashes the new password with bcrypt, updates the database, and records an audit log entry
+- **WHEN** an administrator submits a new username and optional new password in the Settings view
+- **THEN** the system validates complexity if a new password is provided, updates credentials and assigned location in the database safely, records an audit log entry, and reports success without throwing unhandled serialization or revalidation exceptions.
+
+#### Scenario: Preserving password on empty input
+- **WHEN** an administrator updates their profile with the password field left empty
+- **THEN** the system updates other profile fields (username, assigned campus, assigned facility) while leaving the existing password hash intact.
 
 ### Requirement: Location Context and Multi-Facility Management
 The Settings view (`/admin` under Settings) SHALL dynamically display the active campus context (`Køge Campus`), show all accessible campus facilities (`Makerspace (Køge)` and `MediaLab (Køge)`), provide an interactive session facility switcher, and allow administrators to view, assign, and persist user-level default operational locations and facility permissions.

@@ -1,9 +1,6 @@
-# inventory-location-management Specification
+# inventory-location-management Specification (Delta)
 
-## Purpose
-Provides inventory asset registration, editing, taxonomy tag filtering, and specific physical location tracking (room, shelf, locker, cabinet) across Zealand Labs facilities.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Physical Location Metadata and Filtering
 The system SHALL organize inventory metadata using a 2-Tier Namespaced Faceted Taxonomy (`DISCIPLINE` and `PROCESS`), alongside Macro-Lab assignments strictly limited to authentic facilities (`Makerspace (Køge)` and `MediaLab (Køge)`), completely excluding non-existent facilities such as Roskilde Lab, providing a dual-mode List/Grid view interface with the canonical POS-harmonized page header architecture (`LABS Inventar` in `Stack Sans Notch`, admin greeting, live KPI counters), high-contrast search, quick view-mode switching, and synchronization with the global admin lab switcher.
@@ -42,14 +39,3 @@ The system SHALL auto-generate deterministic, unique asset tags following the ta
 #### Scenario: Editing an existing inventory asset with modal card interface
 - **WHEN** an administrator updates an item's status, serial number, purchase date, or description from `Card - Edit`
 - **THEN** the system persists changes to MySQL, updates local reactive state, and writes an `UPDATE_INVENTORY` audit log.
-
-### Requirement: Equipment Manuals Documentation Library Integration
-The system SHALL provide a dedicated slide-out documentation browser (`Card - Manual side to edit/create`) accessible from item creation and edit cards, allowing administrators to search, inspect, and link many-to-many PDF manuals and standard operating procedures (SOPs) to equipment assets.
-
-#### Scenario: Attaching manuals to an equipment item
-- **WHEN** an administrator opens the manual selection library from the item modal and selects one or more manuals
-- **THEN** the selected manuals are linked to the equipment item and previewed as dismissible cards with quick view actions
-
-#### Scenario: Removing an attached manual
-- **WHEN** an administrator clicks the remove icon ("x") next to a linked manual in the item card
-- **THEN** the manual is unlinked from the item without deleting the underlying manual file from the documentation repository

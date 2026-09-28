@@ -1,32 +1,52 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 
-export async function getAdminProfile() {
-  const admin =
-    (await prisma.admin.findFirst({
-      where: { isActive: true, role: "SUPER_ADMIN" },
-      include: { assignedLab: true },
-    })) ||
-    (await prisma.admin.findFirst({
-      where: { isActive: true },
-      include: { assignedLab: true },
-    }));
+export interface AdminProfileResponse {
+  id: string;
+  username: string;
+  role: string;
+  assignedCampus: string;
+  assignedLabId: number | null;
+  assignedLabSlug: string;
+  assignedLabName: string;
+  createdAt: string;
+}
 
-  if (!admin) return null;
+export async function getAdminProfile(): Promise<AdminProfileResponse | null> {
+  try {
+    const admin =
+      (await prisma.admin.findFirst({
+        where: { isActive: true, role: "SUPER_ADMIN" },
+        include: { assignedLab: true },
+      })) ||
+      (await prisma.admin.findFirst({
+        where: { isActive: true },
+        include: { assignedLab: true },
+      })) ||
+      (await prisma.admin.findFirst({
+        include: { assignedLab: true },
+      }));
 
-  return {
-    id: admin.id,
-    username: admin.username,
-    role: admin.role,
-    assignedCampus: admin.assignedCampus || "Køge Campus",
-    assignedLabId: admin.assignedLabId,
-    assignedLabSlug: admin.assignedLab?.slug || "medialab",
-    assignedLabName: admin.assignedLab?.name || "MediaLab (Køge)",
-    createdAt: admin.createdAt,
-  };
+    if (!admin) return null;
+
+    return {
+      id: admin.id,
+      username: admin.username,
+      role: admin.role,
+      assignedCampus: admin.assignedCampus || "Køge Campus",
+      assignedLabId: admin.assignedLabId,
+      assignedLabSlug: admin.assignedLab?.slug || "medialab",
+      assignedLabName: admin.assignedLab?.name || "MediaLab (Køge)",
+      createdAt: admin.createdAt ? admin.createdAt.toISOString() : new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Fejl ved hentning af admin profil:", error);
+    return null;
+  }
 }
 
 export async function updateAdminCredentials(data: {
@@ -36,72 +56,96 @@ export async function updateAdminCredentials(data: {
   assignedCampus?: string;
   assignedLabSlug?: string;
 }) {
-  const admin = data.adminId
-    ? await prisma.admin.findUnique({ where: { id: data.adminId } })
-    : await prisma.admin.findFirst({ where: { isActive: true } });
+  try {
+    let admin = null;
+    if (data.adminId && data.adminId.trim() !== "") {
+      admin = await prisma.admin.findUnique({ where: { id: data.adminId.trim() } });
+    }
 
-  if (!admin) {
-    throw new Error("Admin user not found.");
-  }
+    if (!admin) {
+      admin =
+        (await prisma.admin.findFirst({ where: { isActive: true } })) ||
+        (await prisma.admin.findFirst());
+    }
 
-  const updateData: any = {};
+    if (!admin) {
+      throw new Error("Ingen administrator fundet i databasen.");
+    }
 
-  if (data.newUsername && data.newUsername.trim()) {
-    const trimmed = data.newUsername.trim();
-    if (trimmed !== admin.username) {
-      const existing = await prisma.admin.findUnique({ where: { username: trimmed } });
-      if (existing && existing.id !== admin.id) {
-        throw new Error(`Username "${trimmed}" is already in use.`);
+    const updateData: Prisma.AdminUncheckedUpdateInput = {};
+
+    if (data.newUsername && data.newUsername.trim()) {
+      const trimmed = data.newUsername.trim();
+      if (trimmed !== admin.username) {
+        const existing = await prisma.admin.findUnique({ where: { username: trimmed } });
+        if (existing && existing.id !== admin.id) {
+          throw new Error(`Brugernavnet "${trimmed}" er allerede i brug.`);
+        }
+        updateData.username = trimmed;
       }
-      updateData.username = trimmed;
     }
-  }
 
-  if (data.newPassword && data.newPassword.trim()) {
-    if (data.newPassword.length < 6) {
-      throw new Error("Password must be at least 6 characters long.");
+    // Only process password if non-empty string provided
+    const trimmedPassword = data.newPassword ? data.newPassword.trim() : "";
+    if (trimmedPassword.length > 0) {
+      if (trimmedPassword.length < 6) {
+        throw new Error("Adgangskoden skal være på mindst 6 tegn.");
+      }
+      const hash = await bcrypt.hash(trimmedPassword, 10);
+      updateData.passwordHash = hash;
     }
-    const hash = await bcrypt.hash(data.newPassword.trim(), 10);
-    updateData.passwordHash = hash;
-  }
 
-  if (data.assignedCampus) {
-    updateData.assignedCampus = data.assignedCampus.trim();
-  }
-
-  if (data.assignedLabSlug) {
-    const lab = await prisma.lab.findUnique({ where: { slug: data.assignedLabSlug } });
-    if (lab) {
-      updateData.assignedLabId = lab.id;
+    if (data.assignedCampus && data.assignedCampus.trim()) {
+      updateData.assignedCampus = data.assignedCampus.trim();
     }
+
+    if (data.assignedLabSlug && data.assignedLabSlug.trim()) {
+      const lab = await prisma.lab.findUnique({ where: { slug: data.assignedLabSlug.trim() } });
+      if (lab) {
+        updateData.assignedLabId = lab.id;
+      }
+    }
+
+    const updated = await prisma.admin.update({
+      where: { id: admin.id },
+      data: updateData,
+      include: { assignedLab: true },
+    });
+
+    try {
+      await prisma.auditLog.create({
+        data: {
+          actorAdminId: admin.id,
+          actionType: "UPDATE_CREDENTIALS",
+          targetTable: "Admin",
+          targetId: admin.id,
+          payloadDelta: {
+            username: updated.username,
+            assignedCampus: updated.assignedCampus,
+            assignedLabSlug: updated.assignedLab?.slug,
+            passwordChanged: Boolean(trimmedPassword.length > 0),
+          },
+        },
+      });
+    } catch (auditErr) {
+      console.warn("Audit log creation skipped:", auditErr);
+    }
+
+    try {
+      revalidatePath("/admin/pos");
+      revalidatePath("/admin");
+    } catch (revalidateErr) {
+      // Revalidation is non-blocking
+    }
+
+    return {
+      success: true,
+      username: updated.username,
+      assignedCampus: updated.assignedCampus || "Køge Campus",
+      assignedLabSlug: (updated.assignedLab?.slug as "medialab" | "makerspace") || "medialab",
+    };
+  } catch (error: any) {
+    console.error("Fejl ved opdatering af admin credentials:", error);
+    throw new Error(error.message || "Kunne ikke opdatere administratoroplysninger.");
   }
-
-  const updated = await prisma.admin.update({
-    where: { id: admin.id },
-    data: updateData,
-    include: { assignedLab: true },
-  });
-
-  await prisma.auditLog.create({
-    data: {
-      actorAdminId: admin.id,
-      actionType: "UPDATE_CREDENTIALS",
-      targetTable: "Admin",
-      targetId: admin.id,
-      payloadDelta: {
-        username: updated.username,
-        assignedCampus: updated.assignedCampus,
-        assignedLabSlug: updated.assignedLab?.slug,
-        passwordChanged: Boolean(data.newPassword),
-      },
-    },
-  });
-
-  revalidatePath("/admin/pos");
-  return {
-    success: true,
-    username: updated.username,
-    assignedCampus: updated.assignedCampus,
-    assignedLabSlug: updated.assignedLab?.slug || "medialab",
-  };
 }

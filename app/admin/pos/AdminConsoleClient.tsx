@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { EquipmentPOS } from "@/components/pos/EquipmentPOS";
 import { InventoryManager } from "@/components/inventory/InventoryManager";
-import { MakerspaceMachineHub } from "@/components/makerspace/MakerspaceMachineHub";
 import { AuditHistoryView } from "@/components/history/AuditHistoryView";
 import { AdminSettingsView } from "@/components/settings/AdminSettingsView";
-import { CraftItemsManager } from "@/components/admin/CraftItemsManager";
+import { ManualsManager } from "@/components/manuals/ManualsManager";
+import { CatalogueAdminManager } from "@/components/catalogue/CatalogueAdminManager";
 import { AdminSidebarNav } from "@/components/admin/AdminSidebarNav";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { logoutAdmin } from "@/app/actions/auth";
@@ -84,9 +84,19 @@ export function AdminConsoleClient({ initialStats }: AdminConsoleClientProps) {
             />
           )}
 
-          {mainNav === "MAKERSPACE" && <MakerspaceMachineHub activeLab={activeLab} />}
+          {mainNav === "CATALOGUE" && (
+            <CatalogueAdminManager
+              activeLab={activeLab}
+              onSelectLab={setActiveLab}
+            />
+          )}
 
-          {mainNav === "CRAFTS" && <CraftItemsManager />}
+          {mainNav === "MANUALS" && (
+            <ManualsManager
+              activeLab={activeLab}
+              onSelectLab={setActiveLab}
+            />
+          )}
 
           {mainNav === "HISTORY" && <AuditHistoryView />}
 

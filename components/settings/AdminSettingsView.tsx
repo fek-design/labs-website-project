@@ -25,18 +25,22 @@ export function AdminSettingsView({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    getAdminProfile().then((res) => {
-      if (res) {
-        setProfile(res);
-        setNewUsername(res.username);
-        if (res.assignedCampus) setAssignedCampus(res.assignedCampus);
-        if (res.assignedLabSlug === "medialab" || res.assignedLabSlug === "makerspace") {
-          setAssignedLabSlug(res.assignedLabSlug);
+    getAdminProfile()
+      .then((res) => {
+        if (res) {
+          setProfile(res);
+          setNewUsername(res.username);
+          if (res.assignedCampus) setAssignedCampus(res.assignedCampus);
+          if (res.assignedLabSlug === "medialab" || res.assignedLabSlug === "makerspace") {
+            setAssignedLabSlug(res.assignedLabSlug);
+          }
+          const formatted = res.username.charAt(0).toUpperCase() + res.username.slice(1);
+          setAdminName(formatted);
         }
-        const formatted = res.username.charAt(0).toUpperCase() + res.username.slice(1);
-        setAdminName(formatted);
-      }
-    });
+      })
+      .catch((err) => {
+        console.error("Fejl ved hentning af admin profil:", err);
+      });
   }, []);
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -71,6 +75,9 @@ export function AdminSettingsView({
           });
           const formatted = res.username.charAt(0).toUpperCase() + res.username.slice(1);
           setAdminName(formatted);
+          if (res.assignedLabSlug === "medialab" || res.assignedLabSlug === "makerspace") {
+            onSelectLab?.(res.assignedLabSlug);
+          }
         }
       }
     } catch (err: any) {
