@@ -303,3 +303,49 @@ export async function deleteManual(params: {
     throw new Error(error.message || "Failed to delete manual.");
   }
 }
+
+/**
+ * 6. Update manual title and description
+ */
+export async function updateManual(params: {
+  manualId: string;
+  title?: string;
+  description?: string;
+  actorAdminId?: string;
+}) {
+  try {
+    const { manualId, title, description, actorAdminId: actorId } = params;
+
+    const updatedManual = await prisma.manual.update({
+      where: { id: manualId },
+      data: {
+        ...(title !== undefined && { title: title.trim() }),
+        ...(description !== undefined && { description: description.trim() || null }),
+      },
+    });
+
+    const actorAdminId = await getActorAdminId(actorId);
+
+    await prisma.auditLog.create({
+      data: {
+        actorAdminId,
+        actionType: "UPDATE_MANUAL",
+        targetTable: "Manual",
+        targetId: manualId,
+        payloadDelta: {
+          title,
+          description,
+        },
+      },
+    });
+
+    revalidatePath("/makerspace");
+    revalidatePath("/inventory");
+
+    return { success: true, manual: updatedManual };
+  } catch (error: any) {
+    console.error("Error updating manual:", error);
+    throw new Error(error.message || "Failed to update manual.");
+  }
+}
+

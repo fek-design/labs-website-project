@@ -23,7 +23,9 @@ import {
   Check,
   Link as LinkIcon,
   UploadSimple,
+  PencilSimple,
 } from "@phosphor-icons/react";
+import { ManualEditModal } from "./ManualEditModal";
 
 interface ManualsManagerProps {
   activeLab?: string;
@@ -43,6 +45,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
 
   // Modals & Popovers
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [editingManual, setEditingManual] = useState<any | null>(null);
   const [linkingManualId, setLinkingManualId] = useState<string | null>(null);
   const [selectedEquipmentToLink, setSelectedEquipmentToLink] = useState<string>("");
 
@@ -433,7 +436,11 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
 
                     {/* Metadata Header */}
                     <div className="space-y-1">
-                      <h3 className="font-notch font-bold text-white text-base leading-snug truncate" title={manual.title}>
+                      <h3
+                        onClick={() => setEditingManual(manual)}
+                        className="font-notch font-bold text-white text-base leading-snug truncate hover:text-[#ffd900] transition-colors cursor-pointer"
+                        title={manual.title}
+                      >
                         {manual.title}
                       </h3>
                       <div className="flex items-center gap-2 text-xs font-headline font-bold text-zinc-400 truncate">
@@ -560,22 +567,34 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
                     )}
                   </div>
 
-                  {/* Bottom section: Readiness Pill & Delete action */}
+                  {/* Bottom section: Readiness Pill, Edit button, Delete action */}
                   <div className="border-t border-[#333333] pt-3 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold uppercase tracking-wider">
                       <Check size={12} weight="bold" />
                       <span>KLAR TIL BRUG</span>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteManual(manual.id, manual.title)}
-                      className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-md transition-colors cursor-pointer"
-                      title="Slet manual"
-                      aria-label="Slet manual"
-                    >
-                      <Trash size={16} />
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setEditingManual(manual)}
+                        className="flex items-center gap-1 px-2.5 py-1 bg-[#151517] hover:bg-[#252528] border border-[#333333] hover:border-[#555555] rounded-md text-[11px] font-bold font-headline text-white transition-colors cursor-pointer"
+                        title="Rediger manual og tilknytninger"
+                      >
+                        <PencilSimple size={12} weight="bold" />
+                        <span>Rediger</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteManual(manual.id, manual.title)}
+                        className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-md transition-colors cursor-pointer"
+                        title="Slet manual"
+                        aria-label="Slet manual"
+                      >
+                        <Trash size={16} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -708,6 +727,26 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
           </div>
         </div>
       )}
+
+      {/* 5. Manual Edit Modal (Figma Node 209:2) */}
+      <ManualEditModal
+        isOpen={Boolean(editingManual)}
+        onClose={() => setEditingManual(null)}
+        manual={editingManual}
+        equipmentList={equipmentList}
+        onManualUpdated={async () => {
+          await loadData();
+          if (editingManual) {
+            const updatedList = await getManualsCatalog();
+            const found = updatedList?.find((m: any) => m.id === editingManual.id);
+            setEditingManual(found || null);
+          }
+        }}
+        onManualDeleted={async () => {
+          await loadData();
+          setEditingManual(null);
+        }}
+      />
     </div>
   );
 }

@@ -337,27 +337,36 @@ export function InventoryManager({ activeLab, onSelectLab }: InventoryManagerPro
         )}
       </div>
 
-      {/* Item Modal (Create or Edit) */}
+      {/* Item Modal (Create or Edit) with paired dual-pane Manuals Library Drawer */}
       <InventoryItemModal
         isOpen={isItemModalOpen}
-        onClose={() => setIsItemModalOpen(false)}
+        onClose={() => {
+          setIsItemModalOpen(false);
+          setIsManualsDrawerOpen(false);
+        }}
         item={editingItem}
         labs={labs}
         availableBulkItems={items.filter((i) => i.trackingType === "BULK")}
         onSave={handleSaveItem}
         onDelete={handleDeleteItem}
         onOpenManualsPicker={() => setIsManualsDrawerOpen(true)}
+        isManualsPickerOpen={isManualsDrawerOpen}
+        onCloseManualsPicker={() => setIsManualsDrawerOpen(false)}
+        onToggleManual={handleToggleManual}
+        selectedManualIds={attachedManuals.map((m) => m.id)}
         attachedManuals={attachedManuals}
         onRemoveManual={handleRemoveAttachedManual}
       />
 
-      {/* Manuals Library Drawer */}
-      <InventoryManualsDrawer
-        isOpen={isManualsDrawerOpen}
-        onClose={() => setIsManualsDrawerOpen(false)}
-        selectedManualIds={attachedManuals.map((m) => m.id)}
-        onToggleManual={handleToggleManual}
-      />
+      {/* Standalone Manuals Library Drawer (only rendered if item modal is NOT open) */}
+      {!isItemModalOpen && (
+        <InventoryManualsDrawer
+          isOpen={isManualsDrawerOpen}
+          onClose={() => setIsManualsDrawerOpen(false)}
+          selectedManualIds={attachedManuals.map((m) => m.id)}
+          onToggleManual={handleToggleManual}
+        />
+      )}
     </div>
   );
 }

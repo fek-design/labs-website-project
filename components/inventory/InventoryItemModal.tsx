@@ -13,6 +13,7 @@ import {
 } from "@phosphor-icons/react";
 import { HardwareType, OperationalStatus, TrackingType } from "@prisma/client";
 import { generateAssetTag } from "@/app/actions/inventory";
+import { InventoryManualsDrawer } from "./InventoryManualsDrawer";
 
 interface InventoryItemModalProps {
   isOpen: boolean;
@@ -23,6 +24,10 @@ interface InventoryItemModalProps {
   onSave: (formData: any) => Promise<void>;
   onDelete?: (itemId: string) => Promise<void>;
   onOpenManualsPicker: () => void;
+  isManualsPickerOpen?: boolean;
+  onCloseManualsPicker?: () => void;
+  onToggleManual?: (manual: any) => void;
+  selectedManualIds?: string[];
   attachedManuals: any[];
   onRemoveManual: (manualId: string) => void;
 }
@@ -36,6 +41,10 @@ export function InventoryItemModal({
   onSave,
   onDelete,
   onOpenManualsPicker,
+  isManualsPickerOpen = false,
+  onCloseManualsPicker,
+  onToggleManual,
+  selectedManualIds,
   attachedManuals,
   onRemoveManual,
 }: InventoryItemModalProps) {
@@ -184,12 +193,13 @@ export function InventoryItemModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div
-        className="w-full max-w-[576px] max-h-[90vh] overflow-y-auto bg-[#202021] border border-[#444444] rounded-xl p-5 sm:p-6 shadow-2xl flex flex-col gap-5 text-white font-['Stack_Sans_Text',sans-serif]"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-200">
+      <div className="flex flex-col xl:flex-row items-center xl:items-start justify-center gap-4 w-full max-w-[1320px] my-auto">
+        <div
+          className="w-full max-w-[576px] max-h-[90vh] overflow-y-auto bg-[#202021] border border-[#444444] rounded-xl p-5 sm:p-6 shadow-2xl flex flex-col gap-5 text-white font-['Stack_Sans_Text',sans-serif]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
         <div className="flex items-center justify-between border-b border-[#333333] pb-3">
           <h2 className="text-base sm:text-lg font-bold font-['Stack_Sans_Notch',sans-serif] tracking-wider uppercase text-white">
             {isEdit ? item.assetTag : "NY GENSTAND"}
@@ -210,22 +220,15 @@ export function InventoryItemModal({
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Top thumbnail representation */}
-          <div className="flex items-center gap-3">
-            <div className="w-[50px] h-[50px] shrink-0 rounded-lg bg-[#444444] border border-[#555555] flex items-center justify-center text-[#d1d5db]">
-              {hardwareType === "BORROWABLE_GEAR" ? (
-                <Camera size={26} weight="regular" />
-              ) : (
-                <Wrench size={26} weight="regular" />
-              )}
-            </div>
-            <div className="flex flex-col text-xs text-[#888888]">
-              <span className="text-white font-bold text-sm">
-                {name || (isEdit ? item.name : "Nyt udstyr")}
-              </span>
-              <span>
-                {previewTag} • {trackingType === "BULK" ? "Puljevare (Bulk)" : hardwareType === "BORROWABLE_GEAR" ? "Udstyr" : "Maskine"}
-              </span>
+          {/* Top thumbnail representation matching Figma node 87:5052 / 87:5146 (554x144) */}
+          <div className="relative w-full h-36 rounded-lg bg-[#444444] border border-[#555555]/40 flex items-center justify-center text-[#888888] overflow-hidden group">
+            {hardwareType === "BORROWABLE_GEAR" ? (
+              <Camera size={36} weight="regular" className="text-[#888888] group-hover:scale-110 group-hover:text-white transition-all" />
+            ) : (
+              <Wrench size={36} weight="regular" className="text-[#888888] group-hover:scale-110 group-hover:text-white transition-all" />
+            )}
+            <div className="absolute bottom-2 left-2.5 px-2 py-0.5 rounded bg-black/60 backdrop-blur-xs text-[10px] text-zinc-300 font-mono">
+              {previewTag} • {trackingType === "BULK" ? "PULJEVARE" : hardwareType === "BORROWABLE_GEAR" ? "UDSTYR" : "MASKINE"}
             </div>
           </div>
 
@@ -644,6 +647,18 @@ export function InventoryItemModal({
             </div>
           </div>
         </form>
+        </div>
+
+        {/* Dual-pane Manuals Library Drawer on xl+ matching Figma node 87:6146 */}
+        {isManualsPickerOpen && (
+          <InventoryManualsDrawer
+            isOpen={true}
+            inline={true}
+            onClose={onCloseManualsPicker || (() => {})}
+            selectedManualIds={selectedManualIds || attachedManuals.map((m) => m.id)}
+            onToggleManual={onToggleManual || (() => {})}
+          />
+        )}
       </div>
     </div>
   );
