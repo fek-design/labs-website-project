@@ -24,51 +24,11 @@ async function getActorAdminId(providedAdminId?: string): Promise<string> {
   return defaultAdmin?.id || "system";
 }
 
-const LAB_PREFIX_MAP: Record<string, string> = {
-  makerspace: "MK",
-  medialab: "ML",
-};
-
-const CATEGORY_CODE_MAP: Record<string, string> = {
-  "3d-fabrication": "3DP",
-  "3d-printing": "3DP",
-  "fdm-3d-printing": "3DP",
-  "laser-cutting": "LSR",
-  textile: "TEX",
-  "direct-to-garment": "DTG",
-  "rapid-prototyping": "RPD",
-  "camera-gear": "CAM",
-  "cinema-4k-recording": "CAM",
-  "audio-equipment": "AUD",
-  "wireless-audio": "AUD",
-  lighting: "LGT",
-  "studio-lighting": "LGT",
-  "xr-vr": "VRX",
-  "vr-spatial-computing": "VRX",
-  electronics: "ELC",
-  "soldering-smd": "ELC",
-  "general-tools": "GEN",
-  accessories: "ACC",
-  bulk: "ACC",
-  batteries: "BAT",
-  cables: "CBL",
-};
-
-const LOCATION_PREFIX_MAP: Record<string, string> = {
-  køge: "KG",
-  koge: "KG",
-  kg: "KG",
-  roskilde: "RO",
-  ro: "RO",
-};
-
-export function resolveLocationPrefix(location?: string | null): string {
-  if (!location) return "KG";
-  const trimmed = location.trim().toLowerCase();
-  if (trimmed.includes("roskilde") || trimmed.startsWith("ro")) return "RO";
-  if (trimmed.includes("køge") || trimmed.includes("koge") || trimmed.startsWith("kg")) return "KG";
-  return "KG";
-}
+import {
+  LAB_PREFIX_MAP,
+  CATEGORY_CODE_MAP,
+  resolveLocationPrefix,
+} from "@/lib/inventory-utils";
 
 /**
  * Deterministic Automated Asset Tag Generator

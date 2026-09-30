@@ -12,7 +12,8 @@ import {
   Spinner,
 } from "@phosphor-icons/react";
 import { HardwareType, OperationalStatus, TrackingType } from "@prisma/client";
-import { generateAssetTag, resolveLocationPrefix } from "@/app/actions/inventory";
+import { generateAssetTag } from "@/app/actions/inventory";
+import { resolveLocationPrefix } from "@/lib/inventory-utils";
 import { InventoryManualsDrawer } from "./InventoryManualsDrawer";
 import { InventoryBarcodeLabel } from "./InventoryBarcodeLabel";
 

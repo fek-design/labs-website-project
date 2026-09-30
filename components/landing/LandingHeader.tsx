@@ -36,8 +36,8 @@ export function LandingHeader() {
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ease-out pointer-events-auto ${isScrolled
-            ? "bg-black/85 backdrop-blur-md border-b border-white/10 shadow-2xl py-3.5"
-            : "bg-transparent border-b border-transparent py-5"
+          ? "bg-black/85 backdrop-blur-md border-b border-white/10 shadow-2xl py-3.5"
+          : "bg-transparent border-b border-transparent py-5"
           }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
@@ -48,8 +48,8 @@ export function LandingHeader() {
           <div className="flex items-center gap-2 sm:gap-4">
             {/* Location Indicator Badge */}
             <div className="flex items-center gap-1.5 text-xs text-white font-bold px-3.5 py-2 min-h-[40px] rounded-full bg-black/50 backdrop-blur-md border border-white/15 select-none font-headline">
-              <span>Køge Campus</span>
-              <MapPin size={14} weight="bold" className="text-[#009FE3] shrink-0" aria-hidden="true" />
+              <span>{campus.toUpperCase()} CAMPUS</span>
+              <MapPin size={14} weight="bold" className="text-white shrink-0" aria-hidden="true" />
             </div>
 
             {/* Hamburger Menu Toggle with 44px hit target */}
