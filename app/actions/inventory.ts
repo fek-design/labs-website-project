@@ -54,29 +54,51 @@ const CATEGORY_CODE_MAP: Record<string, string> = {
   cables: "CBL",
 };
 
+const LOCATION_PREFIX_MAP: Record<string, string> = {
+  køge: "KG",
+  koge: "KG",
+  kg: "KG",
+  roskilde: "RO",
+  ro: "RO",
+};
+
+export function resolveLocationPrefix(location?: string | null): string {
+  if (!location) return "KG";
+  const trimmed = location.trim().toLowerCase();
+  if (trimmed.includes("roskilde") || trimmed.startsWith("ro")) return "RO";
+  if (trimmed.includes("køge") || trimmed.includes("koge") || trimmed.startsWith("kg")) return "KG";
+  return "KG";
+}
+
 /**
  * Deterministic Automated Asset Tag Generator
- * Pattern: [LAB-PREFIX]-[CATEGORY]-[4-DIGIT-SEQUENCE]
- * Example: MK-3DP-0001, ML-CAM-0001, ML-ACC-0001
+ * Pattern: [LOCATION]-[LAB-PREFIX]-[CATEGORY]-[4-DIGIT-SEQUENCE]
+ * Example: KG-MK-3DP-0001, KG-ML-CAM-0001, RO-MK-GEN-0001
+ * Maintains full backward compatibility with legacy 3-tier tags (MK-3DP-0001)
  */
 export async function generateAssetTag(params: {
   labSlug: string;
   tagSlug?: string;
   trackingType?: TrackingType;
+  location?: string;
+  locationPrefix?: string;
 }): Promise<string> {
+  const locPrefix = resolveLocationPrefix(params.location || params.locationPrefix);
   const labPrefix = LAB_PREFIX_MAP[params.labSlug.toLowerCase()] || "ZL";
   let catCode = params.tagSlug ? CATEGORY_CODE_MAP[params.tagSlug.toLowerCase()] : undefined;
   if (!catCode) {
     catCode = params.trackingType === TrackingType.BULK ? "ACC" : "GEN";
   }
-  const searchPrefix = `${labPrefix}-${catCode}-`;
+  const searchPrefix = `${locPrefix}-${labPrefix}-${catCode}-`;
+  const legacyPrefix = `${labPrefix}-${catCode}-`;
 
-  // Find all existing asset tags with this prefix
+  // Find all existing asset tags with 4-tier or legacy 3-tier prefix to ensure sequence continuity
   const existingItems = await prisma.inventory.findMany({
     where: {
-      assetTag: {
-        startsWith: searchPrefix,
-      },
+      OR: [
+        { assetTag: { startsWith: searchPrefix } },
+        { assetTag: { startsWith: legacyPrefix } },
+      ],
     },
     select: { assetTag: true },
   });
@@ -156,6 +178,7 @@ export async function getInventoryWithFilters(filters: {
       { name: { contains: q } },
       { assetTag: { contains: q } },
       { notes: { contains: q } },
+      { location: { contains: q } },
     ];
   }
 
@@ -271,6 +294,7 @@ export async function createInventoryItem(data: {
   operationalStatus?: OperationalStatus;
   imageUrl?: string;
   notes?: string;
+  location?: string;
   purchaseDate?: string | Date | null;
   customFields?: any;
   tagSlugs?: string[];
@@ -298,6 +322,7 @@ export async function createInventoryItem(data: {
     labSlug: lab.slug,
     tagSlug: primaryTagSlug,
     trackingType,
+    location: data.location,
   });
 
   let parsedPurchaseDate: Date | null = null;
@@ -324,6 +349,7 @@ export async function createInventoryItem(data: {
       imageUrl: data.imageUrl?.trim() || null,
       notes: data.notes?.trim() || null,
       purchaseDate: parsedPurchaseDate,
+      location: data.location?.trim() || null,
       customFields: data.customFields || null,
     },
   });
@@ -369,6 +395,7 @@ export async function createInventoryItem(data: {
         assetTag: item.assetTag,
         name: item.name,
         lab: lab.name,
+        location: item.location,
         hardwareType: item.hardwareType,
         trackingType: item.trackingType,
         totalQuantity: item.totalQuantity,
@@ -392,6 +419,7 @@ export async function updateInventoryItem(data: {
   operationalStatus?: OperationalStatus;
   imageUrl?: string;
   notes?: string;
+  location?: string;
   purchaseDate?: string | Date | null;
   customFields?: any;
   tagSlugs?: string[];
@@ -435,6 +463,7 @@ export async function updateInventoryItem(data: {
       operationalStatus: data.operationalStatus || existing.operationalStatus,
       imageUrl: data.imageUrl !== undefined ? data.imageUrl.trim() || null : existing.imageUrl,
       notes: data.notes !== undefined ? data.notes.trim() || null : existing.notes,
+      location: data.location !== undefined ? (data.location?.trim() || null) : existing.location,
       purchaseDate: parsedPurchaseDate !== undefined ? parsedPurchaseDate : existing.purchaseDate,
       customFields: data.customFields !== undefined ? data.customFields : existing.customFields,
     },
@@ -468,6 +497,7 @@ export async function updateInventoryItem(data: {
       payloadDelta: {
         assetTag: updated.assetTag,
         name: updated.name,
+        location: updated.location,
         operationalStatus: updated.operationalStatus,
         trackingType: updated.trackingType,
         totalQuantity: updated.totalQuantity,

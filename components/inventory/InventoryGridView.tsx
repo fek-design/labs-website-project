@@ -132,6 +132,12 @@ export function InventoryGridView({
                   </span>
                   <span>•</span>
                   <span>{item.trackingType === "BULK" ? "Delt puljestregkode" : isGear ? "Udstyr" : "Maskine"}</span>
+                  {item.location && (
+                    <>
+                      <span>•</span>
+                      <span className="text-[#009FE3] truncate">{item.location}</span>
+                    </>
+                  )}
                 </div>
               </div>
 

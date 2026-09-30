@@ -12,8 +12,31 @@ import {
   Spinner,
 } from "@phosphor-icons/react";
 import { HardwareType, OperationalStatus, TrackingType } from "@prisma/client";
-import { generateAssetTag } from "@/app/actions/inventory";
+import { generateAssetTag, resolveLocationPrefix } from "@/app/actions/inventory";
 import { InventoryManualsDrawer } from "./InventoryManualsDrawer";
+import { InventoryBarcodeLabel } from "./InventoryBarcodeLabel";
+
+const LOCATION_PRESETS = [
+  "Køge - Makerspace 3D Zone",
+  "Køge - Makerspace Laser Zone",
+  "Køge - Makerspace Tekstil Zone",
+  "Køge - Makerspace Elektronik & Lodning",
+  "Køge - Makerspace Værksted & Montage",
+  "Køge - Makerspace Udlånsskab",
+  "Køge - Medialab Udlån & Depot",
+  "Køge - Medialab Fotostudie",
+  "Køge - Medialab Podcast & Lydstudie",
+  "Køge - Medialab VR / XR Lab",
+  "Roskilde - Makerspace Værksted",
+  "Roskilde - Medialab Udlån",
+];
+
+function getDefaultPresetForLab(slug: string): string {
+  if (slug === "medialab") {
+    return "Køge - Medialab Udlån & Depot";
+  }
+  return "Køge - Makerspace 3D Zone";
+}
 
 interface InventoryItemModalProps {
   isOpen: boolean;
@@ -58,8 +81,11 @@ export function InventoryItemModal({
   const [operationalStatus, setOperationalStatus] = useState<OperationalStatus>("AVAILABLE");
   const [serialNumber, setSerialNumber] = useState("");
   const [purchaseDate, setPurchaseDate] = useState("");
+  const [location, setLocation] = useState("Køge - Makerspace 3D Zone");
+  const [locationPreset, setLocationPreset] = useState("Køge - Makerspace 3D Zone");
+  const [customLocation, setCustomLocation] = useState("");
   const [notes, setNotes] = useState("");
-  const [previewTag, setPreviewTag] = useState("MK-GEN-0001");
+  const [previewTag, setPreviewTag] = useState("KG-MK-GEN-0001");
   const [bundleItems, setBundleItems] = useState<{ accessoryInventoryId: string; defaultQuantity: number; name?: string; assetTag?: string }[]>([]);
   const [selectedAccessoryId, setSelectedAccessoryId] = useState("");
   const [accessoryQty, setAccessoryQty] = useState(1);
@@ -71,13 +97,30 @@ export function InventoryItemModal({
   useEffect(() => {
     if (item) {
       setName(item.name || "");
-      setLabSlug(item.lab?.slug || "makerspace");
+      const currentLabSlug = item.lab?.slug || "makerspace";
+      setLabSlug(currentLabSlug);
       setHardwareType(item.hardwareType || "BORROWABLE_GEAR");
       setTrackingType(item.trackingType || "SERIALIZED");
       setTotalQuantity(item.totalQuantity || 1);
       setOperationalStatus(item.operationalStatus || "AVAILABLE");
       setNotes(item.notes || "");
       setSerialNumber(item.customFields?.serialNumber || "");
+
+      // Hydrate location
+      const initialLocation = item.location || "";
+      setLocation(initialLocation || getDefaultPresetForLab(currentLabSlug));
+      if (LOCATION_PRESETS.includes(initialLocation)) {
+        setLocationPreset(initialLocation);
+        setCustomLocation("");
+      } else if (initialLocation) {
+        setLocationPreset("CUSTOM");
+        setCustomLocation(initialLocation);
+      } else {
+        const defaultLoc = getDefaultPresetForLab(currentLabSlug);
+        setLocationPreset(defaultLoc);
+        setCustomLocation("");
+      }
+
       // Hydrate purchaseDate from top-level column, falling back to legacy customFields
       let initialDate = "";
       if (item.purchaseDate) {
@@ -110,24 +153,29 @@ export function InventoryItemModal({
       }
     } else {
       setName("");
-      setLabSlug(labs[0]?.slug || "makerspace");
+      const initialLabSlug = labs[0]?.slug || "makerspace";
+      setLabSlug(initialLabSlug);
       setHardwareType("BORROWABLE_GEAR");
       setTrackingType("SERIALIZED");
       setTotalQuantity(1);
       setOperationalStatus("AVAILABLE");
       setSerialNumber("");
       setPurchaseDate("");
+      const defaultLoc = getDefaultPresetForLab(initialLabSlug);
+      setLocation(defaultLoc);
+      setLocationPreset(defaultLoc);
+      setCustomLocation("");
       setNotes("");
       setBundleItems([]);
     }
     setError(null);
   }, [item, labs, isOpen]);
 
-  // Compute live deterministic tag preview for Create mode
+  // Compute live deterministic 4-tier tag preview for Create mode
   useEffect(() => {
     if (!isEdit && isOpen) {
       let isMounted = true;
-      generateAssetTag({ labSlug, trackingType })
+      generateAssetTag({ labSlug, trackingType, location })
         .then((tag) => {
           if (isMounted) setPreviewTag(tag);
         })
@@ -136,7 +184,7 @@ export function InventoryItemModal({
         isMounted = false;
       };
     }
-  }, [labSlug, trackingType, isEdit, isOpen]);
+  }, [labSlug, trackingType, location, isEdit, isOpen]);
 
   if (!isOpen) return null;
 
@@ -159,6 +207,7 @@ export function InventoryItemModal({
         totalQuantity: trackingType === "BULK" ? Math.max(1, Number(totalQuantity) || 1) : 1,
         operationalStatus,
         notes: notes.trim(),
+        location: location.trim(),
         purchaseDate: purchaseDate ? new Date(purchaseDate).toISOString() : null,
         bundleItems: trackingType === "SERIALIZED" && hardwareType === "BORROWABLE_GEAR" ? bundleItems : [],
         customFields: {
@@ -271,15 +320,20 @@ export function InventoryItemModal({
           {/* Create mode: Deterministic Asset Tag Banner (Figma 87:6420) */}
           {!isEdit && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-[#888888] font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
-                ID - {trackingType === "BULK" ? "Delt Pulje Stregkode" : "Deterministic Asset Tag"}
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs text-[#888888] font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
+                  ID - {trackingType === "BULK" ? "Delt Pulje Stregkode" : "Deterministic 4-Tier Asset Tag"}
+                </label>
+                <span className="text-[10px] text-zinc-400 font-mono">
+                  Prefix: <strong className="text-[#FFED00]">{resolveLocationPrefix(location)}</strong>
+                </span>
+              </div>
               <div className="bg-[#151517] border border-[#333333] rounded-lg p-3">
                 <span className="text-[#1da9e4] font-mono font-bold text-sm block">
                   {previewTag}
                 </span>
                 <span className="text-[#888888] text-[11px] block mt-0.5">
-                  Computeret via [LAB-PREFIX]-[KATEGORI]-[4-DIGIT-SEQUENCE]
+                  Computeret via [LOKATION]-[LAB]-[KATEGORI]-[4-CIFRET-NUMMER]
                 </span>
               </div>
             </div>
@@ -493,7 +547,15 @@ export function InventoryItemModal({
               </label>
               <select
                 value={labSlug}
-                onChange={(e) => setLabSlug(e.target.value)}
+                onChange={(e) => {
+                  const newLab = e.target.value;
+                  setLabSlug(newLab);
+                  if (!isEdit && locationPreset !== "CUSTOM") {
+                    const defaultLoc = getDefaultPresetForLab(newLab);
+                    setLocationPreset(defaultLoc);
+                    setLocation(defaultLoc);
+                  }
+                }}
                 className="bg-[#151517] border border-[#333333] rounded-lg px-3.5 py-2.5 text-sm text-[#d1d5db] focus:outline-none focus:border-[#1da9e4] focus:ring-1 focus:ring-[#1da9e4] transition-colors cursor-pointer"
               >
                 <optgroup label="Køge Campus" className="bg-[#151517] text-zinc-400 font-semibold font-['Stack_Sans_Headline',sans-serif]">
@@ -537,6 +599,72 @@ export function InventoryItemModal({
               </div>
             )}
           </div>
+
+          {/* Physical Location Selection */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-[#888888] font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
+                Fysisk Placering (Zone / Hylde)
+              </label>
+              <span className="text-[10px] text-zinc-400 font-mono">
+                Campus: <span className="text-[#FFED00] font-bold">{resolveLocationPrefix(location) === "RO" ? "Roskilde" : "Køge"}</span>
+              </span>
+            </div>
+            <select
+              value={locationPreset}
+              onChange={(e) => {
+                const val = e.target.value;
+                setLocationPreset(val);
+                if (val !== "CUSTOM") {
+                  setLocation(val);
+                } else {
+                  setLocation(customLocation || "");
+                }
+              }}
+              className="bg-[#151517] border border-[#333333] rounded-lg px-3.5 py-2.5 text-sm text-[#d1d5db] focus:outline-none focus:border-[#1da9e4] transition-colors cursor-pointer"
+            >
+              <optgroup label="Makerspace (Køge)" className="bg-[#151517] text-zinc-400 font-semibold">
+                <option value="Køge - Makerspace 3D Zone">Køge - Makerspace 3D Zone</option>
+                <option value="Køge - Makerspace Laser Zone">Køge - Makerspace Laser Zone</option>
+                <option value="Køge - Makerspace Tekstil Zone">Køge - Makerspace Tekstil Zone</option>
+                <option value="Køge - Makerspace Elektronik & Lodning">Køge - Makerspace Elektronik & Lodning</option>
+                <option value="Køge - Makerspace Værksted & Montage">Køge - Makerspace Værksted & Montage</option>
+                <option value="Køge - Makerspace Udlånsskab">Køge - Makerspace Udlånsskab</option>
+              </optgroup>
+              <optgroup label="Medialab (Køge)" className="bg-[#151517] text-zinc-400 font-semibold">
+                <option value="Køge - Medialab Udlån & Depot">Køge - Medialab Udlån & Depot</option>
+                <option value="Køge - Medialab Fotostudie">Køge - Medialab Fotostudie</option>
+                <option value="Køge - Medialab Podcast & Lydstudie">Køge - Medialab Podcast & Lydstudie</option>
+                <option value="Køge - Medialab VR / XR Lab">Køge - Medialab VR / XR Lab</option>
+              </optgroup>
+              <optgroup label="Roskilde Campus" className="bg-[#151517] text-zinc-400 font-semibold">
+                <option value="Roskilde - Makerspace Værksted">Roskilde - Makerspace Værksted</option>
+                <option value="Roskilde - Medialab Udlån">Roskilde - Medialab Udlån</option>
+              </optgroup>
+              <option value="CUSTOM">Anden placering (brugerdefineret)...</option>
+            </select>
+
+            {locationPreset === "CUSTOM" && (
+              <input
+                type="text"
+                value={customLocation}
+                onChange={(e) => {
+                  setCustomLocation(e.target.value);
+                  setLocation(e.target.value);
+                }}
+                placeholder="F.eks. Reol 3, Hylde B eller Køge Depot"
+                className="bg-[#151517] border border-[#333333] rounded-lg px-3.5 py-2 text-sm text-[#d1d5db] focus:outline-none focus:border-[#1da9e4] transition-colors mt-1 font-sans"
+              />
+            )}
+          </div>
+
+          {/* Live Code 128 Barcode & Printable Sticker Label */}
+          <InventoryBarcodeLabel
+            assetTag={isEdit ? (item.assetTag || previewTag) : previewTag}
+            name={name.trim() || (isEdit ? item.name : "Nyt Udstyr")}
+            location={location}
+            labName={labs.find((l) => l.slug === labSlug)?.name || (labSlug === "medialab" ? "Medialab" : "Makerspace")}
+          />
 
           {/* Manuals Section (Figma node 87:5806 & 87:6481) */}
           <div className="flex flex-col gap-2">

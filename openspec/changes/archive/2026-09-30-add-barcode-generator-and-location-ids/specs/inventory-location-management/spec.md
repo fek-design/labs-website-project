@@ -1,28 +1,4 @@
-# inventory-location-management Specification
-
-## Purpose
-Provides inventory asset registration, editing, taxonomy tag filtering, and specific physical location tracking (room, shelf, locker, cabinet) across Zealand Labs facilities.
-
-## Requirements
-
-### Requirement: Physical Location Metadata and Filtering
-The system SHALL organize inventory metadata using a 2-Tier Namespaced Faceted Taxonomy (`DISCIPLINE` and `PROCESS`), alongside Macro-Lab assignments strictly limited to authentic facilities (`Makerspace (Køge)` and `MediaLab (Køge)`), completely excluding non-existent facilities such as Roskilde Lab, providing a dual-mode List/Grid view interface with the canonical POS-harmonized page header architecture (`LABS Inventar` in `Stack Sans Notch`, admin greeting, live KPI counters), high-contrast search, quick view-mode switching, and synchronization with the global admin lab switcher.
-
-#### Scenario: Filtering inventory by physical location
-- **WHEN** an administrator selects a macro facility filter (`Makerspace (Køge)` or `MediaLab (Køge)`)
-- **THEN** the system returns only inventory assets assigned to that authentic macro lab facility.
-
-#### Scenario: Filtering inventory by taxonomy tag and status
-- **WHEN** an administrator selects a discipline or process filter and status "AVAILABLE"
-- **THEN** the system displays matching items with their operational badges and 2-tier facet tags.
-
-#### Scenario: Switching between List and Grid view modes
-- **WHEN** an administrator toggles the view switch inside the inventory search toolbar
-- **THEN** the system switches the display between a dense single-line List view with status pill clusters and a responsive multi-column Grid card layout with descriptions and action buttons.
-
-#### Scenario: Header KPI rendering and global lab synchronization
-- **WHEN** an administrator switches the global lab or views the inventory workspace
-- **THEN** the system renders the canonical `LABS Inventar` header with live available/total asset KPI counters and updates the inventory filter to the selected lab.
+## MODIFIED Requirements
 
 ### Requirement: Streamlined Inventory Item Creation and Editing
 The system SHALL auto-generate deterministic, unique asset tags following the 4-tier taxonomy schema `[LOCATION]-[LAB-PREFIX]-[CATEGORY]-[4-DIGIT-SEQUENCE]` upon item creation using the physical location/campus prefix (`KG` for Køge, `RO` for Roskilde) and 2-tier category taxonomy (`DISCIPLINE` and `PROCESS`), mapping lab prefixes strictly to authentic Køge facilities (`MK` for Makerspace and `ML` for MediaLab), disabling manual asset tag text entry, presenting the item creation and editing interfaces as centered modal cards (`Card - Create` node `87:5143` and `Card - Edit` node `87:5050`) styled in `#202021` card surface with 1px `#444444` border, containing equipment name, serial number, acquisition date (`purchaseDate`), physical location placement (`location`), lab facility, hardware/tracking type, linked manual attachments with cyan `#1da9e4` "Se" pill buttons, description, an integrated zero-cloud Code 128 barcode preview with direct printable sticker trigger and PNG/SVG download actions, and standardized action footers with `#e51d87` (Pink) "Slet" button, `#151517` / `#333333` "Afbryd" cancel button, and `#1da9e4` (Cyan) "Gem" / "Opret" primary action button, persisting the acquisition date and physical location in the `Inventory` database record.
@@ -66,14 +42,3 @@ The system SHALL auto-generate deterministic, unique asset tags following the 4-
 #### Scenario: Downloading barcode asset files
 - **WHEN** an administrator clicks the "Hent Barcode" action button
 - **THEN** the system directly downloads the high-resolution vector SVG and/or PNG image file of the asset tag barcode without invoking external web services.
-
-### Requirement: Equipment Manuals Documentation Library Integration
-The system SHALL provide a dedicated slide-out documentation browser (`Card - Manual side to edit/create` / `MANUALER` library node `87:6081`) accessible from item creation and edit cards, featuring header title `MANUALER Many-to-Many documentation library`, live `Valgt N` counter, high-contrast search input, and a 2-column card grid allowing administrators to inspect, search, and link many-to-many PDF manuals and standard operating procedures (SOPs) to equipment assets.
-
-#### Scenario: Attaching manuals to an equipment item from library drawer
-- **WHEN** an administrator selects one or more manuals in the documentation library drawer
-- **THEN** the selected manuals display an active checkmark, update the `Valgt N` counter, and appear in the parent item card's manual list with cyan "Se" triggers upon confirmation.
-
-#### Scenario: Removing an attached manual from the item card
-- **WHEN** an administrator clicks the remove icon ("x") next to a linked manual in the item card
-- **THEN** the manual is unlinked from the item without deleting the underlying PDF file from the documentation repository.

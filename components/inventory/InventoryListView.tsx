@@ -136,6 +136,12 @@ export function InventoryListView({
                       <span className="text-[#888888] truncate">{item.lab.name}</span>
                     </>
                   )}
+                  {item.location && (
+                    <>
+                      <span>•</span>
+                      <span className="text-[#009FE3] truncate">{item.location}</span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
