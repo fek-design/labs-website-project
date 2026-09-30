@@ -18,6 +18,11 @@ enum TrustStatus {
   BLOCKED
 }
 
+enum TrackingType {
+  SERIALIZED
+  BULK
+}
+
 enum HardwareType {
   STATIC_MACHINE
   BORROWABLE_GEAR
@@ -97,6 +102,8 @@ model Inventory {
   assetTag          String            @unique
   name              String
   hardwareType      HardwareType
+  trackingType      TrackingType      @default(SERIALIZED)
+  totalQuantity     Int               @default(1)
   operationalStatus OperationalStatus @default(AVAILABLE)
   imageUrl          String?
   purchaseDate      DateTime?
@@ -106,11 +113,26 @@ model Inventory {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  lab      Lab               @relation(fields: [labId], references: [id])
-  loans    Loan[]
-  tags     InventoryTag[]
-  repairs  RepairLog[]
-  manuals  InventoryManual[]
+  lab               Lab               @relation(fields: [labId], references: [id])
+  loans             Loan[]
+  tags              InventoryTag[]
+  repairs           RepairLog[]
+  manuals           InventoryManual[]
+  bundleAccessories BundleItem[]      @relation("BundleParent")
+  bundleParents     BundleItem[]      @relation("BundleAccessory")
+}
+
+model BundleItem {
+  id                   String    @id @default(uuid())
+  parentInventoryId    String
+  accessoryInventoryId String
+  defaultQuantity      Int       @default(1)
+  createdAt            DateTime  @default(now())
+
+  parent    Inventory @relation("BundleParent", fields: [parentInventoryId], references: [id], onDelete: Cascade)
+  accessory Inventory @relation("BundleAccessory", fields: [accessoryInventoryId], references: [id], onDelete: Cascade)
+
+  @@unique([parentInventoryId, accessoryInventoryId])
 }
 
 model RepairLog {
@@ -174,6 +196,8 @@ model Loan {
   patronId        String
   adminIdCheckout String
   adminIdCheckin  String?
+  quantity        Int        @default(1)
+  returnedQty     Int        @default(0)
   status          LoanStatus @default(ACTIVE)
   checkoutDate    DateTime   @default(now())
   expectedReturn  DateTime

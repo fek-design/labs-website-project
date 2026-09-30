@@ -98,7 +98,17 @@ export function InventoryGridView({
                 </div>
 
                 {/* Status or Manuals pill */}
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                  {item.trackingType === "BULK" && (
+                    <span className="inline-flex items-center gap-1 text-[10px] text-[#FFED00] bg-[#FFED00]/10 border border-[#FFED00]/30 px-2 py-0.5 rounded font-bold font-['Stack_Sans_Headline',sans-serif]">
+                      PULJE ({item.availableQuantity !== undefined ? item.availableQuantity : item.totalQuantity}/{item.totalQuantity})
+                    </span>
+                  )}
+                  {item.bundleAccessories?.length > 0 && (
+                    <span className="inline-flex items-center gap-1 text-[10px] text-[#009FE3] bg-[#009FE3]/10 border border-[#009FE3]/30 px-2 py-0.5 rounded font-bold font-['Stack_Sans_Headline',sans-serif]">
+                      Sæt ({item.bundleAccessories.length})
+                    </span>
+                  )}
                   {manualCount > 0 && (
                     <span className="inline-flex items-center gap-1 text-[10px] text-[#1da9e4] bg-[#1da9e4]/10 border border-[#1da9e4]/30 px-2 py-0.5 rounded font-bold">
                       <FileText size={11} /> {manualCount}
@@ -121,7 +131,7 @@ export function InventoryGridView({
                     {item.assetTag}
                   </span>
                   <span>•</span>
-                  <span>{isGear ? "Udstyr" : "Maskine"}</span>
+                  <span>{item.trackingType === "BULK" ? "Delt puljestregkode" : isGear ? "Udstyr" : "Maskine"}</span>
                 </div>
               </div>
 

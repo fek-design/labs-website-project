@@ -1,8 +1,16 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { LoanStatus, OperationalStatus, HardwareType } from "@prisma/client";
+import { LoanStatus, OperationalStatus, HardwareType, TrackingType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+
+function safeRevalidatePath(path: string) {
+  try {
+    revalidatePath(path);
+  } catch {
+    // Graceful fallback when executed in non-request contexts or tests
+  }
+}
 
 /**
  * Helper to retrieve a fallback system admin ID if an action is performed
@@ -74,6 +82,11 @@ export async function searchPatronOrAsset(query: string, labSlug: string = "medi
       include: {
         lab: true,
         tags: { include: { tag: true } },
+        bundleAccessories: {
+          include: {
+            accessory: true,
+          },
+        },
         loans: {
           where: { status: LoanStatus.ACTIVE },
           include: {
@@ -85,15 +98,30 @@ export async function searchPatronOrAsset(query: string, labSlug: string = "medi
     }),
   ]);
 
+  // Compute availableQuantity for assets
+  const formattedAssets = assets.map((item) => {
+    let availableQuantity = 0;
+    if (item.trackingType === TrackingType.BULK) {
+      const activeLoanedQuantity = item.loans.reduce((acc, l) => acc + (l.quantity - l.returnedQty), 0);
+      availableQuantity = Math.max(0, item.totalQuantity - activeLoanedQuantity);
+    } else {
+      availableQuantity = item.operationalStatus === OperationalStatus.AVAILABLE && item.loans.length === 0 ? 1 : 0;
+    }
+    return {
+      ...item,
+      availableQuantity,
+    };
+  });
+
   // Determine if there's an exact barcode match
   const exactPatron = patrons.find(
     (p) => p.studentId.toLowerCase() === cleanQuery.toLowerCase() || p.email.toLowerCase() === cleanQuery.toLowerCase()
   );
-  const exactAsset = assets.find((a) => a.assetTag.toLowerCase() === cleanQuery.toLowerCase());
+  const exactAsset = formattedAssets.find((a) => a.assetTag.toLowerCase() === cleanQuery.toLowerCase());
 
   return {
     patrons,
-    assets,
+    assets: formattedAssets,
     exactMatch: exactPatron
       ? { type: "PATRON" as const, data: exactPatron }
       : exactAsset
@@ -210,12 +238,29 @@ export async function getPatronList() {
  */
 export async function checkoutEquipment(data: {
   patronId: string;
-  inventoryIds: string[];
+  inventoryIds?: string[];
+  items?: { inventoryId: string; quantity?: number }[];
   expectedReturn?: string | Date;
   adminId?: string;
   notes?: string;
 }) {
   const actorId = await getActorAdminId(data.adminId);
+
+  // Normalize requested items with quantities
+  const requestedItems: { inventoryId: string; quantity: number }[] = [];
+  if (data.items && data.items.length > 0) {
+    for (const it of data.items) {
+      requestedItems.push({ inventoryId: it.inventoryId, quantity: Math.max(1, it.quantity || 1) });
+    }
+  } else if (data.inventoryIds && data.inventoryIds.length > 0) {
+    for (const id of data.inventoryIds) {
+      requestedItems.push({ inventoryId: id, quantity: 1 });
+    }
+  }
+
+  if (requestedItems.length === 0) {
+    throw new Error("No equipment items selected for checkout.");
+  }
 
   // Default to 30 days if not provided
   let expectedReturnDate: Date;
@@ -231,10 +276,6 @@ export async function checkoutEquipment(data: {
     throw new Error("Invalid expected return date provided.");
   }
 
-  if (!data.inventoryIds || data.inventoryIds.length === 0) {
-    throw new Error("No equipment items selected for checkout.");
-  }
-
   const patron = await prisma.patron.findUnique({
     where: { id: data.patronId },
   });
@@ -244,9 +285,9 @@ export async function checkoutEquipment(data: {
   }
 
   return await prisma.$transaction(async (tx) => {
-    // Validate availability of all items
-    const items = await tx.inventory.findMany({
-      where: { id: { in: data.inventoryIds } },
+    const targetIds = requestedItems.map((r) => r.inventoryId);
+    const dbItems = await tx.inventory.findMany({
+      where: { id: { in: targetIds } },
       include: {
         loans: {
           where: { status: LoanStatus.ACTIVE },
@@ -254,27 +295,36 @@ export async function checkoutEquipment(data: {
       },
     });
 
-    if (items.length !== data.inventoryIds.length) {
+    if (dbItems.length !== targetIds.length) {
       throw new Error("One or more selected inventory items could not be found.");
     }
 
-    for (const item of items) {
+    const itemMap = new Map(dbItems.map((i) => [i.id, i]));
+
+    for (const req of requestedItems) {
+      const item = itemMap.get(req.inventoryId)!;
       if (item.operationalStatus === OperationalStatus.BROKEN) {
         throw new Error(`Item ${item.name} (${item.assetTag}) is marked as BROKEN and cannot be loaned.`);
       }
-      if (item.loans.length > 0) {
-        throw new Error(`Item ${item.name} (${item.assetTag}) currently has an ACTIVE loan.`);
+      if (item.trackingType === TrackingType.SERIALIZED) {
+        if (item.loans.length > 0) {
+          throw new Error(`Item ${item.name} (${item.assetTag}) currently has an ACTIVE loan.`);
+        }
       }
+      // Note: for BULK items, stock counts are non-limiting (soft stock check)
     }
 
     const createdLoans = [];
 
-    for (const item of items) {
+    for (const req of requestedItems) {
+      const item = itemMap.get(req.inventoryId)!;
       const loan = await tx.loan.create({
         data: {
           inventoryId: item.id,
           patronId: patron.id,
           adminIdCheckout: actorId,
+          quantity: req.quantity,
+          returnedQty: 0,
           status: LoanStatus.ACTIVE,
           checkoutDate: new Date(),
           expectedReturn: expectedReturnDate,
@@ -295,6 +345,8 @@ export async function checkoutEquipment(data: {
           payloadDelta: {
             assetTag: item.assetTag,
             patronStudentId: patron.studentId,
+            quantity: req.quantity,
+            trackingType: item.trackingType,
             expectedReturn: expectedReturnDate.toISOString(),
           },
         },
@@ -303,7 +355,7 @@ export async function checkoutEquipment(data: {
       createdLoans.push(loan);
     }
 
-    revalidatePath("/admin/pos");
+    safeRevalidatePath("/admin/pos");
     return { success: true, loans: createdLoans };
   });
 }
@@ -317,6 +369,7 @@ export async function returnEquipment(data: {
   status?: "RETURNED" | "DAMAGED" | "LOST";
   damageNotes?: string;
   sendToRepair?: boolean;
+  returnQuantity?: number;
 }) {
   const actorId = await getActorAdminId(data.adminId);
   const finalStatus =
@@ -340,11 +393,22 @@ export async function returnEquipment(data: {
       throw new Error(`Loan is already marked as ${loan.status}.`);
     }
 
+    const currentReturned = loan.returnedQty || 0;
+    const remainingToReturn = Math.max(0, loan.quantity - currentReturned);
+    const qtyToReturn =
+      data.returnQuantity !== undefined && data.returnQuantity > 0
+        ? Math.min(data.returnQuantity, remainingToReturn)
+        : remainingToReturn;
+
+    const newReturnedQty = currentReturned + qtyToReturn;
+    const isFullyReturned = newReturnedQty >= loan.quantity;
+
     const updatedLoan = await tx.loan.update({
       where: { id: loan.id },
       data: {
-        status: finalStatus,
-        actualReturn: new Date(),
+        returnedQty: newReturnedQty,
+        status: isFullyReturned ? finalStatus : loan.status,
+        actualReturn: isFullyReturned ? new Date() : null,
         adminIdCheckin: actorId,
         notes: data.damageNotes ? `${loan.notes ? loan.notes + " | " : ""}Return note: ${data.damageNotes}` : loan.notes,
       },
@@ -374,7 +438,10 @@ export async function returnEquipment(data: {
         targetTable: "Loan",
         targetId: loan.id,
         payloadDelta: {
-          status: finalStatus,
+          status: isFullyReturned ? finalStatus : loan.status,
+          quantityReturnedThisAction: qtyToReturn,
+          totalReturnedQty: newReturnedQty,
+          remainingQty: loan.quantity - newReturnedQty,
           assetTag: loan.inventory.assetTag,
           patronStudentId: loan.patron.studentId,
           damageNotes: data.damageNotes,
@@ -383,8 +450,8 @@ export async function returnEquipment(data: {
       },
     });
 
-    revalidatePath("/admin/pos");
-    return { success: true, loan: updatedLoan };
+    safeRevalidatePath("/admin/pos");
+    return { success: true, loan: updatedLoan, isFullyReturned };
   });
 }
 
@@ -428,6 +495,7 @@ export async function returnMultipleLoans(data: {
         where: { id: loan.id },
         data: {
           status: LoanStatus.RETURNED,
+          returnedQty: loan.quantity,
           actualReturn: new Date(),
           adminIdCheckin: actorId,
           notes: data.notes
@@ -455,7 +523,7 @@ export async function returnMultipleLoans(data: {
       updatedLoans.push(updated);
     }
 
-    revalidatePath("/admin/pos");
+    safeRevalidatePath("/admin/pos");
     return { success: true, count: updatedLoans.length, loans: updatedLoans };
   });
 }
@@ -598,19 +666,38 @@ export async function getCalendarLoans(params: {
  * 10. Get Lab Inventory for POS checkout listing
  */
 export async function getLabInventory(labSlug: string = "medialab") {
-  return await prisma.inventory.findMany({
+  const items = await prisma.inventory.findMany({
     where: {
       lab: { slug: labSlug },
       hardwareType: HardwareType.BORROWABLE_GEAR,
     },
     include: {
       tags: { include: { tag: true } },
+      bundleAccessories: {
+        include: {
+          accessory: true,
+        },
+      },
       loans: {
         where: { status: LoanStatus.ACTIVE },
         include: { patron: true },
       },
     },
     orderBy: { name: "asc" },
+  });
+
+  return items.map((item) => {
+    let availableQuantity = 0;
+    if (item.trackingType === TrackingType.BULK) {
+      const activeLoanedQuantity = item.loans.reduce((acc, l) => acc + (l.quantity - l.returnedQty), 0);
+      availableQuantity = Math.max(0, item.totalQuantity - activeLoanedQuantity);
+    } else {
+      availableQuantity = item.operationalStatus === OperationalStatus.AVAILABLE && item.loans.length === 0 ? 1 : 0;
+    }
+    return {
+      ...item,
+      availableQuantity,
+    };
   });
 }
 

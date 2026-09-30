@@ -18,11 +18,15 @@ interface ActiveSessionPanelProps {
     name: string;
     assetTag: string;
     operationalStatus: string;
+    trackingType?: "SERIALIZED" | "BULK";
+    quantity?: number;
+    availableQuantity?: number;
     imageUrl?: string | null;
   }>;
   inspectedLoan?: any | null;
   onClearInspectedLoan?: () => void;
   onRemoveItem: (id: string) => void;
+  onUpdateQuantity?: (id: string, newQty: number) => void;
   onClearSession: () => void;
   onCheckoutSuccess: () => void;
   onRefresh: () => void;
@@ -36,6 +40,7 @@ export function ActiveSessionPanel({
   inspectedLoan,
   onClearInspectedLoan,
   onRemoveItem,
+  onUpdateQuantity,
   onClearSession,
   onCheckoutSuccess,
   onRefresh,
@@ -44,6 +49,7 @@ export function ActiveSessionPanel({
 }: ActiveSessionPanelProps) {
   const [sessionMode, setSessionMode] = useState<"UDLEJNING" | "RETUNERING">("UDLEJNING");
   const [selectedLoanId, setSelectedLoanId] = useState<string | null>(inspectedLoan?.id || null);
+  const [targetReturnQty, setTargetReturnQty] = useState<number>(1);
 
   // Automatically switch to RETUNERING mode and focus inspected loan when selected from activity/calendar
   useEffect(() => {
@@ -201,22 +207,30 @@ export function ActiveSessionPanel({
     setIsEditingLoan(false);
     setShowDamageForm(false);
     setDamageNotes("");
-  }, [selectedLoanId, inspectedLoan?.id]);
+    if (targetLoan) {
+      const remaining = Math.max(1, (targetLoan.quantity || 1) - (targetLoan.returnedQty || 0));
+      setTargetReturnQty(remaining);
+    }
+  }, [selectedLoanId, inspectedLoan?.id, targetLoan?.id]);
 
   const handleTargetReturn = async (damaged: boolean = false) => {
     if (!targetLoan) return;
     try {
       setIsProcessingLoan(true);
+      const isMulti = (targetLoan.quantity || 1) > 1;
       await returnEquipment({
         loanId: targetLoan.id,
         status: damaged ? "DAMAGED" : "RETURNED",
         damageNotes: damaged ? damageNotes.trim() : undefined,
         sendToRepair: damaged ? sendToRepair : false,
+        returnQuantity: isMulti ? targetReturnQty : undefined,
       });
       setFeedbackToast({
         type: "success",
         message: damaged
           ? "Udstyr modtaget med skade og sat til reparation!"
+          : isMulti && targetReturnQty < ((targetLoan.quantity || 1) - (targetLoan.returnedQty || 0))
+          ? `Delvis returnering registreret (${targetReturnQty} stk modtaget)!`
           : "Udstyr modtaget og afleveret i god stand!",
       });
       setTimeout(() => setFeedbackToast(null), 3000);
@@ -314,16 +328,17 @@ export function ActiveSessionPanel({
 
     try {
       setIsSubmitting(true);
+      const totalUnits = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
       await checkoutEquipment({
         patronId: patron.id,
-        inventoryIds: items.map((item) => item.id),
+        items: items.map((item) => ({ inventoryId: item.id, quantity: item.quantity || 1 })),
         expectedReturn: new Date(expectedReturn),
         notes: notes.trim() || undefined,
       });
 
       setFeedbackToast({
         type: "success",
-        message: `Udlån godkendt for ${items.length} genstand(e) til ${patron.studentId}!`,
+        message: `Udlån godkendt for ${totalUnits} genstand(e) til ${patron.studentId}!`,
       });
       setTimeout(() => setFeedbackToast(null), 3500);
 
@@ -548,8 +563,13 @@ export function ActiveSessionPanel({
 
               {/* Scanned Equipment List */}
               <div>
-                <div className="text-sm font-bold font-headline text-white mb-2">
-                  Scannet udstyr ({items.length})
+                <div className="text-sm font-bold font-headline text-white mb-2 flex items-center justify-between">
+                  <span>Scannet udstyr ({items.length})</span>
+                  {items.some((i) => (i.quantity || 1) > 1) && (
+                    <span className="text-xs text-[#FFED00] font-mono">
+                      I alt: {items.reduce((acc, i) => acc + (i.quantity || 1), 0)} stk
+                    </span>
+                  )}
                 </div>
 
                 <div className="max-h-40 overflow-y-auto space-y-2 pr-1">
@@ -558,35 +578,84 @@ export function ActiveSessionPanel({
                       Scan udstyrs stregkode (f.eks. ML-CAM-001) for at tilføje.
                     </div>
                   ) : (
-                    items.map((item) => (
-                      <div
-                        key={item.id}
-                        className="bg-[#202021] border border-[#444444] rounded-lg p-2.5 flex items-center justify-between gap-3 text-xs"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-10 h-10 rounded-md bg-[#333333] flex items-center justify-center text-zinc-400 shrink-0">
-                            <Camera size={20} weight="regular" />
+                    items.map((item) => {
+                      const qty = item.quantity || 1;
+                      const isBulk = item.trackingType === "BULK";
+                      const isOverStock =
+                        isBulk &&
+                        item.availableQuantity !== undefined &&
+                        qty > item.availableQuantity;
+
+                      return (
+                        <div
+                          key={item.id}
+                          className="bg-[#202021] border border-[#444444] rounded-lg p-2.5 flex items-center justify-between gap-3 text-xs"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 rounded-md bg-[#333333] flex items-center justify-center text-zinc-400 shrink-0">
+                              <Camera size={20} weight="regular" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-bold font-notch text-white truncate text-xs flex items-center gap-2">
+                                <span>{item.name}</span>
+                                {isBulk && (
+                                  <span className="text-[10px] text-[#FFED00] bg-[#FFED00]/10 border border-[#FFED00]/30 px-1.5 py-0.2 rounded font-bold font-mono">
+                                    Pulje
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-zinc-400 text-[11px] font-mono">
+                                Tag: <span className="text-[#009FE3]">[{item.assetTag}]</span>
+                              </div>
+                              {isOverStock && (
+                                <div className="text-[10px] text-[#FFED00] font-medium font-mono mt-0.5">
+                                  ⚠️ Overstiger lager ({item.availableQuantity} ledige)
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div className="min-w-0">
-                            <div className="font-bold font-notch text-white truncate text-xs">
-                              {item.name}
-                            </div>
-                            <div className="text-zinc-400 text-[11px] font-mono">
-                              Tag: <span className="text-[#009FE3]">[{item.assetTag}]</span>
-                            </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            {isBulk && onUpdateQuantity && (
+                              <div className="flex items-center bg-[#151517] border border-[#333333] rounded-lg overflow-hidden text-xs">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (qty > 1) {
+                                      onUpdateQuantity(item.id, qty - 1);
+                                    } else {
+                                      onRemoveItem(item.id);
+                                    }
+                                  }}
+                                  className="px-2 py-1 text-zinc-400 hover:text-white hover:bg-[#252527] transition-colors cursor-pointer font-bold"
+                                  title="Formindsk"
+                                >
+                                  -
+                                </button>
+                                <span className="px-2 font-bold text-white font-mono">{qty}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => onUpdateQuantity(item.id, qty + 1)}
+                                  className="px-2 py-1 text-zinc-400 hover:text-white hover:bg-[#252527] transition-colors cursor-pointer font-bold"
+                                  title="Forøg"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => onRemoveItem(item.id)}
+                              className="px-2 py-0.5 rounded border border-zinc-600 text-zinc-400 hover:text-red-400 hover:border-red-500 transition-colors text-xs font-bold cursor-pointer"
+                              title="Fjern genstand"
+                            >
+                              X
+                            </button>
                           </div>
                         </div>
-
-                        <button
-                          type="button"
-                          onClick={() => onRemoveItem(item.id)}
-                          className="px-2 py-0.5 rounded border border-zinc-600 text-zinc-400 hover:text-red-400 hover:border-red-500 transition-colors text-xs font-bold"
-                          title="Fjern genstand"
-                        >
-                          X
-                        </button>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </div>
@@ -812,6 +881,11 @@ export function ActiveSessionPanel({
                                     <span className="text-[#009FE3] font-mono text-[11px] font-bold bg-[#009FE3]/10 px-1.5 py-0.5 rounded border border-[#009FE3]/30">
                                       [{loan.inventory?.assetTag}]
                                     </span>
+                                    {loan.quantity && loan.quantity > 1 && (
+                                      <span className="bg-[#FFED00]/20 text-[#FFED00] border border-[#FFED00]/40 text-[10px] font-bold px-1.5 py-0.2 rounded font-mono">
+                                        {Math.max(0, (loan.quantity || 1) - (loan.returnedQty || 0))}/{loan.quantity} stk
+                                      </span>
+                                    )}
                                     {isJustScanned && (
                                       <motion.span
                                         initial={{ scale: 0.8, opacity: 0 }}
@@ -895,6 +969,15 @@ export function ActiveSessionPanel({
                             <span>{targetLoan.inventory?.lab?.name || "MediaLab (Køge)"}</span>
                           </span>
                         </div>
+                        {targetLoan.quantity && targetLoan.quantity > 1 && (
+                          <div className="mt-2.5 pt-2.5 border-t border-[#333333] flex items-center justify-between text-xs font-mono">
+                            <span className="text-zinc-400">Puljeantal lånt:</span>
+                            <span className="font-bold text-[#FFED00]">
+                              {targetLoan.quantity} stk ({targetLoan.returnedQty || 0} afleveret,{" "}
+                              {Math.max(0, targetLoan.quantity - (targetLoan.returnedQty || 0))} mangler)
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Dates: Checked Out & Expected Return */}
@@ -1008,6 +1091,39 @@ export function ActiveSessionPanel({
                         </div>
                       )}
 
+                      {/* Partial Return Quantity Selector for Multi-Quantity / Bulk Loans */}
+                      {targetLoan.status === "ACTIVE" && !isEditingLoan && targetLoan.quantity && targetLoan.quantity > 1 && (
+                        <div className="p-3 bg-[#1e1e21] border border-[#333333] rounded-xl flex items-center justify-between text-xs font-mono">
+                          <div>
+                            <div className="font-bold text-white">Antal der afleveres nu:</div>
+                            <div className="text-[11px] text-zinc-400">
+                              Maksimalt {Math.max(1, targetLoan.quantity - (targetLoan.returnedQty || 0))} stk udestående
+                            </div>
+                          </div>
+                          <div className="flex items-center bg-[#151517] border border-[#333333] rounded-lg overflow-hidden">
+                            <button
+                              type="button"
+                              onClick={() => setTargetReturnQty((q) => Math.max(1, q - 1))}
+                              className="px-2.5 py-1 text-zinc-400 hover:text-white hover:bg-[#252527] transition-colors cursor-pointer font-bold"
+                            >
+                              -
+                            </button>
+                            <span className="px-3 font-bold text-white">{targetReturnQty}</span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setTargetReturnQty((q) =>
+                                  Math.min(Math.max(1, targetLoan.quantity - (targetLoan.returnedQty || 0)), q + 1)
+                                )
+                              }
+                              className="px-2.5 py-1 text-zinc-400 hover:text-white hover:bg-[#252527] transition-colors cursor-pointer font-bold"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Action Row */}
                       <div className="pt-2 border-t border-[#2e2e2e] flex flex-wrap items-center justify-between gap-2">
                         <div>
@@ -1040,7 +1156,11 @@ export function ActiveSessionPanel({
                                   onClick={() => handleTargetReturn(false)}
                                   className="px-5 py-2 rounded-full bg-[#009FE3] hover:bg-[#0089c4] text-black font-extrabold text-xs transition-all shadow-md shadow-[#009FE3]/25 cursor-pointer"
                                 >
-                                  {isProcessingLoan ? "Behandler..." : "Check In Equipment"}
+                                  {isProcessingLoan
+                                    ? "Behandler..."
+                                    : targetLoan.quantity && targetLoan.quantity > 1
+                                    ? `Check In (${targetReturnQty} stk)`
+                                    : "Check In Equipment"}
                                 </button>
                               </>
                             ) : (

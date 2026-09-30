@@ -5,20 +5,27 @@ import { checkoutEquipment } from "@/app/actions/pos";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, ShoppingCart, Trash, X } from "@phosphor-icons/react";
 
+export interface CartItem {
+  id: string;
+  name: string;
+  assetTag: string;
+  operationalStatus: string;
+  trackingType?: "SERIALIZED" | "BULK";
+  totalQuantity?: number;
+  availableQuantity?: number;
+  quantity?: number;
+  location?: string | null;
+  imageUrl?: string | null;
+}
+
 interface CheckoutCartProps {
   patron: {
     id: string;
     studentId: string;
   } | null;
-  items: Array<{
-    id: string;
-    name: string;
-    assetTag: string;
-    operationalStatus: string;
-    location?: string | null;
-    imageUrl?: string | null;
-  }>;
+  items: CartItem[];
   onRemoveItem: (id: string) => void;
+  onUpdateQuantity?: (id: string, newQty: number) => void;
   onClearCart: () => void;
   onRestoreCart?: (items: any[]) => void;
   onCheckoutSuccess: () => void;
@@ -28,6 +35,7 @@ export function CheckoutCart({
   patron,
   items,
   onRemoveItem,
+  onUpdateQuantity,
   onClearCart,
   onRestoreCart,
   onCheckoutSuccess,
@@ -74,7 +82,8 @@ export function CheckoutCart({
 
     // Optimistic Update: Immediately clear cart and notify parent
     onClearCart();
-    setSuccessToast(`Checkout initiated for ${itemsSnapshot.length} item(s)...`);
+    const totalUnitsCount = itemsSnapshot.reduce((acc, i) => acc + (i.quantity || 1), 0);
+    setSuccessToast(`Checkout initiated for ${totalUnitsCount} item(s)...`);
     setTimeout(() => setSuccessToast(null), 3000);
 
     // Silent background execution
@@ -82,7 +91,7 @@ export function CheckoutCart({
       setIsSubmitting(true);
       const res = await checkoutEquipment({
         patronId,
-        inventoryIds: itemsSnapshot.map((i) => i.id),
+        items: itemsSnapshot.map((i) => ({ inventoryId: i.id, quantity: i.quantity || 1 })),
         expectedReturn: returnDate,
         notes: loanNotes,
       });
@@ -103,6 +112,8 @@ export function CheckoutCart({
     }
   };
 
+  const totalUnits = items.reduce((acc, i) => acc + (i.quantity || 1), 0);
+
   return (
     <div className="bg-[#141414] border border-[#262626] rounded-3xl p-6 relative flex flex-col justify-between h-full shadow-2xl font-mono">
       <div>
@@ -113,7 +124,7 @@ export function CheckoutCart({
               Checkout Basket
             </span>
             <span className="bg-[#FFED00] text-black text-xs font-bold px-2 py-0.5 rounded-full">
-              {items.length} item{items.length === 1 ? "" : "s"}
+              {totalUnits} unit{totalUnits === 1 ? "" : "s"}
             </span>
           </div>
           {items.length > 0 && (
@@ -141,32 +152,82 @@ export function CheckoutCart({
               Scan equipment barcodes or click available gear below.
             </div>
           ) : (
-            items.map((item) => (
-              <motion.div
-                key={item.id}
-                layout
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="flex items-center justify-between bg-[#0D0D0D] border border-[#262626] rounded-2xl p-3"
-              >
-                <div>
-                  <div className="text-xs font-bold text-white">{item.name}</div>
-                  <div className="flex items-center gap-2 text-[11px] mt-0.5">
-                    <span className="text-[#009FE3] font-bold">[{item.assetTag}]</span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => onRemoveItem(item.id)}
-                  className="text-zinc-500 hover:text-red-400 p-1.5 rounded-full transition-colors cursor-pointer"
-                  title="Remove"
-                  aria-label="Fjern vare"
+            items.map((item) => {
+              const qty = item.quantity || 1;
+              const isBulk = item.trackingType === "BULK";
+              const isOverStock =
+                isBulk &&
+                item.availableQuantity !== undefined &&
+                qty > item.availableQuantity;
+
+              return (
+                <motion.div
+                  key={item.id}
+                  layout
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="flex items-center justify-between bg-[#0D0D0D] border border-[#262626] rounded-2xl p-3 gap-2"
                 >
-                  <X size={14} weight="bold" aria-hidden="true" />
-                </button>
-              </motion.div>
-            ))
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-bold text-white truncate">{item.name}</div>
+                    <div className="flex flex-wrap items-center gap-2 text-[11px] mt-0.5">
+                      <span className="text-[#009FE3] font-bold font-mono">[{item.assetTag}]</span>
+                      {isBulk && (
+                        <span className="text-[10px] text-[#FFED00] bg-[#FFED00]/10 px-1 rounded font-bold">
+                          Pulje
+                        </span>
+                      )}
+                    </div>
+                    {isOverStock && (
+                      <span className="text-[10px] text-[#FFED00] font-medium block mt-1">
+                        ⚠️ Overstiger lager ({item.availableQuantity} ledige)
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {isBulk && onUpdateQuantity && (
+                      <div className="flex items-center bg-[#151517] border border-[#333333] rounded-lg overflow-hidden text-xs">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (qty > 1) {
+                              onUpdateQuantity(item.id, qty - 1);
+                            } else {
+                              onRemoveItem(item.id);
+                            }
+                          }}
+                          className="px-2 py-1 text-zinc-400 hover:text-white hover:bg-[#252527] transition-colors cursor-pointer"
+                          title="Formindsk"
+                        >
+                          -
+                        </button>
+                        <span className="px-2 font-bold text-white font-mono">{qty}</span>
+                        <button
+                          type="button"
+                          onClick={() => onUpdateQuantity(item.id, qty + 1)}
+                          className="px-2 py-1 text-zinc-400 hover:text-white hover:bg-[#252527] transition-colors cursor-pointer"
+                          title="Forøg"
+                        >
+                          +
+                        </button>
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => onRemoveItem(item.id)}
+                      className="text-zinc-500 hover:text-red-400 p-1.5 rounded-full transition-colors cursor-pointer"
+                      title="Remove"
+                      aria-label="Fjern vare"
+                    >
+                      <X size={14} weight="bold" aria-hidden="true" />
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })
           )}
         </div>
 

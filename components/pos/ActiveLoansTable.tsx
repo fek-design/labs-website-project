@@ -139,7 +139,14 @@ export function ActiveLoansTable({ loans, onRefresh }: ActiveLoansTableProps) {
                 >
                   {/* Asset */}
                   <td className="py-3 px-3">
-                    <div className="font-bold text-white">{loan.inventory?.name}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-white">{loan.inventory?.name}</span>
+                      {loan.quantity && loan.quantity > 1 && (
+                        <span className="bg-[#FFED00]/20 text-[#FFED00] border border-[#FFED00]/40 text-[10px] font-bold px-1.5 py-0.5 rounded font-mono">
+                          {Math.max(0, (loan.quantity || 1) - (loan.returnedQty || 0))}/{loan.quantity} stk
+                        </span>
+                      )}
+                    </div>
                     <div className="text-[11px] text-[#009FE3]">{loan.inventory?.assetTag}</div>
                   </td>
 

@@ -11,7 +11,7 @@ import {
   ArrowSquareOut,
   Spinner,
 } from "@phosphor-icons/react";
-import { HardwareType, OperationalStatus } from "@prisma/client";
+import { HardwareType, OperationalStatus, TrackingType } from "@prisma/client";
 import { generateAssetTag } from "@/app/actions/inventory";
 
 interface InventoryItemModalProps {
@@ -19,6 +19,7 @@ interface InventoryItemModalProps {
   onClose: () => void;
   item: any | null; // null for Create, item object for Edit
   labs: Array<{ id: string; name: string; slug: string }>;
+  availableBulkItems?: any[];
   onSave: (formData: any) => Promise<void>;
   onDelete?: (itemId: string) => Promise<void>;
   onOpenManualsPicker: () => void;
@@ -31,6 +32,7 @@ export function InventoryItemModal({
   onClose,
   item,
   labs,
+  availableBulkItems = [],
   onSave,
   onDelete,
   onOpenManualsPicker,
@@ -42,11 +44,16 @@ export function InventoryItemModal({
   const [name, setName] = useState("");
   const [labSlug, setLabSlug] = useState("makerspace");
   const [hardwareType, setHardwareType] = useState<HardwareType>("BORROWABLE_GEAR");
+  const [trackingType, setTrackingType] = useState<TrackingType>("SERIALIZED");
+  const [totalQuantity, setTotalQuantity] = useState<number>(1);
   const [operationalStatus, setOperationalStatus] = useState<OperationalStatus>("AVAILABLE");
   const [serialNumber, setSerialNumber] = useState("");
   const [purchaseDate, setPurchaseDate] = useState("");
   const [notes, setNotes] = useState("");
   const [previewTag, setPreviewTag] = useState("MK-GEN-0001");
+  const [bundleItems, setBundleItems] = useState<{ accessoryInventoryId: string; defaultQuantity: number; name?: string; assetTag?: string }[]>([]);
+  const [selectedAccessoryId, setSelectedAccessoryId] = useState("");
+  const [accessoryQty, setAccessoryQty] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,19 +64,38 @@ export function InventoryItemModal({
       setName(item.name || "");
       setLabSlug(item.lab?.slug || "makerspace");
       setHardwareType(item.hardwareType || "BORROWABLE_GEAR");
+      setTrackingType(item.trackingType || "SERIALIZED");
+      setTotalQuantity(item.totalQuantity || 1);
       setOperationalStatus(item.operationalStatus || "AVAILABLE");
       setNotes(item.notes || "");
       setSerialNumber(item.customFields?.serialNumber || "");
       setPurchaseDate(item.customFields?.purchaseDate || "");
       setPreviewTag(item.assetTag || "");
+
+      // Hydrate bundle accessories
+      if (item.bundleAccessories && item.bundleAccessories.length > 0) {
+        setBundleItems(
+          item.bundleAccessories.map((b: any) => ({
+            accessoryInventoryId: b.accessoryInventoryId || b.accessory?.id,
+            defaultQuantity: b.defaultQuantity || 1,
+            name: b.accessory?.name,
+            assetTag: b.accessory?.assetTag,
+          }))
+        );
+      } else {
+        setBundleItems([]);
+      }
     } else {
       setName("");
       setLabSlug(labs[0]?.slug || "makerspace");
       setHardwareType("BORROWABLE_GEAR");
+      setTrackingType("SERIALIZED");
+      setTotalQuantity(1);
       setOperationalStatus("AVAILABLE");
       setSerialNumber("");
       setPurchaseDate("");
       setNotes("");
+      setBundleItems([]);
     }
     setError(null);
   }, [item, labs, isOpen]);
@@ -78,7 +104,7 @@ export function InventoryItemModal({
   useEffect(() => {
     if (!isEdit && isOpen) {
       let isMounted = true;
-      generateAssetTag({ labSlug })
+      generateAssetTag({ labSlug, trackingType })
         .then((tag) => {
           if (isMounted) setPreviewTag(tag);
         })
@@ -87,7 +113,7 @@ export function InventoryItemModal({
         isMounted = false;
       };
     }
-  }, [labSlug, isEdit, isOpen]);
+  }, [labSlug, trackingType, isEdit, isOpen]);
 
   if (!isOpen) return null;
 
@@ -106,10 +132,13 @@ export function InventoryItemModal({
         name: name.trim(),
         labSlug,
         hardwareType,
+        trackingType,
+        totalQuantity: trackingType === "BULK" ? Math.max(1, Number(totalQuantity) || 1) : 1,
         operationalStatus,
         notes: notes.trim(),
+        bundleItems: trackingType === "SERIALIZED" && hardwareType === "BORROWABLE_GEAR" ? bundleItems : [],
         customFields: {
-          serialNumber: serialNumber.trim(),
+          serialNumber: trackingType === "SERIALIZED" ? serialNumber.trim() : "",
           purchaseDate: purchaseDate.trim(),
         },
       });
@@ -181,16 +210,52 @@ export function InventoryItemModal({
                 {name || (isEdit ? item.name : "Nyt udstyr")}
               </span>
               <span>
-                {previewTag} • {hardwareType === "BORROWABLE_GEAR" ? "Udstyr" : "Maskine"}
+                {previewTag} • {trackingType === "BULK" ? "Puljevare (Bulk)" : hardwareType === "BORROWABLE_GEAR" ? "Udstyr" : "Maskine"}
               </span>
             </div>
+          </div>
+
+          {/* Tracking Type Toggle: SERIALIZED vs BULK */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-[#888888] font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
+              Sporingstype (Individuel vs. Puljevare)
+            </label>
+            <div className="grid grid-cols-2 gap-2 p-1 bg-[#151517] border border-[#333333] rounded-lg">
+              <button
+                type="button"
+                onClick={() => setTrackingType("SERIALIZED")}
+                className={`py-2 px-3 rounded-md text-xs font-bold transition-all ${
+                  trackingType === "SERIALIZED"
+                    ? "bg-[#252527] text-white shadow-sm border border-[#555555]"
+                    : "text-[#888888] hover:text-white"
+                }`}
+              >
+                Individuelt udstyr (Unikt ID)
+              </button>
+              <button
+                type="button"
+                onClick={() => setTrackingType("BULK")}
+                className={`py-2 px-3 rounded-md text-xs font-bold transition-all ${
+                  trackingType === "BULK"
+                    ? "bg-[#252527] text-[#FFED00] shadow-sm border border-[#FFED00]/40"
+                    : "text-[#888888] hover:text-white"
+                }`}
+              >
+                Puljevare (Batterier, kabler osv.)
+              </button>
+            </div>
+            {trackingType === "BULK" && (
+              <p className="text-[11px] text-zinc-400 mt-0.5">
+                Puljevarer spores via én delt stregkode for hele beholdningen (f.eks. på en skuffe eller kasse).
+              </p>
+            )}
           </div>
 
           {/* Create mode: Deterministic Asset Tag Banner (Figma 87:6420) */}
           {!isEdit && (
             <div className="flex flex-col gap-1.5">
               <label className="text-xs text-[#888888] font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
-                ID - Deterministic Asset Tag
+                ID - {trackingType === "BULK" ? "Delt Pulje Stregkode" : "Deterministic Asset Tag"}
               </label>
               <div className="bg-[#151517] border border-[#333333] rounded-lg p-3">
                 <span className="text-[#1da9e4] font-mono font-bold text-sm block">
@@ -213,39 +278,160 @@ export function InventoryItemModal({
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="F.eks. Sony FX30 Cinema Line Camera Kit"
+              placeholder={trackingType === "BULK" ? "F.eks. Sony NP-FZ100 Batteri" : "F.eks. Sony FX30 Cinema Line Camera Kit"}
               className="bg-[#151517] border border-[#333333] rounded-lg px-3.5 py-2.5 text-sm text-[#d1d5db] focus:outline-none focus:border-[#1da9e4] transition-colors"
             />
           </div>
 
-          {/* Serial Number & Purchase Date */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Quantity or Serial Number */}
+          {trackingType === "BULK" ? (
             <div className="flex flex-col gap-1.5">
               <label className="text-xs text-[#888888] font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
-                Serie nummer
+                Samlet beholdning (Antal i puljen)
               </label>
               <input
-                type="text"
-                value={serialNumber}
-                onChange={(e) => setSerialNumber(e.target.value)}
-                placeholder="456568567855785"
+                type="number"
+                min={1}
+                required
+                value={totalQuantity}
+                onChange={(e) => setTotalQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                placeholder="F.eks. 15"
                 className="bg-[#151517] border border-[#333333] rounded-lg px-3.5 py-2.5 text-sm text-[#d1d5db] focus:outline-none focus:border-[#1da9e4] transition-colors font-mono"
               />
             </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs text-[#888888] font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
+                  Serie nummer
+                </label>
+                <input
+                  type="text"
+                  value={serialNumber}
+                  onChange={(e) => setSerialNumber(e.target.value)}
+                  placeholder="456568567855785"
+                  className="bg-[#151517] border border-[#333333] rounded-lg px-3.5 py-2.5 text-sm text-[#d1d5db] focus:outline-none focus:border-[#1da9e4] transition-colors font-mono"
+                />
+              </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-[#888888] font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
-                Indkøbsdato
-              </label>
-              <input
-                type="text"
-                value={purchaseDate}
-                onChange={(e) => setPurchaseDate(e.target.value)}
-                placeholder="DD/MM/ÅÅÅÅ"
-                className="bg-[#151517] border border-[#333333] rounded-lg px-3.5 py-2.5 text-sm text-[#d1d5db] focus:outline-none focus:border-[#1da9e4] transition-colors"
-              />
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs text-[#888888] font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
+                  Indkøbsdato
+                </label>
+                <input
+                  type="text"
+                  value={purchaseDate}
+                  onChange={(e) => setPurchaseDate(e.target.value)}
+                  placeholder="DD/MM/ÅÅÅÅ"
+                  className="bg-[#151517] border border-[#333333] rounded-lg px-3.5 py-2.5 text-sm text-[#d1d5db] focus:outline-none focus:border-[#1da9e4] transition-colors"
+                />
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Bundle Accessories Section for Serialized Gear */}
+          {trackingType === "SERIALIZED" && hardwareType === "BORROWABLE_GEAR" && (
+            <div className="flex flex-col gap-2 p-3 bg-[#151517] border border-[#333333] rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-[#888888] font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
+                  Pakkesæt / Standard tilbehør ({bundleItems.length})
+                </span>
+                <span className="text-[11px] text-[#009FE3] font-medium">
+                  Foreslås automatisk i POS
+                </span>
+              </div>
+
+              {/* List of current bundle items */}
+              {bundleItems.length > 0 && (
+                <div className="flex flex-col gap-1.5 mb-1">
+                  {bundleItems.map((b, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-2 bg-[#202021] border border-[#444444] rounded text-xs"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#FFED00] font-bold font-mono">
+                          {b.defaultQuantity}x
+                        </span>
+                        <span className="text-white font-medium">
+                          {b.name || b.assetTag || "Tilbehør"}
+                        </span>
+                        {b.assetTag && (
+                          <span className="text-[10px] text-zinc-400 font-mono">
+                            ({b.assetTag})
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setBundleItems((prev) => prev.filter((_, i) => i !== idx))}
+                        className="text-zinc-400 hover:text-[#E6007E] p-1 transition-colors"
+                        title="Fjern tilbehør fra sæt"
+                      >
+                        <X size={14} weight="bold" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Add accessory selector */}
+              {availableBulkItems.length > 0 ? (
+                <div className="flex items-center gap-2">
+                  <select
+                    value={selectedAccessoryId}
+                    onChange={(e) => setSelectedAccessoryId(e.target.value)}
+                    className="flex-1 bg-[#202021] border border-[#444444] rounded px-2.5 py-1.5 text-xs text-[#d1d5db] focus:outline-none focus:border-[#1da9e4]"
+                  >
+                    <option value="">Vælg tilbehør (puljevare)...</option>
+                    {availableBulkItems
+                      .filter((acc) => acc.id !== item?.id && !bundleItems.some((b) => b.accessoryInventoryId === acc.id))
+                      .map((acc) => (
+                        <option key={acc.id} value={acc.id}>
+                          {acc.name} ({acc.assetTag})
+                        </option>
+                      ))}
+                  </select>
+                  <input
+                    type="number"
+                    min={1}
+                    max={10}
+                    value={accessoryQty}
+                    onChange={(e) => setAccessoryQty(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                    className="w-16 bg-[#202021] border border-[#444444] rounded px-2 py-1.5 text-xs text-white text-center font-mono"
+                    title="Standard antal"
+                  />
+                  <button
+                    type="button"
+                    disabled={!selectedAccessoryId}
+                    onClick={() => {
+                      const acc = availableBulkItems.find((a) => a.id === selectedAccessoryId);
+                      if (acc) {
+                        setBundleItems((prev) => [
+                          ...prev,
+                          {
+                            accessoryInventoryId: acc.id,
+                            defaultQuantity: accessoryQty,
+                            name: acc.name,
+                            assetTag: acc.assetTag,
+                          },
+                        ]);
+                        setSelectedAccessoryId("");
+                        setAccessoryQty(1);
+                      }
+                    }}
+                    className="px-3 py-1.5 bg-[#009FE3] hover:bg-[#0082b8] text-white rounded text-xs font-bold transition-colors disabled:opacity-40"
+                  >
+                    Tilknyt
+                  </button>
+                </div>
+              ) : (
+                <p className="text-[11px] text-zinc-500 italic">
+                  Opret puljevarer (f.eks. batterier eller kabler) for at tilknytte dem som standardudstyr.
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Lab & Type / Status */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

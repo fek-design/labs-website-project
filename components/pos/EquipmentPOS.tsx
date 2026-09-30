@@ -19,7 +19,7 @@ import { ActiveLoansTable } from "./ActiveLoansTable";
 import { OverdueInspector } from "./OverdueInspector";
 import { LoanCalendar } from "./LoanCalendar";
 import { motion, AnimatePresence } from "motion/react";
-import { User, X, Check } from "@phosphor-icons/react";
+import { User, X, Check, Package } from "@phosphor-icons/react";
 import { getAuthSession } from "@/app/actions/auth";
 
 interface EquipmentPOSProps {
@@ -70,6 +70,61 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
 
   // Scanned item return check-off state
   const [scannedReturnAssetTag, setScannedReturnAssetTag] = useState<string | null>(null);
+
+  // Companion bundle suggestion modal state
+  const [pendingBundlePrompt, setPendingBundlePrompt] = useState<{
+    parent: any;
+    accessories: Array<{
+      accessory: any;
+      defaultQuantity: number;
+      selectedQuantity: number;
+      included: boolean;
+    }>;
+  } | null>(null);
+
+  const handleUpdateQuantity = (id: string, newQty: number) => {
+    if (newQty <= 0) {
+      setCartItems((prev) => prev.filter((i) => i.id !== id));
+    } else {
+      setCartItems((prev) =>
+        prev.map((i) => (i.id === id ? { ...i, quantity: newQty } : i))
+      );
+    }
+  };
+
+  const handleConfirmBundle = () => {
+    if (!pendingBundlePrompt) return;
+    const itemsToAdd = pendingBundlePrompt.accessories.filter((a) => a.included && a.selectedQuantity > 0);
+    if (itemsToAdd.length === 0) {
+      setPendingBundlePrompt(null);
+      return;
+    }
+
+    setCartItems((prev) => {
+      let updated = [...prev];
+      for (const entry of itemsToAdd) {
+        const acc = entry.accessory;
+        const addQty = entry.selectedQuantity;
+        const existingIdx = updated.findIndex((i) => i.id === acc.id);
+        if (existingIdx !== -1) {
+          updated[existingIdx] = {
+            ...updated[existingIdx],
+            quantity: (updated[existingIdx].quantity || 1) + addQty,
+          };
+        } else {
+          updated.push({
+            ...acc,
+            quantity: addQty,
+          });
+        }
+      }
+      return updated;
+    });
+
+    setScanMessage(`Tilføjede pakkesæt tilbehør til kurven.`);
+    setTimeout(() => setScanMessage(null), 3000);
+    setPendingBundlePrompt(null);
+  };
 
   const handleSelectLoan = async (loan: any) => {
     setInspectedLoan(loan);
@@ -132,7 +187,14 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
       setStats(statsRes);
       setActiveLoans(activeRes);
       setOverdueLoans(overdueRes);
-      setAvailableGear(gearRes.filter((g: any) => g.loans.length === 0 && g.operationalStatus === "AVAILABLE"));
+      setAvailableGear(
+        gearRes.filter(
+          (g: any) =>
+            (g.trackingType === "BULK"
+              ? ((g.availableQuantity ?? g.totalQuantity) > 0)
+              : g.loans.length === 0) && g.operationalStatus === "AVAILABLE"
+        )
+      );
 
       if (currentPatronId && refreshedPatron) {
         setActivePatron(refreshedPatron);
@@ -147,6 +209,89 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
   useEffect(() => {
     refreshData();
   }, [refreshData]);
+
+  const handleScannedAsset = async (item: any) => {
+    // Bulk items handling: auto-increment if already in cart
+    if (item.trackingType === "BULK") {
+      const existingCartItem = cartItems.find((c) => c.id === item.id);
+      if (existingCartItem) {
+        const nextQty = (existingCartItem.quantity || 1) + 1;
+        setCartItems((prev) =>
+          prev.map((c) => (c.id === item.id ? { ...c, quantity: nextQty } : c))
+        );
+        setScanMessage(`Øget antal for ${item.name} (${nextQty} stk)`);
+        return;
+      }
+
+      if (item.operationalStatus !== "AVAILABLE" && item.operationalStatus !== "MAINTENANCE") {
+        setScanMessage(`Puljevare ${item.assetTag} har status ${item.operationalStatus}.`);
+        return;
+      }
+
+      setCartItems((prev) => [...prev, { ...item, quantity: 1 }]);
+      setScanMessage(`Tilføjet puljevare: ${item.name} (${item.assetTag})`);
+      return;
+    }
+
+    // Serialized items handling
+    if (cartItems.some((c) => c.id === item.id)) {
+      setScanMessage(`Udstyr ${item.assetTag} er allerede i kurven.`);
+      return;
+    }
+
+    // Check if item has an active loan
+    if (item.loans && item.loans.length > 0) {
+      const activeLoan = item.loans[0];
+      const isLoanedToActivePatron =
+        activePatron &&
+        (activeLoan.patron?.id === activePatron.id || activeLoan.patronId === activePatron.id);
+
+      if (isLoanedToActivePatron) {
+        setScannedReturnAssetTag(item.assetTag);
+        setScanMessage(`Afkrydset for returnering: ${item.name} (${item.assetTag})`);
+        return;
+      }
+
+      if (!activePatron && activeLoan.patron) {
+        try {
+          const fullPatron = await getPatronDetails(activeLoan.patron.id);
+          setActivePatron(fullPatron || activeLoan.patron);
+        } catch (e) {
+          setActivePatron(activeLoan.patron);
+        }
+        setScannedReturnAssetTag(item.assetTag);
+        setScanMessage(`Lån fundet - låner tilknyttet: ${activeLoan.patron.studentId}`);
+        return;
+      }
+
+      setScanMessage(
+        `Udstyr ${item.assetTag} er udlånt til en anden (${activeLoan.patron?.studentId || "aktivt lån"}).`
+      );
+      return;
+    }
+
+    if (item.operationalStatus !== "AVAILABLE") {
+      setScanMessage(`Udstyr ${item.assetTag} har status ${item.operationalStatus}.`);
+      return;
+    }
+
+    setCartItems((prev) => [...prev, { ...item, quantity: 1 }]);
+    setScanMessage(`Tilføjet ${item.name} (${item.assetTag})`);
+
+    // Trigger companion bundle prompt if accessories are configured
+    if (item.bundleAccessories && item.bundleAccessories.length > 0) {
+      const accessories = item.bundleAccessories.map((ba: any) => ({
+        accessory: ba.accessory,
+        defaultQuantity: ba.defaultQuantity || 1,
+        selectedQuantity: ba.defaultQuantity || 1,
+        included: true,
+      }));
+      setPendingBundlePrompt({
+        parent: item,
+        accessories,
+      });
+    }
+  };
 
   // Handle Scan Heuristic & Auto-Association with Mode Support
   const handleScanMatch = async ({
@@ -176,52 +321,6 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
         }
         return;
       }
-
-      const handleScannedAsset = async (item: any) => {
-        if (cartItems.some((c) => c.id === item.id)) {
-          setScanMessage(`Udstyr ${item.assetTag} er allerede i kurven.`);
-          return;
-        }
-
-        // Check if item has an active loan
-        if (item.loans && item.loans.length > 0) {
-          const activeLoan = item.loans[0];
-          const isLoanedToActivePatron =
-            activePatron &&
-            (activeLoan.patron?.id === activePatron.id || activeLoan.patronId === activePatron.id);
-
-          if (isLoanedToActivePatron) {
-            setScannedReturnAssetTag(item.assetTag);
-            setScanMessage(`Afkrydset for returnering: ${item.name} (${item.assetTag})`);
-            return;
-          }
-
-          if (!activePatron && activeLoan.patron) {
-            try {
-              const fullPatron = await getPatronDetails(activeLoan.patron.id);
-              setActivePatron(fullPatron || activeLoan.patron);
-            } catch (e) {
-              setActivePatron(activeLoan.patron);
-            }
-            setScannedReturnAssetTag(item.assetTag);
-            setScanMessage(`Lån fundet - låner tilknyttet: ${activeLoan.patron.studentId}`);
-            return;
-          }
-
-          setScanMessage(
-            `Udstyr ${item.assetTag} er udlånt til en anden (${activeLoan.patron?.studentId || "aktivt lån"}).`
-          );
-          return;
-        }
-
-        if (item.operationalStatus !== "AVAILABLE") {
-          setScanMessage(`Udstyr ${item.assetTag} har status ${item.operationalStatus}.`);
-          return;
-        }
-
-        setCartItems((prev) => [...prev, item]);
-        setScanMessage(`Tilføjet ${item.name} (${item.assetTag})`);
-      };
 
       // Force UDSTYR mode
       if (mode === "UDSTYR") {
@@ -396,6 +495,7 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
             lastScannedReturnAssetTag={scannedReturnAssetTag}
             onClearScannedReturnAssetTag={() => setScannedReturnAssetTag(null)}
             onRemoveItem={(id) => setCartItems((prev) => prev.filter((i) => i.id !== id))}
+            onUpdateQuantity={handleUpdateQuantity}
             onClearSession={() => {
               setActivePatron(null);
               setCartItems([]);
@@ -434,11 +534,7 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => {
-                    if (!cartItems.some((c) => c.id === item.id)) {
-                      setCartItems((prev) => [...prev, item]);
-                    }
-                  }}
+                  onClick={() => handleScannedAsset(item)}
                   className="text-left bg-[#202021] hover:bg-[#28282a] border border-[#444444] hover:border-[#009FE3] p-3 rounded-lg transition-all flex flex-col justify-between cursor-pointer"
                 >
                   <div>
@@ -551,6 +647,152 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
                   className="px-5 py-2 bg-[#ffd900] text-black font-bold rounded-lg shadow-md cursor-pointer hover:bg-yellow-400 transition-colors"
                 >
                   Opret & Tilknyt
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Companion Bundle Suggestion Modal */}
+      <AnimatePresence>
+        {pendingBundlePrompt && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="bg-[#151517] border border-[#333333] rounded-2xl max-w-lg w-full p-6 shadow-2xl relative font-mono"
+            >
+              <button
+                type="button"
+                onClick={() => setPendingBundlePrompt(null)}
+                className="absolute top-4 right-4 text-zinc-400 hover:text-white p-1 rounded-full cursor-pointer transition-colors"
+                title="Luk"
+              >
+                <X size={18} weight="bold" />
+              </button>
+
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-[#FFED00]/15 border border-[#FFED00]/30 text-[#FFED00] flex items-center justify-center shrink-0">
+                  <Package size={22} weight="bold" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold font-notch text-white">
+                    Pakkesæt tilgængeligt
+                  </h3>
+                  <p className="text-xs text-zinc-400 font-headline">
+                    Anbefalet tilbehør til {pendingBundlePrompt.parent.name}
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-xs text-zinc-300 mb-3">
+                Dette udstyr har et tilknyttet pakkesæt. Vælg hvilke puljevarer du ønsker at tilføje til lånet:
+              </div>
+
+              <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1 my-4">
+                {pendingBundlePrompt.accessories.map((item, idx) => {
+                  const acc = item.accessory;
+                  return (
+                    <div
+                      key={acc.id}
+                      className={`p-3 rounded-xl border transition-all flex items-center justify-between gap-3 text-xs ${
+                        item.included
+                          ? "bg-[#202021] border-[#FFED00]/40"
+                          : "bg-[#18181a] border-[#333333] opacity-60"
+                      }`}
+                    >
+                      <label className="flex items-center gap-2.5 cursor-pointer min-w-0 flex-1 select-none">
+                        <input
+                          type="checkbox"
+                          checked={item.included}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setPendingBundlePrompt((prev) => {
+                              if (!prev) return null;
+                              const next = [...prev.accessories];
+                              next[idx] = { ...next[idx], included: checked };
+                              return { ...prev, accessories: next };
+                            });
+                          }}
+                          className="w-4 h-4 rounded border-[#444444] bg-[#151517] text-[#FFED00] accent-[#FFED00] cursor-pointer"
+                        />
+                        <div className="min-w-0">
+                          <div className="font-bold text-white truncate font-notch">
+                            {acc.name}
+                          </div>
+                          <div className="text-[11px] text-[#009FE3] font-mono">
+                            [{acc.assetTag}]
+                            {acc.trackingType === "BULK" && (
+                              <span className="ml-2 text-zinc-400">
+                                ({acc.availableQuantity !== undefined ? acc.availableQuantity : acc.totalQuantity} ledige)
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </label>
+
+                      {item.included && (
+                        <div className="flex items-center bg-[#151517] border border-[#333333] rounded-lg overflow-hidden shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPendingBundlePrompt((prev) => {
+                                if (!prev) return null;
+                                const next = [...prev.accessories];
+                                next[idx] = {
+                                  ...next[idx],
+                                  selectedQuantity: Math.max(1, next[idx].selectedQuantity - 1),
+                                };
+                                return { ...prev, accessories: next };
+                              });
+                            }}
+                            className="px-2 py-1 text-zinc-400 hover:text-white hover:bg-[#252527] transition-colors font-bold cursor-pointer"
+                          >
+                            -
+                          </button>
+                          <span className="px-2 font-bold text-white font-mono">
+                            {item.selectedQuantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPendingBundlePrompt((prev) => {
+                                if (!prev) return null;
+                                const next = [...prev.accessories];
+                                next[idx] = {
+                                  ...next[idx],
+                                  selectedQuantity: next[idx].selectedQuantity + 1,
+                                };
+                                return { ...prev, accessories: next };
+                              });
+                            }}
+                            className="px-2 py-1 text-zinc-400 hover:text-white hover:bg-[#252527] transition-colors font-bold cursor-pointer"
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="pt-3 border-t border-[#2e2e2e] flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setPendingBundlePrompt(null)}
+                  className="px-4 py-2 rounded-full bg-[#202021] hover:bg-zinc-800 border border-[#333333] text-zinc-300 text-xs font-headline transition-colors cursor-pointer"
+                >
+                  Spring over
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmBundle}
+                  className="px-5 py-2 rounded-full bg-[#FFED00] hover:bg-[#e6d500] text-black font-extrabold text-xs font-headline transition-all shadow-md shadow-[#FFED00]/20 cursor-pointer"
+                >
+                  + Tilføj valgte til kurv
                 </button>
               </div>
             </motion.div>

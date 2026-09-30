@@ -1,8 +1,16 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { HardwareType, OperationalStatus, TagFacet } from "@prisma/client";
+import { HardwareType, OperationalStatus, TagFacet, TrackingType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+
+function safeRevalidatePath(path: string) {
+  try {
+    revalidatePath(path);
+  } catch {
+    // Graceful fallback when executed in non-request contexts or tests
+  }
+}
 
 async function getActorAdminId(providedAdminId?: string): Promise<string> {
   if (providedAdminId) {
@@ -40,19 +48,27 @@ const CATEGORY_CODE_MAP: Record<string, string> = {
   electronics: "ELC",
   "soldering-smd": "ELC",
   "general-tools": "GEN",
+  accessories: "ACC",
+  bulk: "ACC",
+  batteries: "BAT",
+  cables: "CBL",
 };
 
 /**
  * Deterministic Automated Asset Tag Generator
  * Pattern: [LAB-PREFIX]-[CATEGORY]-[4-DIGIT-SEQUENCE]
- * Example: MK-3DP-0001, ML-CAM-0001, RK-AUD-0001
+ * Example: MK-3DP-0001, ML-CAM-0001, ML-ACC-0001
  */
 export async function generateAssetTag(params: {
   labSlug: string;
   tagSlug?: string;
+  trackingType?: TrackingType;
 }): Promise<string> {
   const labPrefix = LAB_PREFIX_MAP[params.labSlug.toLowerCase()] || "ZL";
-  const catCode = (params.tagSlug && CATEGORY_CODE_MAP[params.tagSlug.toLowerCase()]) || "GEN";
+  let catCode = params.tagSlug ? CATEGORY_CODE_MAP[params.tagSlug.toLowerCase()] : undefined;
+  if (!catCode) {
+    catCode = params.trackingType === TrackingType.BULK ? "ACC" : "GEN";
+  }
   const searchPrefix = `${labPrefix}-${catCode}-`;
 
   // Find all existing asset tags with this prefix
@@ -143,12 +159,15 @@ export async function getInventoryWithFilters(filters: {
     ];
   }
 
-  return await prisma.inventory.findMany({
+  const items = await prisma.inventory.findMany({
     where,
     include: {
       lab: true,
       tags: { include: { tag: true } },
       manuals: { include: { manual: true } },
+      bundleAccessories: {
+        include: { accessory: true },
+      },
       loans: {
         where: { status: "ACTIVE" },
         include: { patron: true },
@@ -159,6 +178,20 @@ export async function getInventoryWithFilters(filters: {
       },
     },
     orderBy: [{ lab: { name: "asc" } }, { name: "asc" }],
+  });
+
+  return items.map((item) => {
+    let availableQuantity = 0;
+    if (item.trackingType === TrackingType.BULK) {
+      const activeLoanedQuantity = item.loans.reduce((acc, l) => acc + (l.quantity - l.returnedQty), 0);
+      availableQuantity = Math.max(0, item.totalQuantity - activeLoanedQuantity);
+    } else {
+      availableQuantity = item.operationalStatus === OperationalStatus.AVAILABLE && item.loans.length === 0 ? 1 : 0;
+    }
+    return {
+      ...item,
+      availableQuantity,
+    };
   });
 }
 
@@ -221,7 +254,7 @@ export async function createTag(data: { name: string; facet: TagFacet }) {
     },
   });
 
-  revalidatePath("/admin/pos");
+  safeRevalidatePath("/admin/pos");
   return { success: true, tag: newTag };
 }
 
@@ -230,30 +263,40 @@ export async function createTag(data: { name: string; facet: TagFacet }) {
  */
 export async function createInventoryItem(data: {
   name: string;
-  labSlug: string;
+  labSlug?: string;
+  labId?: number;
   hardwareType: HardwareType;
+  trackingType?: TrackingType;
+  totalQuantity?: number;
   operationalStatus?: OperationalStatus;
   imageUrl?: string;
   notes?: string;
   customFields?: any;
   tagSlugs?: string[];
+  bundleItems?: { accessoryInventoryId: string; defaultQuantity: number }[];
   adminId?: string;
 }) {
   const actorId = await getActorAdminId(data.adminId);
 
-  const lab = await prisma.lab.findUnique({
-    where: { slug: data.labSlug },
-  });
+  const lab = data.labSlug
+    ? await prisma.lab.findUnique({ where: { slug: data.labSlug } })
+    : data.labId
+    ? await prisma.lab.findUnique({ where: { id: data.labId } })
+    : null;
 
   if (!lab) {
-    throw new Error(`Lab with slug "${data.labSlug}" not found.`);
+    throw new Error(`Lab with slug "${data.labSlug}" or id "${data.labId}" not found.`);
   }
+
+  const trackingType = data.trackingType || TrackingType.SERIALIZED;
+  const totalQuantity = data.totalQuantity !== undefined && data.totalQuantity > 0 ? data.totalQuantity : 1;
 
   // Generate deterministic asset tag
   const primaryTagSlug = data.tagSlugs && data.tagSlugs.length > 0 ? data.tagSlugs[0] : undefined;
   const generatedAssetTag = await generateAssetTag({
-    labSlug: data.labSlug,
+    labSlug: lab.slug,
     tagSlug: primaryTagSlug,
+    trackingType,
   });
 
   const item = await prisma.inventory.create({
@@ -262,6 +305,8 @@ export async function createInventoryItem(data: {
       name: data.name.trim(),
       labId: lab.id,
       hardwareType: data.hardwareType,
+      trackingType,
+      totalQuantity,
       operationalStatus: data.operationalStatus || OperationalStatus.AVAILABLE,
       imageUrl: data.imageUrl?.trim() || null,
       notes: data.notes?.trim() || null,
@@ -285,6 +330,21 @@ export async function createInventoryItem(data: {
     }
   }
 
+  // Attach bundle items if provided
+  if (data.bundleItems && data.bundleItems.length > 0) {
+    for (const b of data.bundleItems) {
+      if (b.accessoryInventoryId && b.accessoryInventoryId !== item.id) {
+        await prisma.bundleItem.create({
+          data: {
+            parentInventoryId: item.id,
+            accessoryInventoryId: b.accessoryInventoryId,
+            defaultQuantity: b.defaultQuantity || 1,
+          },
+        });
+      }
+    }
+  }
+
   await prisma.auditLog.create({
     data: {
       actorAdminId: actorId,
@@ -296,11 +356,13 @@ export async function createInventoryItem(data: {
         name: item.name,
         lab: lab.name,
         hardwareType: item.hardwareType,
+        trackingType: item.trackingType,
+        totalQuantity: item.totalQuantity,
       },
     },
   });
 
-  revalidatePath("/admin/pos");
+  safeRevalidatePath("/admin/pos");
   return { success: true, item };
 }
 
@@ -311,6 +373,8 @@ export async function updateInventoryItem(data: {
   id: string;
   name?: string;
   labSlug?: string;
+  trackingType?: TrackingType;
+  totalQuantity?: number;
   operationalStatus?: OperationalStatus;
   imageUrl?: string;
   notes?: string;
@@ -339,6 +403,8 @@ export async function updateInventoryItem(data: {
     data: {
       name: data.name !== undefined ? data.name.trim() : existing.name,
       labId: targetLabId,
+      trackingType: data.trackingType || existing.trackingType,
+      totalQuantity: data.totalQuantity !== undefined ? data.totalQuantity : existing.totalQuantity,
       operationalStatus: data.operationalStatus || existing.operationalStatus,
       imageUrl: data.imageUrl !== undefined ? data.imageUrl.trim() || null : existing.imageUrl,
       notes: data.notes !== undefined ? data.notes.trim() || null : existing.notes,
@@ -375,11 +441,13 @@ export async function updateInventoryItem(data: {
         assetTag: updated.assetTag,
         name: updated.name,
         operationalStatus: updated.operationalStatus,
+        trackingType: updated.trackingType,
+        totalQuantity: updated.totalQuantity,
       },
     },
   });
 
-  revalidatePath("/admin/pos");
+  safeRevalidatePath("/admin/pos");
   return { success: true, item: updated };
 }
 
@@ -407,6 +475,14 @@ export async function deleteInventoryItem(id: string, adminId?: string) {
   await prisma.inventoryTag.deleteMany({ where: { inventoryId: item.id } });
   await prisma.repairLog.deleteMany({ where: { inventoryId: item.id } });
   await prisma.loan.deleteMany({ where: { inventoryId: item.id } });
+  await prisma.bundleItem.deleteMany({
+    where: {
+      OR: [
+        { parentInventoryId: item.id },
+        { accessoryInventoryId: item.id },
+      ],
+    },
+  });
   await prisma.inventory.delete({ where: { id: item.id } });
 
   await prisma.auditLog.create({
@@ -422,6 +498,98 @@ export async function deleteInventoryItem(id: string, adminId?: string) {
     },
   });
 
-  revalidatePath("/admin/pos");
+  safeRevalidatePath("/admin/pos");
   return { success: true };
+}
+
+/**
+ * 7. Bundle Preset Management Actions
+ */
+export async function assignBundleItem(data: {
+  parentInventoryId: string;
+  accessoryInventoryId: string;
+  defaultQuantity?: number;
+  adminId?: string;
+}) {
+  const actorId = await getActorAdminId(data.adminId);
+  const qty = data.defaultQuantity && data.defaultQuantity > 0 ? data.defaultQuantity : 1;
+
+  const item = await prisma.bundleItem.upsert({
+    where: {
+      parentInventoryId_accessoryInventoryId: {
+        parentInventoryId: data.parentInventoryId,
+        accessoryInventoryId: data.accessoryInventoryId,
+      },
+    },
+    update: {
+      defaultQuantity: qty,
+    },
+    create: {
+      parentInventoryId: data.parentInventoryId,
+      accessoryInventoryId: data.accessoryInventoryId,
+      defaultQuantity: qty,
+    },
+    include: {
+      accessory: true,
+      parent: true,
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      actorAdminId: actorId,
+      actionType: "ASSIGN_BUNDLE_ITEM",
+      targetTable: "BundleItem",
+      targetId: item.id,
+      payloadDelta: {
+        parentAssetTag: item.parent.assetTag,
+        accessoryAssetTag: item.accessory.assetTag,
+        defaultQuantity: item.defaultQuantity,
+      },
+    },
+  });
+
+  safeRevalidatePath("/admin/pos");
+  return { success: true, bundleItem: item };
+}
+
+export async function removeBundleItem(data: {
+  parentInventoryId: string;
+  accessoryInventoryId: string;
+  adminId?: string;
+}) {
+  const actorId = await getActorAdminId(data.adminId);
+
+  await prisma.bundleItem.deleteMany({
+    where: {
+      parentInventoryId: data.parentInventoryId,
+      accessoryInventoryId: data.accessoryInventoryId,
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      actorAdminId: actorId,
+      actionType: "REMOVE_BUNDLE_ITEM",
+      targetTable: "BundleItem",
+      targetId: `${data.parentInventoryId}_${data.accessoryInventoryId}`,
+      payloadDelta: {
+        parentInventoryId: data.parentInventoryId,
+        accessoryInventoryId: data.accessoryInventoryId,
+      },
+    },
+  });
+
+  safeRevalidatePath("/admin/pos");
+  return { success: true };
+}
+
+export async function getBundleItems(parentInventoryId: string) {
+  return await prisma.bundleItem.findMany({
+    where: { parentInventoryId },
+    include: {
+      accessory: true,
+    },
+    orderBy: { createdAt: "asc" },
+  });
 }

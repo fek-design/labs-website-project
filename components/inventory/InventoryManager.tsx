@@ -7,6 +7,8 @@ import {
   createInventoryItem,
   updateInventoryItem,
   deleteInventoryItem,
+  assignBundleItem,
+  removeBundleItem,
 } from "@/app/actions/inventory";
 import {
   assignManualToMachine,
@@ -139,10 +141,35 @@ export function InventoryManager({ activeLab, onSelectLab }: InventoryManagerPro
         id: formData.id,
         name: formData.name,
         labSlug: formData.labSlug,
+        trackingType: formData.trackingType,
+        totalQuantity: formData.totalQuantity,
         operationalStatus: formData.operationalStatus,
         notes: formData.notes,
         customFields: formData.customFields,
       });
+
+      // Synchronize bundle accessories if configured
+      if (formData.bundleItems) {
+        const currentBundleAccessories = editingItem?.bundleAccessories || [];
+        const newAccessoryIds = formData.bundleItems.map((b: any) => b.accessoryInventoryId);
+
+        // Remove unlinked
+        for (const oldB of currentBundleAccessories) {
+          const accId = oldB.accessoryInventoryId || oldB.accessory?.id;
+          if (accId && !newAccessoryIds.includes(accId)) {
+            await removeBundleItem({ parentInventoryId: formData.id, accessoryInventoryId: accId });
+          }
+        }
+
+        // Add or update linked
+        for (const newB of formData.bundleItems) {
+          await assignBundleItem({
+            parentInventoryId: formData.id,
+            accessoryInventoryId: newB.accessoryInventoryId,
+            defaultQuantity: newB.defaultQuantity,
+          });
+        }
+      }
 
       // Synchronize manuals
       const currentManualIds = editingItem?.manuals?.map((m: any) => m.manualId) || [];
@@ -165,9 +192,12 @@ export function InventoryManager({ activeLab, onSelectLab }: InventoryManagerPro
         name: formData.name,
         labSlug: formData.labSlug,
         hardwareType: formData.hardwareType,
+        trackingType: formData.trackingType,
+        totalQuantity: formData.totalQuantity,
         operationalStatus: formData.operationalStatus,
         notes: formData.notes,
         customFields: formData.customFields,
+        bundleItems: formData.bundleItems,
       });
 
       if (res.item && attachedManuals.length > 0) {
@@ -311,6 +341,7 @@ export function InventoryManager({ activeLab, onSelectLab }: InventoryManagerPro
         onClose={() => setIsItemModalOpen(false)}
         item={editingItem}
         labs={labs}
+        availableBulkItems={items.filter((i) => i.trackingType === "BULK")}
         onSave={handleSaveItem}
         onDelete={handleDeleteItem}
         onOpenManualsPicker={() => setIsManualsDrawerOpen(true)}

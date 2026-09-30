@@ -104,10 +104,20 @@ export function InventoryListView({
               </div>
 
               <div className="flex flex-col min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-white text-sm sm:text-base font-bold font-['Stack_Sans_Notch',sans-serif] truncate">
                     {item.name}
                   </h3>
+                  {item.trackingType === "BULK" && (
+                    <span className="inline-flex items-center gap-1 text-[10px] text-[#FFED00] bg-[#FFED00]/10 border border-[#FFED00]/30 px-1.5 py-0.5 rounded font-bold font-['Stack_Sans_Headline',sans-serif]">
+                      PULJEVARE ({item.availableQuantity !== undefined ? item.availableQuantity : item.totalQuantity}/{item.totalQuantity})
+                    </span>
+                  )}
+                  {item.bundleAccessories?.length > 0 && (
+                    <span className="inline-flex items-center gap-1 text-[10px] text-[#009FE3] bg-[#009FE3]/10 border border-[#009FE3]/30 px-1.5 py-0.5 rounded font-bold font-['Stack_Sans_Headline',sans-serif]">
+                      Pakkesæt ({item.bundleAccessories.length})
+                    </span>
+                  )}
                   {manualCount > 0 && (
                     <span className="hidden sm:inline-flex items-center gap-1 text-[10px] text-[#1da9e4] bg-[#1da9e4]/10 border border-[#1da9e4]/30 px-1.5 py-0.5 rounded font-bold">
                       <FileText size={11} /> {manualCount}
@@ -119,7 +129,7 @@ export function InventoryListView({
                     {item.assetTag}
                   </span>
                   <span>•</span>
-                  <span>{isGear ? "Udstyr" : "Maskine"}</span>
+                  <span>{item.trackingType === "BULK" ? "Delt puljestregkode" : isGear ? "Udstyr" : "Maskine"}</span>
                   {item.lab?.name && (
                     <>
                       <span>•</span>
@@ -165,7 +175,9 @@ export function InventoryListView({
                   AKTIVITET
                 </span>
                 <span className="text-[11px] font-bold text-[#d1d5db] truncate">
-                  {activeLoan
+                  {item.trackingType === "BULK"
+                    ? `${item.availableQuantity !== undefined ? item.availableQuantity : item.totalQuantity} ledige (${item.totalQuantity} i alt)`
+                    : activeLoan
                     ? `Udlånt til ${activeLoan.patron?.name || "Låner"}`
                     : item.operationalStatus === "AVAILABLE"
                     ? "KLAR TIL UDLEJNING"
