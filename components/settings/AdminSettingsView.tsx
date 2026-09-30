@@ -94,7 +94,7 @@ export function AdminSettingsView({
         <div>
           <h1 className="text-4xl sm:text-5xl font-black font-notch tracking-tight flex items-baseline gap-1">
             <span className="text-white">LABS</span>
-            <span className="text-[#FFED00]">Indstillinger</span>
+            <span className="text-[#E6007E]">Indstillinger</span>
           </h1>
           <p className="text-sm font-headline font-bold text-zinc-400 mt-1">
             Velkommen, {adminName}
@@ -151,7 +151,7 @@ export function AdminSettingsView({
                 Vælg hvilken facilitet på Køge Campus din aktuelle session administrerer.
               </p>
             </div>
-            <span className="text-[11px] font-mono font-bold text-[#FFED00] bg-[#FFED00]/10 border border-[#FFED00]/30 px-2.5 py-1 rounded-full w-fit">
+            <span className="text-[11px] font-mono font-bold text-[#E6007E] bg-[#E6007E]/10 border border-[#E6007E]/30 px-2.5 py-1 rounded-full w-fit">
               Køge Campus
             </span>
           </div>
@@ -173,7 +173,7 @@ export function AdminSettingsView({
                         onClick={() => onSelectLab?.(facility.slug)}
                         className={`px-4 py-2.5 rounded-xl text-xs font-headline font-bold transition-all cursor-pointer flex items-center gap-2.5 ${
                           isSelected
-                            ? "bg-[#FFED00] text-black shadow-md shadow-[#FFED00]/20 border border-[#FFED00]"
+                            ? "bg-[#E6007E] text-white shadow-md shadow-[#E6007E]/20 border border-[#E6007E]"
                             : "bg-[#151517] text-zinc-300 border border-[#333333] hover:border-zinc-500 hover:text-white"
                         }`}
                       >
@@ -202,7 +202,7 @@ export function AdminSettingsView({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#333333] pb-3">
             <div>
               <h2 className="text-base font-bold font-headline text-white flex items-center gap-2">
-                <UserCheck size={18} weight="bold" className="text-[#FFED00]" />
+                <UserCheck size={18} weight="bold" className="text-[#E6007E]" />
                 <span>Brugerens faste lokation & standardfacilitet</span>
               </h2>
               <p className="text-xs text-zinc-400 font-text mt-0.5">
@@ -222,7 +222,7 @@ export function AdminSettingsView({
               <select
                 value={assignedCampus}
                 onChange={(e) => setAssignedCampus(e.target.value)}
-                className="w-full bg-[#151517] border border-[#333333] focus:border-[#FFED00] text-white rounded-lg p-2.5 outline-none font-headline font-bold text-xs"
+                className="w-full bg-[#151517] border border-[#333333] focus:border-[#E6007E] text-white rounded-lg p-2.5 outline-none font-headline font-bold text-xs"
               >
                 <option value="Køge Campus">Køge Campus (Zealand)</option>
               </select>
@@ -235,7 +235,7 @@ export function AdminSettingsView({
               <select
                 value={assignedLabSlug}
                 onChange={(e) => setAssignedLabSlug(e.target.value as any)}
-                className="w-full bg-[#151517] border border-[#333333] focus:border-[#FFED00] text-white rounded-lg p-2.5 outline-none font-headline font-bold text-xs"
+                className="w-full bg-[#151517] border border-[#333333] focus:border-[#E6007E] text-white rounded-lg p-2.5 outline-none font-headline font-bold text-xs"
               >
                 <option value="medialab">MediaLab (Køge)</option>
                 <option value="makerspace">Makerspace (Køge)</option>
@@ -273,7 +273,7 @@ export function AdminSettingsView({
                 type="text"
                 value={newUsername}
                 onChange={(e) => setNewUsername(e.target.value)}
-                className="w-full bg-[#151517] border border-[#333333] focus:border-[#FFED00] text-white rounded-lg p-2.5 outline-none font-bold font-mono text-xs"
+                className="w-full bg-[#151517] border border-[#333333] focus:border-[#E6007E] text-white rounded-lg p-2.5 outline-none font-bold font-mono text-xs"
               />
             </div>
 
@@ -287,7 +287,7 @@ export function AdminSettingsView({
                 placeholder="••••••••••••"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full bg-[#151517] border border-[#333333] focus:border-[#FFED00] text-white rounded-lg p-2.5 outline-none font-mono text-xs"
+                className="w-full bg-[#151517] border border-[#333333] focus:border-[#E6007E] text-white rounded-lg p-2.5 outline-none font-mono text-xs"
               />
             </div>
 
@@ -302,7 +302,7 @@ export function AdminSettingsView({
                   placeholder="••••••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-[#151517] border border-[#333333] focus:border-[#FFED00] text-white rounded-lg p-2.5 outline-none font-mono text-xs"
+                  className="w-full bg-[#151517] border border-[#333333] focus:border-[#E6007E] text-white rounded-lg p-2.5 outline-none font-mono text-xs"
                 />
               </div>
             )}
@@ -311,7 +311,7 @@ export function AdminSettingsView({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2.5 bg-[#FFED00] hover:bg-[#ffe600] text-black font-headline font-bold rounded-full shadow-lg shadow-[#FFED00]/20 transition-transform hover:scale-[1.02] cursor-pointer"
+                className="px-6 py-2.5 bg-[#E6007E] hover:bg-[#d00072] text-white font-headline font-bold rounded-full shadow-lg shadow-[#E6007E]/20 transition-transform hover:scale-[1.02] cursor-pointer"
               >
                 {isSubmitting ? "Gemmer..." : "Gem Oplysninger & Lokation"}
               </button>
@@ -335,7 +335,7 @@ export function AdminSettingsView({
             </div>
             <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#151517] border border-[#333333]">
               <span className="text-zinc-400 font-text">Tildelt Campus:</span>
-              <span className="text-[#FFED00] font-bold font-mono">{assignedCampus}</span>
+              <span className="text-[#E6007E] font-bold font-mono">{assignedCampus}</span>
             </div>
             <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#151517] border border-[#333333]">
               <span className="text-zinc-400 font-text">Aktiv Session:</span>

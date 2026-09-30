@@ -6,11 +6,11 @@ Provides a dedicated administrator portal (`LABS Katalog`) with distinct amber a
 ## Requirements
 
 ### Requirement: Dedicated Catalogue Administration Dashboard
-The system SHALL provide a unified top-level admin page (`LABS Katalog`) featuring a distinctive brand accent color (`#FF9900` Amber), consolidating craft article creation, step-by-step editing, tools/materials management, and public showcase curation into a single cohesive interface.
+The system SHALL provide a unified top-level admin page (`LABS Katalog`) featuring brand magenta accent styling (`#E6007E`) matching its position as Tab 3 in the cyclic navigation scheme, consolidating craft article creation, step-by-step editing, tools/materials management, and public showcase curation into a single cohesive interface.
 
 #### Scenario: Navigating to catalogue management
 - **WHEN** an administrator clicks the Catalogue icon in the left navigation dock
-- **THEN** the system renders the unified `LABS Katalog` view with amber accent metrics, category filter controls, project list, and craft creation/editing tools.
+- **THEN** the system renders the unified `LABS Katalog` view with magenta accent metrics, category filter controls, project list, and craft creation/editing tools.
 
 ### Requirement: Public Showcase and Category Curation
 The system SHALL allow administrators to curate featured items on the public `/katalog` and landing page, toggle showcase status, create and edit craft guide articles with steps, tools, and media, and update project metadata.

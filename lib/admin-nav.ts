@@ -40,7 +40,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     shortTitle: "POS Desk",
     description: "Stregkodescanner, aktivt udlån og reservationskalender",
     icon: CashRegister,
-    accentColor: "#FFED00", // Yellow — matches LABS Dashboard
+    accentColor: "#FFED00", // Yellow — Tab 1
   },
   {
     id: "INVENTORY",
@@ -48,7 +48,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     shortTitle: "Inventar",
     description: "Fysisk placering, maskiner, hylder, tags og udstyrsstatus",
     icon: Package,
-    accentColor: "#009FE3", // Cyan — matches LABS Inventar
+    accentColor: "#009FE3", // Cyan — Tab 2
   },
   {
     id: "CATALOGUE",
@@ -56,7 +56,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     shortTitle: "Katalog",
     description: "Offentlig udstilling, projektguides, materialer og showcase curation",
     icon: GridFour,
-    accentColor: "#FF9900", // Amber — distinct from physical inventory
+    accentColor: "#E6007E", // Magenta — Tab 3
   },
   {
     id: "MANUALS",
@@ -64,7 +64,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     shortTitle: "Manualer",
     description: "SOP-dokumenter, PDF-manualer og maskintilknytning",
     icon: Books,
-    accentColor: "#E6007E", // Pink — matches Figma LABS Manualer
+    accentColor: "#FFED00", // Yellow — Tab 4 (loops to yellow)
   },
   {
     id: "HISTORY",
@@ -72,7 +72,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     shortTitle: "Historik",
     description: "Handlingslog, admin-aktiviteter og hardwarehistorik",
     icon: ClockCounterClockwise,
-    accentColor: "#009FE3", // Cyan — matches Audit Logs
+    accentColor: "#009FE3", // Cyan — Tab 5 (loops to cyan)
   },
   {
     id: "SETTINGS",
@@ -80,6 +80,6 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     shortTitle: "Opsætning",
     description: "Campusparametre, lokale noder og admin-rettigheder",
     icon: SlidersHorizontal,
-    accentColor: "#FFED00", // Yellow — matches LABS Indstillinger
+    accentColor: "#E6007E", // Magenta — Tab 6 (loops to magenta)
   },
 ];

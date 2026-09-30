@@ -1,9 +1,4 @@
-# admin-navigation-and-dashboard Specification
-
-## Purpose
-Provides a docked, vertical left-hand icon navigation architecture for the admin operational workspace and delivers a refreshed, high-contrast dashboard landing page adhering to Zealand Labs visual design tokens.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Docked Left-Hand Vertical Icon Navigation
 The admin console interface (`/admin/pos`) SHALL feature a fixed, vertical left-hand navigation dock (`width: 80px` collapsed, `width: 256px` expanded) built with the design system dock surface (`#09090b`), right border (`#262626`), a hierarchical location-first lab category selector grouping facilities under their physical campus (`Køge Campus` → `MediaLab`, `Makerspace`), and category icon triggers whose active accent color tokens strictly cycle through the 3 canonical brand CMYK accents in order (`FRONT_DESK` `#FFED00` Yellow, `INVENTORY` `#009FE3` Cyan, `CATALOGUE` `#E6007E` Magenta, `MANUALS` `#FFED00` Yellow, `HISTORY` `#009FE3` Cyan, `SETTINGS` `#E6007E` Magenta) with exactly one distinct accent color assigned per tab.
@@ -42,25 +37,3 @@ The navigation dock SHALL be driven by a centralized, typed declarative registry
 #### Scenario: Extending the navigation system with a new tool
 - **WHEN** a developer adds a new item configuration to the navigation registry
 - **THEN** the navigation bar SHALL automatically render the new icon, tooltip, and view switcher in the correct position without layout regressions.
-
-### Requirement: Refreshed Admin Dashboard Landing Page
-The administrative root landing portal (`/admin`) SHALL display a modernized, high-contrast visual interface matching Figma design specifications while strictly preserving database statistics logic and zero-cloud execution.
-
-#### Scenario: Viewing dashboard statistics cards
-- **WHEN** an administrator visits `/admin`
-- **THEN** the system SHALL execute server-side count queries for borrowable gear, machines, and active loans, rendering the metrics inside high-contrast feature cards.
-
-#### Scenario: Graceful fallback when database is disconnected
-- **WHEN** the local database is offline or encountering connectivity issues
-- **THEN** the `/admin` landing page SHALL render safely with zero-count fallbacks without crashing or displaying raw database errors.
-
-#### Scenario: One-click launching into POS desk
-- **WHEN** an administrator clicks "Launch POS Desk" or any feature module card on `/admin`
-- **THEN** the system SHALL route the user directly to the corresponding admin console view.
-
-### Requirement: Canonical Operational Page Header Standard
-All administrative pages (POS, Inventory, Machines) SHALL adhere to the canonical page header structure established by the POS dashboard: `LABS` in white with the section name styled in `Stack Sans Notch` with brand accent color, administrator welcome greeting, and top live KPI metric counters.
-
-#### Scenario: Rendering canonical page header in admin views
-- **WHEN** an administrator navigates to any admin operational module
-- **THEN** the page displays the unified `LABS [Section]` brand header with admin greeting and top KPI summary ribbon.

@@ -216,7 +216,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
           className={`p-3.5 rounded-xl text-xs font-headline font-bold border flex items-center justify-between ${
             feedback.type === "success"
               ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-              : "bg-[#E6007E]/10 border-[#E6007E]/30 text-[#E6007E]"
+              : "bg-[#FFED00]/10 border-[#FFED00]/30 text-[#FFED00]"
           }`}
         >
           <span>{feedback.message}</span>
@@ -235,7 +235,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
         <div>
           <h1 className="text-4xl sm:text-5xl font-black font-notch tracking-tight flex items-baseline gap-1.5">
             <span className="text-white">LABS</span>
-            <span className="text-[#E6007E]">Manualer</span>
+            <span className="text-[#FFED00]">Manualer</span>
           </h1>
           <p className="text-sm font-headline font-bold text-zinc-400 mt-1">
             Velkommen, {adminName}
@@ -259,7 +259,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
           <div className="flex items-baseline gap-3">
             <AnimatedCounter
               value={linkedEquipmentCount}
-              className="text-5xl sm:text-6xl font-bold font-notch text-[#E6007E] leading-none"
+              className="text-5xl sm:text-6xl font-bold font-notch text-[#FFED00] leading-none"
             />
             <span className="text-sm text-zinc-400 font-headline font-normal leading-tight">
               Tilknyttet<br />udstyr
@@ -292,7 +292,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Scan eller søg i manualer, filnavne eller udstyr..."
-              className="w-full bg-[#151517] border border-[#333333] hover:border-[#444444] focus:border-[#E6007E] focus:ring-1 focus:ring-[#E6007E] rounded-lg pl-14 pr-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition-colors font-mono"
+              className="w-full bg-[#151517] border border-[#333333] hover:border-[#444444] focus:border-[#FFED00] focus:ring-1 focus:ring-[#FFED00] rounded-lg pl-14 pr-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition-colors font-mono"
             />
             {searchQuery && (
               <button
@@ -305,11 +305,11 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
             )}
           </div>
 
-          {/* Pink "Tilføj" Button (Figma Node 86:4094) */}
+          {/* Yellow "Tilføj" Button (Figma Node 86:4094) */}
           <button
             type="button"
             onClick={() => setIsUploadModalOpen(true)}
-            className="px-5 py-2.5 bg-[#E6007E] hover:bg-[#d41477] text-white font-headline font-bold text-xs sm:text-sm rounded-lg shadow-lg shadow-[#E6007E]/20 flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] cursor-pointer shrink-0"
+            className="px-5 py-2.5 bg-[#FFED00] hover:bg-[#e6d600] text-black font-headline font-bold text-xs sm:text-sm rounded-lg shadow-lg shadow-[#FFED00]/20 flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] cursor-pointer shrink-0"
           >
             <span>Tilføj</span>
             <Plus size={16} weight="bold" />
@@ -332,7 +332,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
                 <select
                   value={selectedLab}
                   onChange={(e) => setSelectedLab(e.target.value)}
-                  className="w-full appearance-none bg-[#151517] hover:bg-[#1a1a1d] text-white text-xs sm:text-sm font-bold font-text border border-[#333333] hover:border-[#444444] rounded-lg px-3.5 py-2.5 pr-8 cursor-pointer focus:outline-none focus:border-[#E6007E] focus:ring-1 focus:ring-[#E6007E] transition-colors"
+                  className="w-full appearance-none bg-[#151517] hover:bg-[#1a1a1d] text-white text-xs sm:text-sm font-bold font-text border border-[#333333] hover:border-[#444444] rounded-lg px-3.5 py-2.5 pr-8 cursor-pointer focus:outline-none focus:border-[#FFED00] focus:ring-1 focus:ring-[#FFED00] transition-colors"
                 >
                   <option value="ALL">ALLE FACILITETER</option>
                   <optgroup label="Køge Campus" className="bg-[#151517] text-zinc-400 font-semibold font-headline">
@@ -364,7 +364,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
                 <select
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value)}
-                  className="w-full appearance-none bg-[#151517] hover:bg-[#1a1a1d] text-white text-xs sm:text-sm font-bold font-text border border-[#333333] hover:border-[#444444] rounded-lg px-3.5 py-2.5 pr-8 cursor-pointer focus:outline-none focus:border-[#E6007E] focus:ring-1 focus:ring-[#E6007E] transition-colors"
+                  className="w-full appearance-none bg-[#151517] hover:bg-[#1a1a1d] text-white text-xs sm:text-sm font-bold font-text border border-[#333333] hover:border-[#444444] rounded-lg px-3.5 py-2.5 pr-8 cursor-pointer focus:outline-none focus:border-[#FFED00] focus:ring-1 focus:ring-[#FFED00] transition-colors"
                 >
                   <option value="ALL">ALLE</option>
                   <option value="BORROWABLE_GEAR">Udstyr (Udlån)</option>
@@ -413,7 +413,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
                       <FilePdf
                         size={40}
                         weight="regular"
-                        className="text-[#888888] group-hover/preview:text-[#E6007E] transition-colors"
+                        className="text-[#888888] group-hover/preview:text-[#FFED00] transition-colors"
                       />
                       <span className="text-[10px] text-zinc-400 font-mono mt-1 uppercase tracking-wider">
                         PDF Dokument
@@ -461,7 +461,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
                           setLinkingManualId(isLinkingThis ? null : manual.id);
                           setSelectedEquipmentToLink("");
                         }}
-                        className="text-zinc-400 hover:text-[#E6007E] transition-colors cursor-pointer"
+                        className="text-zinc-400 hover:text-[#FFED00] transition-colors cursor-pointer"
                       >
                         {isLinkingThis ? "Luk -" : "Tilføj +"}
                       </button>
@@ -499,7 +499,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
                             type="button"
                             disabled={!selectedEquipmentToLink}
                             onClick={() => handleConfirmLink(manual.id)}
-                            className="px-3 py-1 bg-[#E6007E] hover:bg-[#d41477] disabled:opacity-40 text-white text-[11px] font-bold rounded cursor-pointer"
+                            className="px-3 py-1 bg-[#FFED00] hover:bg-[#e6d600] disabled:opacity-40 text-black text-[11px] font-bold rounded cursor-pointer"
                           >
                             Tilknyt
                           </button>
@@ -594,7 +594,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-[#333333] pb-3">
               <h2 className="text-lg font-bold font-notch tracking-wider uppercase text-white flex items-center gap-2">
-                <FilePdf size={22} weight="bold" className="text-[#E6007E]" />
+                <FilePdf size={22} weight="bold" className="text-[#FFED00]" />
                 <span>Upload Ny Manual (PDF)</span>
               </h2>
               <button
@@ -611,9 +611,9 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
               {/* File Dropzone */}
               <div>
                 <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider font-headline block mb-1.5">
-                  PDF Fil <span className="text-[#E6007E]">*</span>
+                  PDF Fil <span className="text-[#FFED00]">*</span>
                 </label>
-                <label className="flex flex-col items-center justify-center p-5 border-2 border-dashed border-[#444444] hover:border-[#E6007E] rounded-xl cursor-pointer bg-[#151517] transition-colors">
+                <label className="flex flex-col items-center justify-center p-5 border-2 border-dashed border-[#444444] hover:border-[#FFED00] rounded-xl cursor-pointer bg-[#151517] transition-colors">
                   <UploadSimple size={28} weight="bold" className="text-zinc-400 mb-2" />
                   <span className="text-xs font-headline font-bold text-zinc-200">
                     {uploadFile ? uploadFile.name : "Klik for at vælge eller træk en PDF herind"}
@@ -629,7 +629,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
                       if (e.target.files?.[0]) {
                         setUploadFile(e.target.files[0]);
                         if (!uploadTitle) {
-                          setUploadTitle(
+                           setUploadTitle(
                             e.target.files[0].name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ")
                           );
                         }
@@ -642,7 +642,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
               {/* Title Field */}
               <div>
                 <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider font-headline block mb-1">
-                  Manual Titel <span className="text-[#E6007E]">*</span>
+                  Manual Titel <span className="text-[#FFED00]">*</span>
                 </label>
                 <input
                   type="text"
@@ -650,7 +650,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
                   value={uploadTitle}
                   onChange={(e) => setUploadTitle(e.target.value)}
                   placeholder="F.eks. Sony FX30 Operation Guide"
-                  className="w-full bg-[#151517] border border-[#333333] focus:border-[#E6007E] rounded-lg px-3.5 py-2.5 text-sm text-white outline-none font-bold"
+                  className="w-full bg-[#151517] border border-[#333333] focus:border-[#FFED00] rounded-lg px-3.5 py-2.5 text-sm text-white outline-none font-bold"
                 />
               </div>
 
@@ -664,7 +664,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
                   value={uploadDescription}
                   onChange={(e) => setUploadDescription(e.target.value)}
                   placeholder="Instruktioner, sikkerhedsforskrifter og hurtigvejledning..."
-                  className="w-full bg-[#151517] border border-[#333333] focus:border-[#E6007E] rounded-lg px-3.5 py-2 text-xs text-white outline-none resize-none"
+                  className="w-full bg-[#151517] border border-[#333333] focus:border-[#FFED00] rounded-lg px-3.5 py-2 text-xs text-white outline-none resize-none"
                 />
               </div>
 
@@ -676,7 +676,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
                 <select
                   value={uploadTargetEquipment}
                   onChange={(e) => setUploadTargetEquipment(e.target.value)}
-                  className="w-full bg-[#151517] border border-[#333333] focus:border-[#E6007E] rounded-lg p-2.5 text-xs text-white outline-none font-mono"
+                  className="w-full bg-[#151517] border border-[#333333] focus:border-[#FFED00] rounded-lg p-2.5 text-xs text-white outline-none font-mono"
                 >
                   <option value="">-- Tilknyt ikke endnu --</option>
                   {equipmentList.map((eq) => (
@@ -699,7 +699,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
                 <button
                   type="submit"
                   disabled={isSubmitting || !uploadFile}
-                  className="px-6 py-2.5 bg-[#E6007E] hover:bg-[#d41477] disabled:opacity-40 text-white font-headline font-bold text-xs rounded-full shadow-lg shadow-[#E6007E]/20 transition-all cursor-pointer"
+                  className="px-6 py-2.5 bg-[#FFED00] hover:bg-[#e6d600] disabled:opacity-40 text-black font-headline font-bold text-xs rounded-full shadow-lg shadow-[#FFED00]/20 transition-all cursor-pointer"
                 >
                   {isSubmitting ? "Uploader..." : "Upload Manual"}
                 </button>

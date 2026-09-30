@@ -319,7 +319,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
           className={`p-3.5 rounded-xl text-xs font-headline font-bold border flex items-center justify-between ${
             feedback.type === "success"
               ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-              : "bg-[#FF9900]/10 border-[#FF9900]/30 text-[#FF9900]"
+              : "bg-[#E6007E]/10 border-[#E6007E]/30 text-[#E6007E]"
           }`}
         >
           <span>{feedback.message}</span>
@@ -333,12 +333,12 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
         </div>
       )}
 
-      {/* 1. Canonical Admin Page Header Standard (AGENTS.md) with Amber #FF9900 Accent */}
+      {/* 1. Canonical Admin Page Header Standard (AGENTS.md) with Magenta #E6007E Accent */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 pb-2">
         <div>
           <h1 className="text-4xl sm:text-5xl font-black font-notch tracking-tight flex items-baseline gap-1.5">
             <span className="text-white">LABS</span>
-            <span className="text-[#FF9900]">Katalog</span>
+            <span className="text-[#E6007E]">Katalog</span>
           </h1>
           <p className="text-sm font-headline font-bold text-zinc-400 mt-1">
             Velkommen, {adminName}
@@ -363,7 +363,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
             <div className="flex items-baseline gap-1">
               <AnimatedCounter
                 value={featuredCount}
-                className="text-5xl sm:text-6xl font-bold font-notch text-[#FF9900] leading-none"
+                className="text-5xl sm:text-6xl font-bold font-notch text-[#E6007E] leading-none"
               />
               <span className="text-2xl font-bold text-zinc-500 font-notch">/5</span>
             </div>
@@ -399,7 +399,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Søg i offentlige katalogartikler, tags eller metoder..."
-              className="w-full bg-[#151517] border border-[#333333] hover:border-[#444444] focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition-colors font-mono"
+              className="w-full bg-[#151517] border border-[#333333] hover:border-[#444444] focus:border-[#E6007E] focus:ring-1 focus:ring-[#E6007E] rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition-colors font-mono"
             />
             {searchQuery && (
               <button
@@ -416,7 +416,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
           <button
             type="button"
             onClick={openCreateModal}
-            className="px-5 py-2.5 bg-[#FF9900] hover:bg-[#e68a00] text-black font-headline font-bold text-xs sm:text-sm rounded-lg shadow-lg shadow-[#FF9900]/20 flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] cursor-pointer shrink-0"
+            className="px-5 py-2.5 bg-[#E6007E] hover:bg-[#d00072] text-white font-headline font-bold text-xs sm:text-sm rounded-lg shadow-lg shadow-[#E6007E]/20 flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] cursor-pointer shrink-0"
           >
             <Plus size={16} weight="bold" />
             <span>Nyt Projekt</span>
@@ -449,7 +449,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none bg-[#151517] hover:bg-[#1a1a1d] text-white text-xs sm:text-sm font-bold font-text border border-[#333333] hover:border-[#444444] rounded-lg px-3.5 py-2.5 pr-8 cursor-pointer focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors"
+                  className="w-full appearance-none bg-[#151517] hover:bg-[#1a1a1d] text-white text-xs sm:text-sm font-bold font-text border border-[#333333] hover:border-[#444444] rounded-lg px-3.5 py-2.5 pr-8 cursor-pointer focus:outline-none focus:border-[#E6007E] focus:ring-1 focus:ring-[#E6007E] transition-colors"
                 >
                   <option value="ALL">ALLE KATEGORIER</option>
                   {CANONICAL_CRAFT_CATEGORIES.map((cat) => (
@@ -478,7 +478,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
                 <select
                   value={selectedShowcaseFilter}
                   onChange={(e) => setSelectedShowcaseFilter(e.target.value as any)}
-                  className="w-full appearance-none bg-[#151517] hover:bg-[#1a1a1d] text-white text-xs sm:text-sm font-bold font-text border border-[#333333] hover:border-[#444444] rounded-lg px-3.5 py-2.5 pr-8 cursor-pointer focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors"
+                  className="w-full appearance-none bg-[#151517] hover:bg-[#1a1a1d] text-white text-xs sm:text-sm font-bold font-text border border-[#333333] hover:border-[#444444] rounded-lg px-3.5 py-2.5 pr-8 cursor-pointer focus:outline-none focus:border-[#E6007E] focus:ring-1 focus:ring-[#E6007E] transition-colors"
                 >
                   <option value="ALL">ALLE</option>
                   <option value="FEATURED">Fremhævet på forside</option>
@@ -497,7 +497,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
         {/* 3. Items Card Grid */}
         {isLoading ? (
           <div className="py-24 text-center">
-            <div className="inline-block w-8 h-8 border-2 border-[#FF9900] border-t-transparent rounded-full animate-spin mb-3" />
+            <div className="inline-block w-8 h-8 border-2 border-[#E6007E] border-t-transparent rounded-full animate-spin mb-3" />
             <p className="text-zinc-500 font-headline text-sm">Indlæser katalogartikler...</p>
           </div>
         ) : filteredItems.length === 0 ? (
@@ -510,7 +510,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
                 setSelectedCategory("ALL");
                 setSelectedShowcaseFilter("ALL");
               }}
-              className="mt-3 text-xs text-[#FF9900] hover:underline font-bold cursor-pointer"
+              className="mt-3 text-xs text-[#E6007E] hover:underline font-bold cursor-pointer"
             >
               Nulstil alle filtre
             </button>
@@ -544,7 +544,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
                         }
                         className={`absolute top-3 right-3 p-2.5 rounded-full backdrop-blur-md transition-all cursor-pointer shadow-lg ${
                           isFeatured
-                            ? "bg-[#FF9900] text-black hover:scale-110 shadow-[#FF9900]/30"
+                            ? "bg-[#E6007E] text-white hover:scale-110 shadow-[#E6007E]/30"
                             : "bg-black/60 text-zinc-400 hover:text-white hover:bg-black/80"
                         }`}
                       >
@@ -559,7 +559,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
 
                     {/* Title */}
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 className="text-xl font-bold font-notch text-white group-hover:text-[#FF9900] transition-colors leading-tight">
+                      <h3 className="text-xl font-bold font-notch text-white group-hover:text-[#E6007E] transition-colors leading-tight">
                         {item.title}
                       </h3>
                     </div>
@@ -636,7 +636,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
             <div className="flex items-center justify-between border-b border-[#333333] pb-4">
               <div>
                 <h2 className="text-2xl font-bold font-notch text-white flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 bg-[#FF9900] rounded-full" />
+                  <span className="w-2.5 h-2.5 bg-[#E6007E] rounded-full" />
                   <span>{formData.slug ? "Rediger Katalogartikel" : "Opret Ny Katalogartikel"}</span>
                 </h2>
                 <p className="text-xs text-zinc-400 font-headline mt-1">
@@ -663,7 +663,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     placeholder="fx Laserskåret Nøglering i Akryl"
-                    className="w-full bg-[#202021] border border-[#444444] focus:border-[#FF9900] rounded-lg p-2.5 text-sm text-white font-bold outline-none"
+                    className="w-full bg-[#202021] border border-[#444444] focus:border-[#E6007E] rounded-lg p-2.5 text-sm text-white font-bold outline-none"
                   />
                 </div>
 
@@ -672,7 +672,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full bg-[#202021] border border-[#444444] focus:border-[#FF9900] rounded-lg p-2.5 text-xs text-white font-bold outline-none"
+                    className="w-full bg-[#202021] border border-[#444444] focus:border-[#E6007E] rounded-lg p-2.5 text-xs text-white font-bold outline-none"
                   >
                     {CANONICAL_CRAFT_CATEGORIES.map((c) => (
                       <option key={c} value={c}>
@@ -689,7 +689,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
                     value={formData.slug}
                     onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                     placeholder="autogenereres hvis tom"
-                    className="w-full bg-[#202021] border border-[#444444] focus:border-[#FF9900] rounded-lg p-2.5 text-xs text-zinc-300 font-mono outline-none"
+                    className="w-full bg-[#202021] border border-[#444444] focus:border-[#E6007E] rounded-lg p-2.5 text-xs text-zinc-300 font-mono outline-none"
                   />
                 </div>
               </div>
@@ -719,7 +719,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
                               labs: newLabs.length > 0 ? newLabs : ["makerspace"],
                             });
                           }}
-                          className="accent-[#FF9900] w-4 h-4 rounded"
+                          className="accent-[#E6007E] w-4 h-4 rounded"
                         />
                         <span className="capitalize">{lab === "makerspace" ? "Makerspace" : "MediaLab"}</span>
                       </label>
@@ -920,7 +920,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-6 py-2.5 bg-[#FF9900] hover:bg-[#e68a00] text-black font-headline font-bold rounded-lg shadow-lg shadow-[#FF9900]/20 cursor-pointer disabled:opacity-50"
+                  className="px-6 py-2.5 bg-[#E6007E] hover:bg-[#d00072] text-white font-headline font-bold rounded-lg shadow-lg shadow-[#E6007E]/20 cursor-pointer disabled:opacity-50"
                 >
                   {isSaving ? "Gemmer..." : "Gem Projekt"}
                 </button>
@@ -936,7 +936,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
           <div className="bg-[#151517] border border-[#333333] rounded-2xl w-full max-w-2xl p-6 space-y-4 shadow-2xl max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between border-b border-[#333333] pb-3">
               <h3 className="text-lg font-bold font-notch text-white flex items-center gap-2">
-                <FolderOpen size={20} weight="bold" className="text-[#FF9900]" />
+                <FolderOpen size={20} weight="bold" className="text-[#E6007E]" />
                 <span>Vælg eller Upload Billede</span>
               </h3>
               <button
@@ -961,7 +961,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
                 type="button"
                 disabled={isUploading}
                 onClick={() => modalFileInputRef.current?.click()}
-                className="px-4 py-2 bg-[#FF9900] hover:bg-[#e68a00] text-black text-xs font-headline font-bold rounded-lg flex items-center gap-2 cursor-pointer shadow-md shadow-[#FF9900]/20"
+                className="px-4 py-2 bg-[#E6007E] hover:bg-[#d00072] text-white text-xs font-headline font-bold rounded-lg flex items-center gap-2 cursor-pointer shadow-md shadow-[#E6007E]/20"
               >
                 <UploadSimple size={16} weight="bold" />
                 <span>{isUploading ? "Uploader..." : "Upload fra enhed"}</span>
@@ -985,7 +985,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
                       key={asset.url}
                       type="button"
                       onClick={() => handleSelectAsset(asset.url)}
-                      className="group relative aspect-square bg-[#151517] border border-[#333333] hover:border-[#FF9900] rounded-xl overflow-hidden cursor-pointer p-1.5 transition-all"
+                      className="group relative aspect-square bg-[#151517] border border-[#333333] hover:border-[#E6007E] rounded-xl overflow-hidden cursor-pointer p-1.5 transition-all"
                     >
                       <Image
                         src={asset.url}
