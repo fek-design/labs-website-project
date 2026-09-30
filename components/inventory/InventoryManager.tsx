@@ -145,6 +145,7 @@ export function InventoryManager({ activeLab, onSelectLab }: InventoryManagerPro
         totalQuantity: formData.totalQuantity,
         operationalStatus: formData.operationalStatus,
         notes: formData.notes,
+        purchaseDate: formData.purchaseDate,
         customFields: formData.customFields,
       });
 
@@ -196,6 +197,7 @@ export function InventoryManager({ activeLab, onSelectLab }: InventoryManagerPro
         totalQuantity: formData.totalQuantity,
         operationalStatus: formData.operationalStatus,
         notes: formData.notes,
+        purchaseDate: formData.purchaseDate,
         customFields: formData.customFields,
         bundleItems: formData.bundleItems,
       });

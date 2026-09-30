@@ -160,6 +160,18 @@ export function InventoryGridView({
                     {statusMeta.text}
                   </span>
                 </div>
+
+                {/* Acquisition Date */}
+                {(item.purchaseDate || item.customFields?.purchaseDate) && (
+                  <div className="flex flex-col px-2 py-0.5 bg-[#151517] border border-[#333333] rounded">
+                    <span className="text-[8px] font-bold text-[#888888] uppercase">ANSKAFFET</span>
+                    <span className="text-[10px] font-bold text-[#d1d5db] font-mono">
+                      {item.purchaseDate
+                        ? new Intl.DateTimeFormat("da-DK", { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(item.purchaseDate))
+                        : item.customFields.purchaseDate}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Edit Icon Button */}

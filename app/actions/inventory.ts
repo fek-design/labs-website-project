@@ -271,6 +271,7 @@ export async function createInventoryItem(data: {
   operationalStatus?: OperationalStatus;
   imageUrl?: string;
   notes?: string;
+  purchaseDate?: string | Date | null;
   customFields?: any;
   tagSlugs?: string[];
   bundleItems?: { accessoryInventoryId: string; defaultQuantity: number }[];
@@ -299,6 +300,18 @@ export async function createInventoryItem(data: {
     trackingType,
   });
 
+  let parsedPurchaseDate: Date | null = null;
+  if (data.purchaseDate) {
+    if (data.purchaseDate instanceof Date) {
+      parsedPurchaseDate = data.purchaseDate;
+    } else if (typeof data.purchaseDate === "string" && data.purchaseDate.trim()) {
+      const parsed = new Date(data.purchaseDate);
+      if (!isNaN(parsed.getTime())) {
+        parsedPurchaseDate = parsed;
+      }
+    }
+  }
+
   const item = await prisma.inventory.create({
     data: {
       assetTag: generatedAssetTag,
@@ -310,6 +323,7 @@ export async function createInventoryItem(data: {
       operationalStatus: data.operationalStatus || OperationalStatus.AVAILABLE,
       imageUrl: data.imageUrl?.trim() || null,
       notes: data.notes?.trim() || null,
+      purchaseDate: parsedPurchaseDate,
       customFields: data.customFields || null,
     },
   });
@@ -378,6 +392,7 @@ export async function updateInventoryItem(data: {
   operationalStatus?: OperationalStatus;
   imageUrl?: string;
   notes?: string;
+  purchaseDate?: string | Date | null;
   customFields?: any;
   tagSlugs?: string[];
   adminId?: string;
@@ -398,6 +413,18 @@ export async function updateInventoryItem(data: {
     if (lab) targetLabId = lab.id;
   }
 
+  let parsedPurchaseDate: Date | null | undefined = undefined;
+  if (data.purchaseDate !== undefined) {
+    if (data.purchaseDate === null || data.purchaseDate === "") {
+      parsedPurchaseDate = null;
+    } else if (data.purchaseDate instanceof Date) {
+      parsedPurchaseDate = data.purchaseDate;
+    } else if (typeof data.purchaseDate === "string") {
+      const parsed = new Date(data.purchaseDate);
+      parsedPurchaseDate = !isNaN(parsed.getTime()) ? parsed : null;
+    }
+  }
+
   const updated = await prisma.inventory.update({
     where: { id: data.id },
     data: {
@@ -408,6 +435,7 @@ export async function updateInventoryItem(data: {
       operationalStatus: data.operationalStatus || existing.operationalStatus,
       imageUrl: data.imageUrl !== undefined ? data.imageUrl.trim() || null : existing.imageUrl,
       notes: data.notes !== undefined ? data.notes.trim() || null : existing.notes,
+      purchaseDate: parsedPurchaseDate !== undefined ? parsedPurchaseDate : existing.purchaseDate,
       customFields: data.customFields !== undefined ? data.customFields : existing.customFields,
     },
   });

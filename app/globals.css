@@ -14,6 +14,22 @@
   --color-surface-elevated: #141416;
   --color-surface-border: #262626;
 
+  /* Brand Neutral Palette (Overriding Tailwind default zinc with authentic Zealand Labs obsidian darks) */
+  --color-zinc-950: #09090b;
+  --color-zinc-900: #0e0e11;
+  --color-zinc-850: #151517;
+  --color-zinc-800: #202021;
+  --color-zinc-750: #262626;
+  --color-zinc-700: #333333;
+  --color-zinc-650: #444444;
+  --color-zinc-600: #52525a;
+  --color-zinc-500: #717178;
+  --color-zinc-400: #9e9ea3;
+  --color-zinc-300: #d1d1d4;
+  --color-zinc-200: #e4e4e7;
+  --color-zinc-100: #f5f5f6;
+  --color-zinc-50: #fafafa;
+
   /* Light Section Tokens */
   --color-surface-light: #ffffff;
   --color-surface-light-card: #f4f4f5;

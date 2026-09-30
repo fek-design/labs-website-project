@@ -188,6 +188,21 @@ export function InventoryListView({
               {/* Vertical divider */}
               <div className="hidden sm:block w-[1px] h-7 bg-[#333333]" />
 
+              {/* Acquisition Date Pill */}
+              <div className="flex flex-col items-start px-2.5 py-1 bg-[#151517] border border-[#333333] rounded">
+                <span className="text-[9px] font-bold text-[#888888] uppercase tracking-wider">
+                  ANSKAFFET
+                </span>
+                <span className="text-[11px] font-bold text-[#d1d5db] font-mono">
+                  {item.purchaseDate
+                    ? new Intl.DateTimeFormat("da-DK", { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(item.purchaseDate))
+                    : item.customFields?.purchaseDate || "—"}
+                </span>
+              </div>
+
+              {/* Vertical divider */}
+              <div className="hidden sm:block w-[1px] h-7 bg-[#333333]" />
+
               {/* Action Button: Edit */}
               <button
                 type="button"

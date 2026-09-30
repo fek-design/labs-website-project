@@ -69,7 +69,21 @@ export function InventoryItemModal({
       setOperationalStatus(item.operationalStatus || "AVAILABLE");
       setNotes(item.notes || "");
       setSerialNumber(item.customFields?.serialNumber || "");
-      setPurchaseDate(item.customFields?.purchaseDate || "");
+      // Hydrate purchaseDate from top-level column, falling back to legacy customFields
+      let initialDate = "";
+      if (item.purchaseDate) {
+        try {
+          const d = new Date(item.purchaseDate);
+          if (!isNaN(d.getTime())) {
+            initialDate = d.toISOString().split("T")[0];
+          }
+        } catch {
+          initialDate = "";
+        }
+      } else if (item.customFields?.purchaseDate) {
+        initialDate = String(item.customFields.purchaseDate);
+      }
+      setPurchaseDate(initialDate);
       setPreviewTag(item.assetTag || "");
 
       // Hydrate bundle accessories
@@ -136,10 +150,10 @@ export function InventoryItemModal({
         totalQuantity: trackingType === "BULK" ? Math.max(1, Number(totalQuantity) || 1) : 1,
         operationalStatus,
         notes: notes.trim(),
+        purchaseDate: purchaseDate ? new Date(purchaseDate).toISOString() : null,
         bundleItems: trackingType === "SERIALIZED" && hardwareType === "BORROWABLE_GEAR" ? bundleItems : [],
         customFields: {
           serialNumber: trackingType === "SERIALIZED" ? serialNumber.trim() : "",
-          purchaseDate: purchaseDate.trim(),
         },
       });
       onClose();
@@ -283,27 +297,52 @@ export function InventoryItemModal({
             />
           </div>
 
-          {/* Quantity or Serial Number */}
+          {/* Quantity, Serial Number & Acquisition Date */}
           {trackingType === "BULK" ? (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-[#888888] font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
-                Samlet beholdning (Antal i puljen)
-              </label>
-              <input
-                type="number"
-                min={1}
-                required
-                value={totalQuantity}
-                onChange={(e) => setTotalQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                placeholder="F.eks. 15"
-                className="bg-[#151517] border border-[#333333] rounded-lg px-3.5 py-2.5 text-sm text-[#d1d5db] focus:outline-none focus:border-[#1da9e4] transition-colors font-mono"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs text-[#888888] font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
+                  Samlet beholdning (Antal i puljen)
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  required
+                  value={totalQuantity}
+                  onChange={(e) => setTotalQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                  placeholder="F.eks. 15"
+                  className="bg-[#151517] border border-[#333333] rounded-lg px-3.5 py-2.5 text-sm text-[#d1d5db] focus:outline-none focus:border-[#1da9e4] transition-colors font-mono"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-[#888888] font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
+                    Anskaffelsesdato
+                  </label>
+                  {purchaseDate && (
+                    <button
+                      type="button"
+                      onClick={() => setPurchaseDate("")}
+                      className="text-[11px] text-[#888888] hover:text-[#e51d87] transition-colors"
+                    >
+                      Ryd
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="date"
+                  value={purchaseDate}
+                  onChange={(e) => setPurchaseDate(e.target.value)}
+                  className="bg-[#151517] border border-[#333333] rounded-lg px-3.5 py-2.5 text-sm text-[#d1d5db] focus:outline-none focus:border-[#1da9e4] transition-colors font-mono [color-scheme:dark]"
+                />
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs text-[#888888] font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
-                  Serie nummer
+                  Serienummer
                 </label>
                 <input
                   type="text"
@@ -315,15 +354,25 @@ export function InventoryItemModal({
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs text-[#888888] font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
-                  Indkøbsdato
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-[#888888] font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
+                    Anskaffelsesdato
+                  </label>
+                  {purchaseDate && (
+                    <button
+                      type="button"
+                      onClick={() => setPurchaseDate("")}
+                      className="text-[11px] text-[#888888] hover:text-[#e51d87] transition-colors"
+                    >
+                      Ryd
+                    </button>
+                  )}
+                </div>
                 <input
-                  type="text"
+                  type="date"
                   value={purchaseDate}
                   onChange={(e) => setPurchaseDate(e.target.value)}
-                  placeholder="DD/MM/ÅÅÅÅ"
-                  className="bg-[#151517] border border-[#333333] rounded-lg px-3.5 py-2.5 text-sm text-[#d1d5db] focus:outline-none focus:border-[#1da9e4] transition-colors"
+                  className="bg-[#151517] border border-[#333333] rounded-lg px-3.5 py-2.5 text-sm text-[#d1d5db] focus:outline-none focus:border-[#1da9e4] transition-colors font-mono [color-scheme:dark]"
                 />
               </div>
             </div>
