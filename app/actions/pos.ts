@@ -12,6 +12,7 @@ import {
   returnEquipmentSchema,
   returnMultipleLoansSchema,
 } from "@/lib/validations/pos";
+import { requireAuth } from "@/lib/auth";
 
 function safeRevalidatePath(path: string) {
   try {
@@ -232,7 +233,8 @@ export async function createOrUpdatePatron(data: {
     throw new Error("For mange anmodninger om oprettelse. Vent et øjeblik.");
   }
 
-  const adminId = await getActorAdminId(data.adminId);
+  const authUser = await requireAuth();
+  const adminId = authUser.id;
   const normalizedStudentId = parsed.data.studentId.trim();
   const normalizedEmail =
     parsed.data.email?.toLowerCase().trim() ||
@@ -327,7 +329,8 @@ export async function checkoutEquipment(data: {
     throw new Error("For mange udlån gennemført på kort tid. Vent venligst 1 minut.");
   }
 
-  const actorId = await getActorAdminId(data.adminId);
+  const authUser = await requireAuth();
+  const actorId = authUser.id;
 
   // Normalize requested items with quantities
   const requestedItems: { inventoryId: string; quantity: number }[] = [];
@@ -462,7 +465,8 @@ export async function returnEquipment(data: {
     throw new Error(`Valideringsfejl: ${parsed.error.issues[0]?.message || "Ugyldigt udlåns-ID."}`);
   }
 
-  const actorId = await getActorAdminId(data.adminId);
+  const authUser = await requireAuth();
+  const actorId = authUser.id;
   const finalStatus =
     data.status === "DAMAGED"
       ? LoanStatus.DAMAGED
@@ -567,7 +571,8 @@ export async function returnMultipleLoans(data: {
     throw new Error(`Valideringsfejl: ${parsed.error.issues[0]?.message || "Ingen lån valgt til returnering."}`);
   }
 
-  const actorId = await getActorAdminId(data.adminId);
+  const authUser = await requireAuth();
+  const actorId = authUser.id;
 
   return await prisma.$transaction(async (tx) => {
     const loans = await tx.loan.findMany({
@@ -644,7 +649,8 @@ export async function modifyLoan(data: {
   notes?: string;
   adminId?: string;
 }) {
-  const actorId = await getActorAdminId(data.adminId);
+  const authUser = await requireAuth();
+  const actorId = authUser.id;
 
   const existingLoan = await prisma.loan.findUnique({
     where: { id: data.loanId },

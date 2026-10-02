@@ -9,6 +9,7 @@ import {
   createInventoryItemSchema,
   updateInventoryItemSchema,
 } from "@/lib/validations/inventory";
+import { requireAuth } from "@/lib/auth";
 
 function safeRevalidatePath(path: string) {
   try {
@@ -246,6 +247,7 @@ export async function getFacetedTags() {
  * Dynamic Tag Creation within a specific facet
  */
 export async function createTag(data: { name: string; facet: TagFacet }) {
+  await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
   const cleanName = data.name.trim();
   if (!cleanName) {
     throw new Error("Tag name cannot be empty.");
@@ -307,7 +309,8 @@ export async function createInventoryItem(data: {
     throw new Error("For mange oprettelser på kort tid. Vent venligst et øjeblik.");
   }
 
-  const actorId = await getActorAdminId(data.adminId);
+  const authUser = await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+  const actorId = authUser.id;
 
   const lab = data.labSlug
     ? await prisma.lab.findUnique({ where: { slug: data.labSlug } })
@@ -466,7 +469,8 @@ export async function updateInventoryItem(data: {
     throw new Error("For mange opdateringer på kort tid. Vent venligst et øjeblik.");
   }
 
-  const actorId = await getActorAdminId(data.adminId);
+  const authUser = await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+  const actorId = authUser.id;
 
   try {
     const existing = await prisma.inventory.findUnique({
@@ -573,7 +577,8 @@ export async function updateInventoryItem(data: {
  * 6. Delete Inventory Item
  */
 export async function deleteInventoryItem(id: string, adminId?: string) {
-  const actorId = await getActorAdminId(adminId);
+  const authUser = await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+  const actorId = authUser.id;
 
   const item = await prisma.inventory.findUnique({
     where: { id },
@@ -650,7 +655,8 @@ export async function saveBundlePreset(data: {
   items: { accessoryInventoryId: string; defaultQuantity: number }[];
   adminId?: string;
 }) {
-  const actorId = await getActorAdminId(data.adminId);
+  const authUser = await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+  const actorId = authUser.id;
   const name = data.name.trim();
   if (!name) throw new Error("Pakkenavn er påkrævet");
 
@@ -703,7 +709,8 @@ export async function saveBundlePreset(data: {
 }
 
 export async function deleteBundlePreset(id: string, adminId?: string) {
-  const actorId = await getActorAdminId(adminId);
+  const authUser = await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+  const actorId = authUser.id;
   const bundle = await prisma.bundle.findUnique({ where: { id } });
   if (!bundle) throw new Error("Pakkesæt ikke fundet");
 
@@ -724,7 +731,8 @@ export async function deleteBundlePreset(id: string, adminId?: string) {
 }
 
 export async function setEquipmentBundles(inventoryId: string, bundleIds: string[], adminId?: string) {
-  const actorId = await getActorAdminId(adminId);
+  const authUser = await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+  const actorId = authUser.id;
   await prisma.equipmentBundleAssignment.deleteMany({
     where: { inventoryId },
   });

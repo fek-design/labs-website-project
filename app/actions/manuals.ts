@@ -4,18 +4,7 @@ import { prisma } from "@/lib/prisma";
 import fs from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
-
-async function getActorAdminId(providedAdminId?: string): Promise<string> {
-  if (providedAdminId) {
-    const admin = await prisma.admin.findUnique({ where: { id: providedAdminId } });
-    if (admin) return admin.id;
-  }
-  const defaultAdmin =
-    (await prisma.admin.findFirst({ where: { isActive: true, role: "TECHNICIAN" } })) ||
-    (await prisma.admin.findFirst({ where: { isActive: true } }));
-
-  return defaultAdmin?.id || "system";
-}
+import { requireAuth } from "@/lib/auth";
 
 /**
  * 1. Get entire centralized Manuals catalog with linked machine associations
@@ -93,7 +82,8 @@ export async function uploadManual(formData: FormData) {
     await fs.writeFile(filePath, buffer);
     const publicUrl = `/uploads/manuals/${sanitizedFileName}`;
 
-    const actorAdminId = await getActorAdminId(actorAdminIdParam || undefined);
+    const user = await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+    const actorAdminId = user.id;
 
     // Create standalone Manual record
     const createdManual = await prisma.manual.create({
@@ -155,7 +145,8 @@ export async function assignManualToMachine(params: {
   actorAdminId?: string;
 }) {
   try {
-    const { inventoryId, manualId, actorAdminId: actorId } = params;
+    const user = await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+    const { inventoryId, manualId } = params;
 
     const existingLink = await prisma.inventoryManual.findUnique({
       where: {
@@ -177,7 +168,7 @@ export async function assignManualToMachine(params: {
       },
     });
 
-    const actorAdminId = await getActorAdminId(actorId);
+    const actorAdminId = user.id;
 
     await prisma.auditLog.create({
       data: {
@@ -208,7 +199,8 @@ export async function unassignManualFromMachine(params: {
   actorAdminId?: string;
 }) {
   try {
-    const { inventoryId, manualId, actorAdminId: actorId } = params;
+    const user = await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+    const { inventoryId, manualId } = params;
 
     await prisma.inventoryManual.delete({
       where: {
@@ -219,7 +211,7 @@ export async function unassignManualFromMachine(params: {
       },
     });
 
-    const actorAdminId = await getActorAdminId(actorId);
+    const actorAdminId = user.id;
 
     await prisma.auditLog.create({
       data: {
@@ -249,7 +241,8 @@ export async function deleteManual(params: {
   actorAdminId?: string;
 }) {
   try {
-    const { manualId, actorAdminId: actorId } = params;
+    const user = await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+    const { manualId } = params;
 
     const manual = await prisma.manual.findUnique({
       where: { id: manualId },
@@ -278,7 +271,7 @@ export async function deleteManual(params: {
       }
     }
 
-    const actorAdminId = await getActorAdminId(actorId);
+    const actorAdminId = user.id;
 
     await prisma.auditLog.create({
       data: {
@@ -314,7 +307,8 @@ export async function updateManual(params: {
   actorAdminId?: string;
 }) {
   try {
-    const { manualId, title, description, actorAdminId: actorId } = params;
+    const user = await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+    const { manualId, title, description } = params;
 
     const updatedManual = await prisma.manual.update({
       where: { id: manualId },
@@ -324,7 +318,7 @@ export async function updateManual(params: {
       },
     });
 
-    const actorAdminId = await getActorAdminId(actorId);
+    const actorAdminId = user.id;
 
     await prisma.auditLog.create({
       data: {

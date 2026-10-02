@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
+import { requireAuth } from "@/lib/auth";
 
 export interface AdminProfileResponse {
   id: string;
@@ -18,18 +19,11 @@ export interface AdminProfileResponse {
 
 export async function getAdminProfile(): Promise<AdminProfileResponse | null> {
   try {
-    const admin =
-      (await prisma.admin.findFirst({
-        where: { isActive: true, role: "SUPER_ADMIN" },
-        include: { assignedLab: true },
-      })) ||
-      (await prisma.admin.findFirst({
-        where: { isActive: true },
-        include: { assignedLab: true },
-      })) ||
-      (await prisma.admin.findFirst({
-        include: { assignedLab: true },
-      }));
+    const user = await requireAuth();
+    const admin = await prisma.admin.findUnique({
+      where: { id: user.id },
+      include: { assignedLab: true },
+    });
 
     if (!admin) return null;
 
@@ -57,17 +51,17 @@ export async function updateAdminCredentials(data: {
   assignedLabSlug?: string;
 }) {
   try {
-    let admin = null;
-    if (data.adminId && data.adminId.trim() !== "") {
-      admin = await prisma.admin.findUnique({ where: { id: data.adminId.trim() } });
+    const user = await requireAuth();
+
+    let targetAdminId = user.id;
+    if (data.adminId && data.adminId.trim() !== "" && data.adminId.trim() !== user.id) {
+      if (user.role !== "SUPER_ADMIN") {
+        throw new Error("Kun SuperAdmin må redigere andre brugeres oplysninger.");
+      }
+      targetAdminId = data.adminId.trim();
     }
 
-    if (!admin) {
-      admin =
-        (await prisma.admin.findFirst({ where: { isActive: true } })) ||
-        (await prisma.admin.findFirst());
-    }
-
+    const admin = await prisma.admin.findUnique({ where: { id: targetAdminId } });
     if (!admin) {
       throw new Error("Ingen administrator fundet i databasen.");
     }
@@ -115,7 +109,7 @@ export async function updateAdminCredentials(data: {
     try {
       await prisma.auditLog.create({
         data: {
-          actorAdminId: admin.id,
+          actorAdminId: user.id,
           actionType: "UPDATE_CREDENTIALS",
           targetTable: "Admin",
           targetId: admin.id,

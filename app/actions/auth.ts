@@ -2,28 +2,18 @@
 
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { cookies } from "next/headers";
-
-const SESSION_COOKIE_NAME = "zl_admin_session";
+import {
+  createSessionToken,
+  setSessionCookie,
+  clearSessionCookie,
+  getVerifiedSession,
+} from "@/lib/session";
 
 export async function loginAdmin(formData: { username: string; password: string }) {
   const cleanUsername = formData.username.trim();
   const cleanPassword = formData.password.trim();
 
-  // 1. Direct temporary credential check OR database lookup
-  if (cleanUsername === "admin" && cleanPassword === "pass") {
-    const cookieStore = await cookies();
-    cookieStore.set(SESSION_COOKIE_NAME, "admin:super_admin", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-    });
-
-    return { success: true, username: "admin", role: "SUPER_ADMIN" };
-  }
-
-  // 2. Database bcrypt check
+  // 1. Database lookup
   const admin = await prisma.admin.findUnique({
     where: { username: cleanUsername },
   });
@@ -32,42 +22,57 @@ export async function loginAdmin(formData: { username: string; password: string 
     throw new Error("Invalid administrator username or inactive account.");
   }
 
+  // 2. Local bcrypt password verification
   const isMatch = await bcrypt.compare(cleanPassword, admin.passwordHash);
   if (!isMatch) {
     throw new Error("Invalid password provided.");
   }
 
-  const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE_NAME, `${admin.username}:${admin.role}`, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 7,
+  // 3. Issue cryptographically signed HMAC-SHA256 session token
+  const token = createSessionToken({
+    adminId: admin.id,
+    role: admin.role,
+    username: admin.username,
   });
+
+  await setSessionCookie(token);
 
   return { success: true, username: admin.username, role: admin.role };
 }
 
 export async function logoutAdmin() {
-  const cookieStore = await cookies();
-  cookieStore.delete(SESSION_COOKIE_NAME);
+  await clearSessionCookie();
   return { success: true };
 }
 
 export async function getAuthSession() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get(SESSION_COOKIE_NAME);
+  const sessionData = await getVerifiedSession();
 
-  if (!session?.value) {
+  if (!sessionData) {
     return { isAuthenticated: false, user: null };
   }
 
-  const [username, role] = session.value.split(":");
-  return {
-    isAuthenticated: true,
-    user: {
-      username: username || "admin",
-      role: role || "SUPER_ADMIN",
-    },
-  };
+  // Verify in database that admin still exists and is active
+  try {
+    const admin = await prisma.admin.findUnique({
+      where: { id: sessionData.adminId },
+      select: { id: true, username: true, role: true, isActive: true },
+    });
+
+    if (!admin || !admin.isActive) {
+      await clearSessionCookie();
+      return { isAuthenticated: false, user: null };
+    }
+
+    return {
+      isAuthenticated: true,
+      user: {
+        id: admin.id,
+        username: admin.username,
+        role: admin.role,
+      },
+    };
+  } catch {
+    return { isAuthenticated: false, user: null };
+  }
 }
