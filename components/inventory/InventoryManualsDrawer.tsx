@@ -108,7 +108,7 @@ export function InventoryManualsDrawer({
               onClick={() => onToggleManual(manual)}
               className={`flex flex-col justify-between p-3 rounded-lg border transition-all cursor-pointer select-none ${
                 isSelected
-                  ? "bg-[#162734] border-[#1da9e4] shadow-sm shadow-[#1da9e4]/20"
+                  ? "bg-[#162734] border-[#1da9e4] shadow-sm"
                   : "bg-[#202021] hover:bg-[#252527] border-[#444444] hover:border-[#666666]"
               }`}
             >

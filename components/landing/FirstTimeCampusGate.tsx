@@ -10,7 +10,7 @@ interface FirstTimeCampusGateProps {
   onEnter?: (campus: CampusKey) => void;
 }
 
-const CAMPUSES: CampusKey[] = ["køge", "roskilde"];
+const CAMPUSES: CampusKey[] = ["køge"];
 
 export function FirstTimeCampusGate({ forceShow = false, onEnter }: FirstTimeCampusGateProps) {
   // Scoped to Køge: Bypassed to avoid blocking visitors with single-campus selection
@@ -113,10 +113,8 @@ export function FirstTimeCampusGate({ forceShow = false, onEnter }: FirstTimeCam
               className="absolute inset-0 bg-cover bg-center opacity-40 scale-105 filter blur-[2px] transition-transform duration-1000"
               style={{ backgroundImage: `url('/images/landing/hero-bg.jpg')` }}
             />
-            {/* Dark tinted overlay per Figma rgba(0, 0, 0, 0.81) */}
+            {/* Dark tinted overlay */}
             <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px]" />
-            {/* Subtle radial CMYK glow in background */}
-            <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-brand-cyan/10 blur-[120px] rounded-full pointer-events-none" />
           </div>
 
           {/* Top Header */}
@@ -194,7 +192,7 @@ export function FirstTimeCampusGate({ forceShow = false, onEnter }: FirstTimeCam
                     {isSelected && (
                       <motion.div
                         layoutId="activeCampusUnderline"
-                        className="absolute -bottom-1 left-2 right-2 h-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+                        className="absolute -bottom-1 left-2 right-2 h-0.5 bg-white"
                         transition={{ type: "spring", stiffness: 380, damping: 30 }}
                       />
                     )}

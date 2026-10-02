@@ -284,7 +284,7 @@ export function ActiveLoansTable({ loans, onRefresh }: ActiveLoansTableProps) {
                   type="button"
                   disabled={processingLoanId === damagePromptLoan.id}
                   onClick={handleDamagedReturnSubmit}
-                  className="px-5 py-2 bg-[#E6007E] hover:bg-[#cf006f] text-white font-bold rounded-full text-xs shadow-lg shadow-[#E6007E]/20"
+                  className="px-5 py-2 bg-[#E6007E] hover:bg-[#cf006f] text-white font-bold rounded-full text-xs cursor-pointer"
                 >
                   {processingLoanId === damagePromptLoan.id ? "Processing..." : "Confirm Damaged Return"}
                 </button>

@@ -70,14 +70,14 @@ export function AuthGate({ children }: AuthGateProps) {
         >
           {/* Header */}
           <div className="text-center space-y-2">
-            <div className="w-12 h-12 rounded-full bg-[#FFED00] flex items-center justify-center text-black font-extrabold text-base mx-auto mb-3 shadow-lg shadow-[#FFED00]/20">
+            <div className="w-12 h-12 rounded-full bg-[#FFED00] flex items-center justify-center text-black font-extrabold text-base mx-auto mb-3">
               ZL
             </div>
             <h1 className="text-2xl font-extrabold tracking-tight uppercase">
               Staff Console Gate
             </h1>
             <p className="text-xs text-zinc-400">
-              Zealand Labs Offline Management Protocol (Roskilde & Køge)
+              Zealand Labs Offline Management Protocol (Køge)
             </p>
           </div>
 
@@ -133,7 +133,7 @@ export function AuthGate({ children }: AuthGateProps) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3.5 bg-[#FFED00] hover:bg-[#ffe600] text-black font-bold rounded-full shadow-lg shadow-[#FFED00]/20 transition-transform hover:scale-[1.01] active:scale-[0.99] mt-2 flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-[#FFED00] hover:bg-[#ffe600] text-black font-bold rounded-full transition-transform hover:scale-[1.01] active:scale-[0.99] mt-2 flex items-center justify-center gap-2 cursor-pointer"
             >
               {isSubmitting ? "Authenticating..." : "Unlock Admin Console →"}
             </button>

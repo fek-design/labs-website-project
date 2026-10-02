@@ -509,7 +509,7 @@ export function ActiveSessionPanel({
                 onClick={() => setSessionMode("UDLEJNING")}
                 className={`flex-1 py-4 px-2 rounded-lg font-bold font-mono text-sm tracking-wider transition-all cursor-pointer text-center ${
                   sessionMode === "UDLEJNING"
-                    ? "bg-[#ffd900] text-black shadow-lg shadow-[#ffd900]/10"
+                    ? "bg-[#ffd900] text-black"
                     : "bg-[#202021] border border-[#444444] text-zinc-400 hover:text-white"
                 }`}
               >
@@ -522,7 +522,7 @@ export function ActiveSessionPanel({
                 onClick={() => setSessionMode("RETUNERING")}
                 className={`flex-1 py-4 px-2 rounded-lg font-bold font-mono text-sm tracking-wider transition-all cursor-pointer text-center ${
                   sessionMode === "RETUNERING"
-                    ? "bg-[#ffd900] text-black shadow-lg shadow-[#ffd900]/10"
+                    ? "bg-[#ffd900] text-black"
                     : "bg-[#202021] border border-[#444444] text-white hover:bg-zinc-800"
                 }`}
               >
@@ -1154,7 +1154,7 @@ export function ActiveSessionPanel({
                                   type="button"
                                   disabled={isProcessingLoan}
                                   onClick={() => handleTargetReturn(false)}
-                                  className="px-5 py-2 rounded-full bg-[#009FE3] hover:bg-[#0089c4] text-black font-extrabold text-xs transition-all shadow-md shadow-[#009FE3]/25 cursor-pointer"
+                                  className="px-5 py-2 rounded-full bg-[#009FE3] hover:bg-[#0089c4] text-black font-extrabold text-xs transition-all cursor-pointer"
                                 >
                                   {isProcessingLoan
                                     ? "Behandler..."
@@ -1176,7 +1176,7 @@ export function ActiveSessionPanel({
                                   type="button"
                                   disabled={isProcessingLoan}
                                   onClick={() => handleTargetReturn(true)}
-                                  className="px-4 py-1.5 rounded-full bg-[#E6007E] hover:bg-[#c9006e] text-white font-extrabold text-xs transition-all shadow-md shadow-[#E6007E]/25 cursor-pointer"
+                                  className="px-4 py-1.5 rounded-full bg-[#E6007E] hover:bg-[#c9006e] text-white font-extrabold text-xs transition-all cursor-pointer"
                                 >
                                   {isProcessingLoan ? "Registrerer..." : "Bekræft defekt aflevering"}
                                 </button>

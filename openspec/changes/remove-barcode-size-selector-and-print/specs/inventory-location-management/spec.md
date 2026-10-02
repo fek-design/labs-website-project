@@ -35,6 +35,10 @@ The system SHALL auto-generate deterministic, unique asset tags following the 4-
 - **WHEN** an administrator views the item creation or edit modal card
 - **THEN** the system generates a local, zero-cloud Code 128 barcode representation matching the current deterministic asset tag alongside human-readable text and placement metadata without size roll toggling controls.
 
+#### Scenario: Printing physical sticker label
+- **WHEN** an administrator attempts or requests physical label printing
+- **THEN** the system delegates physical printing to downloaded standardized vector SVG or 300 DPI PNG graphics loaded in dedicated thermal printer software, deprecating direct in-browser thermal print dialog triggers.
+
 #### Scenario: Downloading barcode asset files
 - **WHEN** an administrator clicks "Hent SVG" or "Hent PNG"
 - **THEN** the system directly downloads the high-resolution vector SVG or 300 DPI PNG image file of the standardized label asset tag barcode without invoking external web services or browser print dialogs.

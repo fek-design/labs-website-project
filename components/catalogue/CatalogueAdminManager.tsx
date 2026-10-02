@@ -416,7 +416,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
           <button
             type="button"
             onClick={openCreateModal}
-            className="px-5 py-2.5 bg-[#E6007E] hover:bg-[#d00072] text-white font-headline font-bold text-xs sm:text-sm rounded-lg shadow-lg shadow-[#E6007E]/20 flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] cursor-pointer shrink-0"
+            className="px-5 py-2.5 bg-[#E6007E] hover:bg-[#d00072] text-white font-headline font-bold text-xs sm:text-sm rounded-lg flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] cursor-pointer shrink-0"
           >
             <Plus size={16} weight="bold" />
             <span>Nyt Projekt</span>
@@ -544,7 +544,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
                         }
                         className={`absolute top-3 right-3 p-2.5 rounded-full backdrop-blur-md transition-all cursor-pointer shadow-lg ${
                           isFeatured
-                            ? "bg-[#E6007E] text-white hover:scale-110 shadow-[#E6007E]/30"
+                            ? "bg-[#E6007E] text-white hover:scale-110"
                             : "bg-black/60 text-zinc-400 hover:text-white hover:bg-black/80"
                         }`}
                       >
@@ -920,7 +920,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-6 py-2.5 bg-[#E6007E] hover:bg-[#d00072] text-white font-headline font-bold rounded-lg shadow-lg shadow-[#E6007E]/20 cursor-pointer disabled:opacity-50"
+                  className="px-6 py-2.5 bg-[#E6007E] hover:bg-[#d00072] text-white font-headline font-bold rounded-lg cursor-pointer disabled:opacity-50"
                 >
                   {isSaving ? "Gemmer..." : "Gem Projekt"}
                 </button>
@@ -961,7 +961,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
                 type="button"
                 disabled={isUploading}
                 onClick={() => modalFileInputRef.current?.click()}
-                className="px-4 py-2 bg-[#E6007E] hover:bg-[#d00072] text-white text-xs font-headline font-bold rounded-lg flex items-center gap-2 cursor-pointer shadow-md shadow-[#E6007E]/20"
+                className="px-4 py-2 bg-[#E6007E] hover:bg-[#d00072] text-white text-xs font-headline font-bold rounded-lg flex items-center gap-2 cursor-pointer"
               >
                 <UploadSimple size={16} weight="bold" />
                 <span>{isUploading ? "Uploader..." : "Upload fra enhed"}</span>

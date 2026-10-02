@@ -36,7 +36,7 @@ export function CalendarDayCell({
       onClick={() => onSelectDate(date)}
       className={`h-[42px] px-2 py-1.5 rounded-lg border text-left transition-all flex flex-col justify-between cursor-pointer ${
         isSelected
-          ? "border-[#FFED00] bg-[#222126] shadow-sm shadow-[#FFED00]/20"
+          ? "border-[#FFED00] bg-[#222126] shadow-sm"
           : isToday
           ? "border-[#009FE3] bg-[#101720]"
           : isCurrentMonth

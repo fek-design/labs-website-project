@@ -124,9 +124,12 @@ export const CAMPUS_DATA: Record<CampusKey, { name: string; labs: LabInfo[] }> =
 
 export const STORAGE_KEY_CAMPUS = "zealand_labs_campus_selected";
 
+export const AVAILABLE_CAMPUSES: CampusKey[] = ["køge"];
+
 interface CampusContextType {
   campus: CampusKey;
   setCampus: (c: CampusKey, persist?: boolean) => void;
+  availableCampuses: CampusKey[];
   activeLabId: string;
   setActiveLabId: (id: string) => void;
   currentLabs: LabInfo[];
@@ -147,10 +150,10 @@ export function CampusProvider({ children }: { children: React.ReactNode }) {
     // Restore saved campus from localStorage if present
     try {
       const saved = localStorage.getItem(STORAGE_KEY_CAMPUS);
-      if (saved && (saved in CAMPUS_DATA)) {
+      if (saved && (saved in CAMPUS_DATA) && AVAILABLE_CAMPUSES.includes(saved as CampusKey)) {
         setCampusState(saved as CampusKey);
-      } else if (saved) {
-        // Graceful fallback for legacy stored keys
+      } else {
+        // Default to active available campus
         setCampusState("køge");
         localStorage.setItem(STORAGE_KEY_CAMPUS, "køge");
       }
@@ -185,6 +188,7 @@ export function CampusProvider({ children }: { children: React.ReactNode }) {
       value={{
         campus,
         setCampus,
+        availableCampuses: AVAILABLE_CAMPUSES,
         activeLabId,
         setActiveLabId,
         currentLabs,

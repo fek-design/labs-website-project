@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { MagnifyingGlass, Plus, List, SquaresFour } from "@phosphor-icons/react";
+import { MagnifyingGlass, Plus, List, SquaresFour, Package } from "@phosphor-icons/react";
 
 interface InventoryToolbarProps {
   searchQuery: string;
@@ -9,6 +9,7 @@ interface InventoryToolbarProps {
   viewMode: "list" | "grid";
   onViewModeChange: (mode: "list" | "grid") => void;
   onOpenCreateModal: () => void;
+  onOpenBundlePresetsModal?: () => void;
 }
 
 export function InventoryToolbar({
@@ -17,6 +18,7 @@ export function InventoryToolbar({
   viewMode,
   onViewModeChange,
   onOpenCreateModal,
+  onOpenBundlePresetsModal,
 }: InventoryToolbarProps) {
   return (
     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full">
@@ -65,15 +67,30 @@ export function InventoryToolbar({
         </div>
       </div>
 
-      {/* Primary Action Button: Tilføj */}
-      <button
-        type="button"
-        onClick={onOpenCreateModal}
-        className="flex items-center justify-center gap-2 bg-[#1da9e4] hover:bg-[#1895ca] text-white px-5 py-2.5 rounded-lg font-['Stack_Sans_Text',sans-serif] text-sm font-bold min-h-[48px] transition-all shadow-sm shrink-0 active:scale-[0.98]"
-      >
-        <span>Tilføj</span>
-        <Plus size={16} weight="bold" />
-      </button>
+      <div className="flex items-center gap-2 shrink-0">
+        {/* Secondary Action: Pakkesæt / Kits */}
+        {onOpenBundlePresetsModal && (
+          <button
+            type="button"
+            onClick={onOpenBundlePresetsModal}
+            className="flex items-center justify-center gap-2 bg-[#202021] hover:bg-[#262626] border border-[#333333] hover:border-[#444444] text-white px-4 py-2.5 rounded-lg font-['Stack_Sans_Text',sans-serif] text-sm font-semibold min-h-[48px] transition-all shrink-0 active:scale-[0.98]"
+            title="Administrer faste pakkesæt & tilbehørskits"
+          >
+            <Package size={16} weight="bold" className="text-[#009FE3]" />
+            <span>Pakkesæt</span>
+          </button>
+        )}
+
+        {/* Primary Action Button: Tilføj */}
+        <button
+          type="button"
+          onClick={onOpenCreateModal}
+          className="flex items-center justify-center gap-2 bg-[#1da9e4] hover:bg-[#1895ca] text-white px-5 py-2.5 rounded-lg font-['Stack_Sans_Text',sans-serif] text-sm font-bold min-h-[48px] transition-all shadow-sm shrink-0 active:scale-[0.98]"
+        >
+          <span>Tilføj</span>
+          <Plus size={16} weight="bold" />
+        </button>
+      </div>
     </div>
   );
 }

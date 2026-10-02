@@ -173,7 +173,7 @@ export function AdminSettingsView({
                         onClick={() => onSelectLab?.(facility.slug)}
                         className={`px-4 py-2.5 rounded-xl text-xs font-headline font-bold transition-all cursor-pointer flex items-center gap-2.5 ${
                           isSelected
-                            ? "bg-[#E6007E] text-white shadow-md shadow-[#E6007E]/20 border border-[#E6007E]"
+                            ? "bg-[#E6007E] text-white border border-[#E6007E]"
                             : "bg-[#151517] text-zinc-300 border border-[#333333] hover:border-zinc-500 hover:text-white"
                         }`}
                       >
@@ -311,7 +311,7 @@ export function AdminSettingsView({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2.5 bg-[#E6007E] hover:bg-[#d00072] text-white font-headline font-bold rounded-full shadow-lg shadow-[#E6007E]/20 transition-transform hover:scale-[1.02] cursor-pointer"
+                className="px-6 py-2.5 bg-[#E6007E] hover:bg-[#d00072] text-white font-headline font-bold rounded-full transition-transform hover:scale-[1.02] cursor-pointer"
               >
                 {isSubmitting ? "Gemmer..." : "Gem Oplysninger & Lokation"}
               </button>

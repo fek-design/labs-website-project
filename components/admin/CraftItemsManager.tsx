@@ -362,7 +362,7 @@ export function CraftItemsManager() {
           <button
             type="button"
             onClick={openNewItemModal}
-            className="px-4 py-2 bg-[#009FE3] hover:bg-[#0080BA] text-black font-bold text-xs uppercase rounded-none transition-colors flex items-center gap-2 cursor-pointer shadow-lg shadow-[#009FE3]/20 font-headline"
+            className="px-4 py-2 bg-[#009FE3] hover:bg-[#0080BA] text-black font-bold text-xs uppercase rounded-none transition-colors flex items-center gap-2 cursor-pointer font-headline"
           >
             <span>+ Opret Ny Artikel</span>
           </button>

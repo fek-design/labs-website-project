@@ -60,7 +60,7 @@ export function CraftProcessSelector({ processes }: CraftProcessSelectorProps) {
               {isActive && (
                 <motion.div
                   layoutId="activeProcessUnderline"
-                  className="absolute -bottom-3.5 left-0 right-0 h-0.5 bg-brand-cyan shadow-[0_0_10px_#009FE3]"
+                  className="absolute -bottom-3.5 left-0 right-0 h-0.5 bg-brand-cyan"
                   transition={{ type: "spring", stiffness: 450, damping: 32 }}
                 />
               )}

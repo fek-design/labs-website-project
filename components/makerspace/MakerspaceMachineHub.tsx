@@ -114,7 +114,7 @@ export function MakerspaceMachineHub({ activeLab = "makerspace" }: MakerspaceMac
           <button
             type="button"
             onClick={openGlobalCatalog}
-            className="px-5 py-2.5 bg-[#FFED00] hover:bg-[#ffe600] text-black font-bold text-xs rounded-full shadow-lg shadow-[#FFED00]/20 flex items-center gap-2 transition-transform hover:scale-[1.02] cursor-pointer"
+            className="px-5 py-2.5 bg-[#FFED00] hover:bg-[#ffe600] text-black font-bold text-xs rounded-full flex items-center gap-2 transition-transform hover:scale-[1.02] cursor-pointer"
           >
             <Books size={16} weight="bold" aria-hidden="true" />
             <span>Manuals Library Catalog</span>

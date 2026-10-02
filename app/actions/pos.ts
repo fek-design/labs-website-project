@@ -82,9 +82,17 @@ export async function searchPatronOrAsset(query: string, labSlug: string = "medi
       include: {
         lab: true,
         tags: { include: { tag: true } },
-        bundleAccessories: {
+        assignedBundles: {
           include: {
-            accessory: true,
+            bundle: {
+              include: {
+                items: {
+                  include: {
+                    accessory: true,
+                  },
+                },
+              },
+            },
           },
         },
         loans: {
@@ -98,7 +106,7 @@ export async function searchPatronOrAsset(query: string, labSlug: string = "medi
     }),
   ]);
 
-  // Compute availableQuantity for assets
+  // Compute availableQuantity and aggregate bundle accessories for assets
   const formattedAssets = assets.map((item) => {
     let availableQuantity = 0;
     if (item.trackingType === TrackingType.BULK) {
@@ -107,8 +115,29 @@ export async function searchPatronOrAsset(query: string, labSlug: string = "medi
     } else {
       availableQuantity = item.operationalStatus === OperationalStatus.AVAILABLE && item.loans.length === 0 ? 1 : 0;
     }
+
+    const accessoryMap = new Map<string, any>();
+    for (const ab of item.assignedBundles || []) {
+      for (const bi of ab.bundle.items) {
+        if (accessoryMap.has(bi.accessoryInventoryId)) {
+          accessoryMap.get(bi.accessoryInventoryId).defaultQuantity += bi.defaultQuantity;
+        } else {
+          accessoryMap.set(bi.accessoryInventoryId, {
+            id: bi.id,
+            bundleId: bi.bundleId,
+            bundleName: ab.bundle.name,
+            accessoryInventoryId: bi.accessoryInventoryId,
+            defaultQuantity: bi.defaultQuantity,
+            accessory: bi.accessory,
+          });
+        }
+      }
+    }
+    const bundleAccessories = Array.from(accessoryMap.values());
+
     return {
       ...item,
+      bundleAccessories,
       availableQuantity,
     };
   });
@@ -673,9 +702,17 @@ export async function getLabInventory(labSlug: string = "medialab") {
     },
     include: {
       tags: { include: { tag: true } },
-      bundleAccessories: {
+      assignedBundles: {
         include: {
-          accessory: true,
+          bundle: {
+            include: {
+              items: {
+                include: {
+                  accessory: true,
+                },
+              },
+            },
+          },
         },
       },
       loans: {
@@ -694,8 +731,29 @@ export async function getLabInventory(labSlug: string = "medialab") {
     } else {
       availableQuantity = item.operationalStatus === OperationalStatus.AVAILABLE && item.loans.length === 0 ? 1 : 0;
     }
+
+    const accessoryMap = new Map<string, any>();
+    for (const ab of item.assignedBundles || []) {
+      for (const bi of ab.bundle.items) {
+        if (accessoryMap.has(bi.accessoryInventoryId)) {
+          accessoryMap.get(bi.accessoryInventoryId).defaultQuantity += bi.defaultQuantity;
+        } else {
+          accessoryMap.set(bi.accessoryInventoryId, {
+            id: bi.id,
+            bundleId: bi.bundleId,
+            bundleName: ab.bundle.name,
+            accessoryInventoryId: bi.accessoryInventoryId,
+            defaultQuantity: bi.defaultQuantity,
+            accessory: bi.accessory,
+          });
+        }
+      }
+    }
+    const bundleAccessories = Array.from(accessoryMap.values());
+
     return {
       ...item,
+      bundleAccessories,
       availableQuantity,
     };
   });

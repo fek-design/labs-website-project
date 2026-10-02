@@ -331,7 +331,7 @@ export function LoanDetailModal({
                     type="button"
                     disabled={isProcessing}
                     onClick={() => handleReturn(false)}
-                    className="px-5 py-2 bg-[#009FE3] hover:bg-[#0089c4] text-black font-bold rounded-full shadow-lg shadow-[#009FE3]/20"
+                    className="px-5 py-2 bg-[#009FE3] hover:bg-[#0089c4] text-black font-bold rounded-full cursor-pointer"
                   >
                     {isProcessing ? "Processing..." : "Check In Equipment"}
                   </button>
@@ -341,7 +341,7 @@ export function LoanDetailModal({
                   type="button"
                   disabled={isProcessing}
                   onClick={() => handleReturn(true)}
-                  className="px-5 py-2 bg-[#E6007E] hover:bg-[#cf006f] text-white font-bold rounded-full shadow-lg shadow-[#E6007E]/20"
+                  className="px-5 py-2 bg-[#E6007E] hover:bg-[#cf006f] text-white font-bold rounded-full cursor-pointer"
                 >
                   {isProcessing ? "Processing..." : "Confirm Damaged Return"}
                 </button>

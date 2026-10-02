@@ -148,8 +148,16 @@ export async function getInventoryWithFilters(filters: {
       lab: true,
       tags: { include: { tag: true } },
       manuals: { include: { manual: true } },
-      bundleAccessories: {
-        include: { accessory: true },
+      assignedBundles: {
+        include: {
+          bundle: {
+            include: {
+              items: {
+                include: { accessory: true },
+              },
+            },
+          },
+        },
       },
       loans: {
         where: { status: "ACTIVE" },
@@ -171,8 +179,29 @@ export async function getInventoryWithFilters(filters: {
     } else {
       availableQuantity = item.operationalStatus === OperationalStatus.AVAILABLE && item.loans.length === 0 ? 1 : 0;
     }
+
+    const accessoryMap = new Map<string, any>();
+    for (const ab of item.assignedBundles || []) {
+      for (const bi of ab.bundle.items) {
+        if (accessoryMap.has(bi.accessoryInventoryId)) {
+          accessoryMap.get(bi.accessoryInventoryId).defaultQuantity += bi.defaultQuantity;
+        } else {
+          accessoryMap.set(bi.accessoryInventoryId, {
+            id: bi.id,
+            bundleId: bi.bundleId,
+            bundleName: ab.bundle.name,
+            accessoryInventoryId: bi.accessoryInventoryId,
+            defaultQuantity: bi.defaultQuantity,
+            accessory: bi.accessory,
+          });
+        }
+      }
+    }
+    const bundleAccessories = Array.from(accessoryMap.values());
+
     return {
       ...item,
+      bundleAccessories,
       availableQuantity,
     };
   });
@@ -258,7 +287,7 @@ export async function createInventoryItem(data: {
   purchaseDate?: string | Date | null;
   customFields?: any;
   tagSlugs?: string[];
-  bundleItems?: { accessoryInventoryId: string; defaultQuantity: number }[];
+  bundleIds?: string[];
   adminId?: string;
 }) {
   const actorId = await getActorAdminId(data.adminId);
@@ -330,18 +359,15 @@ export async function createInventoryItem(data: {
     }
   }
 
-  // Attach bundle items if provided
-  if (data.bundleItems && data.bundleItems.length > 0) {
-    for (const b of data.bundleItems) {
-      if (b.accessoryInventoryId && b.accessoryInventoryId !== item.id) {
-        await prisma.bundleItem.create({
-          data: {
-            parentInventoryId: item.id,
-            accessoryInventoryId: b.accessoryInventoryId,
-            defaultQuantity: b.defaultQuantity || 1,
-          },
-        });
-      }
+  // Attach bundle assignments if provided
+  if (data.bundleIds && data.bundleIds.length > 0) {
+    for (const bId of data.bundleIds) {
+      await prisma.equipmentBundleAssignment.create({
+        data: {
+          inventoryId: item.id,
+          bundleId: bId,
+        },
+      });
     }
   }
 
@@ -383,6 +409,7 @@ export async function updateInventoryItem(data: {
   purchaseDate?: string | Date | null;
   customFields?: any;
   tagSlugs?: string[];
+  bundleIds?: string[];
   adminId?: string;
 }) {
   const actorId = await getActorAdminId(data.adminId);
@@ -448,6 +475,20 @@ export async function updateInventoryItem(data: {
     }
   }
 
+  if (data.bundleIds !== undefined) {
+    await prisma.equipmentBundleAssignment.deleteMany({
+      where: { inventoryId: updated.id },
+    });
+    for (const bId of data.bundleIds) {
+      await prisma.equipmentBundleAssignment.create({
+        data: {
+          inventoryId: updated.id,
+          bundleId: bId,
+        },
+      });
+    }
+  }
+
   await prisma.auditLog.create({
     data: {
       actorAdminId: actorId,
@@ -493,14 +534,8 @@ export async function deleteInventoryItem(id: string, adminId?: string) {
   await prisma.inventoryTag.deleteMany({ where: { inventoryId: item.id } });
   await prisma.repairLog.deleteMany({ where: { inventoryId: item.id } });
   await prisma.loan.deleteMany({ where: { inventoryId: item.id } });
-  await prisma.bundleItem.deleteMany({
-    where: {
-      OR: [
-        { parentInventoryId: item.id },
-        { accessoryInventoryId: item.id },
-      ],
-    },
-  });
+  await prisma.equipmentBundleAssignment.deleteMany({ where: { inventoryId: item.id } });
+  await prisma.bundleItem.deleteMany({ where: { accessoryInventoryId: item.id } });
   await prisma.inventory.delete({ where: { id: item.id } });
 
   await prisma.auditLog.create({
@@ -521,80 +556,107 @@ export async function deleteInventoryItem(id: string, adminId?: string) {
 }
 
 /**
- * 7. Bundle Preset Management Actions
+ * 7. Standalone Bundle Preset Management Actions
  */
-export async function assignBundleItem(data: {
-  parentInventoryId: string;
-  accessoryInventoryId: string;
-  defaultQuantity?: number;
+export async function getBundlePresets() {
+  return await prisma.bundle.findMany({
+    include: {
+      items: {
+        include: {
+          accessory: true,
+        },
+        orderBy: { createdAt: "asc" },
+      },
+      assignments: {
+        include: {
+          inventory: {
+            select: {
+              id: true,
+              name: true,
+              assetTag: true,
+              hardwareType: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: { name: "asc" },
+  });
+}
+
+export async function saveBundlePreset(data: {
+  id?: string;
+  name: string;
+  description?: string;
+  items: { accessoryInventoryId: string; defaultQuantity: number }[];
   adminId?: string;
 }) {
   const actorId = await getActorAdminId(data.adminId);
-  const qty = data.defaultQuantity && data.defaultQuantity > 0 ? data.defaultQuantity : 1;
+  const name = data.name.trim();
+  if (!name) throw new Error("Pakkenavn er påkrævet");
 
-  const item = await prisma.bundleItem.upsert({
-    where: {
-      parentInventoryId_accessoryInventoryId: {
-        parentInventoryId: data.parentInventoryId,
-        accessoryInventoryId: data.accessoryInventoryId,
+  let bundle;
+  if (data.id) {
+    bundle = await prisma.bundle.update({
+      where: { id: data.id },
+      data: {
+        name,
+        description: data.description?.trim() || null,
       },
-    },
-    update: {
-      defaultQuantity: qty,
-    },
-    create: {
-      parentInventoryId: data.parentInventoryId,
-      accessoryInventoryId: data.accessoryInventoryId,
-      defaultQuantity: qty,
-    },
-    include: {
-      accessory: true,
-      parent: true,
-    },
-  });
+    });
+    await prisma.bundleItem.deleteMany({ where: { bundleId: bundle.id } });
+  } else {
+    bundle = await prisma.bundle.create({
+      data: {
+        name,
+        description: data.description?.trim() || null,
+      },
+    });
+  }
+
+  for (const item of data.items) {
+    if (item.accessoryInventoryId) {
+      await prisma.bundleItem.create({
+        data: {
+          bundleId: bundle.id,
+          accessoryInventoryId: item.accessoryInventoryId,
+          defaultQuantity: item.defaultQuantity > 0 ? item.defaultQuantity : 1,
+        },
+      });
+    }
+  }
 
   await prisma.auditLog.create({
     data: {
       actorAdminId: actorId,
-      actionType: "ASSIGN_BUNDLE_ITEM",
-      targetTable: "BundleItem",
-      targetId: item.id,
+      actionType: data.id ? "UPDATE_BUNDLE_PRESET" : "CREATE_BUNDLE_PRESET",
+      targetTable: "Bundle",
+      targetId: bundle.id,
       payloadDelta: {
-        parentAssetTag: item.parent.assetTag,
-        accessoryAssetTag: item.accessory.assetTag,
-        defaultQuantity: item.defaultQuantity,
+        name: bundle.name,
+        itemCount: data.items.length,
       },
     },
   });
 
   safeRevalidatePath("/admin/pos");
-  return { success: true, bundleItem: item };
+  return { success: true, bundle };
 }
 
-export async function removeBundleItem(data: {
-  parentInventoryId: string;
-  accessoryInventoryId: string;
-  adminId?: string;
-}) {
-  const actorId = await getActorAdminId(data.adminId);
+export async function deleteBundlePreset(id: string, adminId?: string) {
+  const actorId = await getActorAdminId(adminId);
+  const bundle = await prisma.bundle.findUnique({ where: { id } });
+  if (!bundle) throw new Error("Pakkesæt ikke fundet");
 
-  await prisma.bundleItem.deleteMany({
-    where: {
-      parentInventoryId: data.parentInventoryId,
-      accessoryInventoryId: data.accessoryInventoryId,
-    },
-  });
+  await prisma.bundle.delete({ where: { id } });
 
   await prisma.auditLog.create({
     data: {
       actorAdminId: actorId,
-      actionType: "REMOVE_BUNDLE_ITEM",
-      targetTable: "BundleItem",
-      targetId: `${data.parentInventoryId}_${data.accessoryInventoryId}`,
-      payloadDelta: {
-        parentInventoryId: data.parentInventoryId,
-        accessoryInventoryId: data.accessoryInventoryId,
-      },
+      actionType: "DELETE_BUNDLE_PRESET",
+      targetTable: "Bundle",
+      targetId: id,
+      payloadDelta: { name: bundle.name },
     },
   });
 
@@ -602,12 +664,31 @@ export async function removeBundleItem(data: {
   return { success: true };
 }
 
-export async function getBundleItems(parentInventoryId: string) {
-  return await prisma.bundleItem.findMany({
-    where: { parentInventoryId },
-    include: {
-      accessory: true,
-    },
-    orderBy: { createdAt: "asc" },
+export async function setEquipmentBundles(inventoryId: string, bundleIds: string[], adminId?: string) {
+  const actorId = await getActorAdminId(adminId);
+  await prisma.equipmentBundleAssignment.deleteMany({
+    where: { inventoryId },
   });
+
+  for (const bundleId of bundleIds) {
+    await prisma.equipmentBundleAssignment.create({
+      data: {
+        inventoryId,
+        bundleId,
+      },
+    });
+  }
+
+  await prisma.auditLog.create({
+    data: {
+      actorAdminId: actorId,
+      actionType: "SET_EQUIPMENT_BUNDLES",
+      targetTable: "EquipmentBundleAssignment",
+      targetId: inventoryId,
+      payloadDelta: { bundleIds },
+    },
+  });
+
+  safeRevalidatePath("/admin/pos");
+  return { success: true };
 }

@@ -33,9 +33,6 @@ export function LandingFooter({ className = "mt-8 sm:mt-12" }: LandingFooterProp
             <a href="#support-pillars" className="py-1.5 sm:py-1 hover:text-black transition-colors flex items-center">
               MEDIALAB
             </a>
-            <a href="#support-pillars" className="py-1.5 sm:py-1 hover:text-black transition-colors flex items-center">
-              DIMSELAB
-            </a>
             <Link href="/admin" className="py-2 hover:text-black transition-colors text-white font-bold pt-2 text-xs flex items-center">
               ADMIN CONSOLE ↗
             </Link>

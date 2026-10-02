@@ -7,8 +7,7 @@ import {
   createInventoryItem,
   updateInventoryItem,
   deleteInventoryItem,
-  assignBundleItem,
-  removeBundleItem,
+  setEquipmentBundles,
 } from "@/app/actions/inventory";
 import {
   assignManualToMachine,
@@ -23,6 +22,7 @@ import { InventoryListView } from "./InventoryListView";
 import { InventoryGridView } from "./InventoryGridView";
 import { InventoryItemModal } from "./InventoryItemModal";
 import { InventoryManualsDrawer } from "./InventoryManualsDrawer";
+import { BundlePresetsModal } from "./BundlePresetsModal";
 
 interface InventoryManagerProps {
   activeLab?: "medialab" | "makerspace" | string;
@@ -48,6 +48,7 @@ export function InventoryManager({ activeLab, onSelectLab }: InventoryManagerPro
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [isManualsDrawerOpen, setIsManualsDrawerOpen] = useState(false);
+  const [isBundlePresetsModalOpen, setIsBundlePresetsModalOpen] = useState(false);
   const [attachedManuals, setAttachedManuals] = useState<any[]>([]);
 
   // Fetch admin session username for greeting
@@ -148,30 +149,8 @@ export function InventoryManager({ activeLab, onSelectLab }: InventoryManagerPro
         purchaseDate: formData.purchaseDate,
         location: formData.location,
         customFields: formData.customFields,
+        bundleIds: formData.bundleIds,
       });
-
-      // Synchronize bundle accessories if configured
-      if (formData.bundleItems) {
-        const currentBundleAccessories = editingItem?.bundleAccessories || [];
-        const newAccessoryIds = formData.bundleItems.map((b: any) => b.accessoryInventoryId);
-
-        // Remove unlinked
-        for (const oldB of currentBundleAccessories) {
-          const accId = oldB.accessoryInventoryId || oldB.accessory?.id;
-          if (accId && !newAccessoryIds.includes(accId)) {
-            await removeBundleItem({ parentInventoryId: formData.id, accessoryInventoryId: accId });
-          }
-        }
-
-        // Add or update linked
-        for (const newB of formData.bundleItems) {
-          await assignBundleItem({
-            parentInventoryId: formData.id,
-            accessoryInventoryId: newB.accessoryInventoryId,
-            defaultQuantity: newB.defaultQuantity,
-          });
-        }
-      }
 
       // Synchronize manuals
       const currentManualIds = editingItem?.manuals?.map((m: any) => m.manualId) || [];
@@ -201,7 +180,7 @@ export function InventoryManager({ activeLab, onSelectLab }: InventoryManagerPro
         purchaseDate: formData.purchaseDate,
         location: formData.location,
         customFields: formData.customFields,
-        bundleItems: formData.bundleItems,
+        bundleIds: formData.bundleIds,
       });
 
       if (res.item && attachedManuals.length > 0) {
@@ -309,6 +288,7 @@ export function InventoryManager({ activeLab, onSelectLab }: InventoryManagerPro
           viewMode={viewMode}
           onViewModeChange={handleViewModeChange}
           onOpenCreateModal={handleOpenCreateModal}
+          onOpenBundlePresetsModal={() => setIsBundlePresetsModalOpen(true)}
         />
 
         {/* Filter Strip with item count and inline LAB, TYPE, STATUS dropdowns */}
@@ -358,6 +338,7 @@ export function InventoryManager({ activeLab, onSelectLab }: InventoryManagerPro
         selectedManualIds={attachedManuals.map((m) => m.id)}
         attachedManuals={attachedManuals}
         onRemoveManual={handleRemoveAttachedManual}
+        onOpenBundlePresetsModal={() => setIsBundlePresetsModalOpen(true)}
       />
 
       {/* Standalone Manuals Library Drawer (only rendered if item modal is NOT open) */}
@@ -369,6 +350,16 @@ export function InventoryManager({ activeLab, onSelectLab }: InventoryManagerPro
           onToggleManual={handleToggleManual}
         />
       )}
+
+      {/* Standalone Bundle Presets Modal */}
+      <BundlePresetsModal
+        isOpen={isBundlePresetsModalOpen}
+        onClose={() => {
+          setIsBundlePresetsModalOpen(false);
+          fetchInventory();
+        }}
+        onUpdated={fetchInventory}
+      />
     </div>
   );
 }

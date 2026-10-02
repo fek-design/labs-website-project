@@ -312,7 +312,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
           <button
             type="button"
             onClick={() => setIsUploadModalOpen(true)}
-            className="px-5 py-2.5 bg-[#FFED00] hover:bg-[#e6d600] text-black font-headline font-bold text-xs sm:text-sm rounded-lg shadow-lg shadow-[#FFED00]/20 flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] cursor-pointer shrink-0"
+            className="px-5 py-2.5 bg-[#FFED00] hover:bg-[#e6d600] text-black font-headline font-bold text-xs sm:text-sm rounded-lg flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] cursor-pointer shrink-0"
           >
             <span>Tilføj</span>
             <Plus size={16} weight="bold" />
@@ -718,7 +718,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
                 <button
                   type="submit"
                   disabled={isSubmitting || !uploadFile}
-                  className="px-6 py-2.5 bg-[#FFED00] hover:bg-[#e6d600] disabled:opacity-40 text-black font-headline font-bold text-xs rounded-full shadow-lg shadow-[#FFED00]/20 transition-all cursor-pointer"
+                  className="px-6 py-2.5 bg-[#FFED00] hover:bg-[#e6d600] disabled:opacity-40 text-black font-headline font-bold text-xs rounded-full transition-all cursor-pointer"
                 >
                   {isSubmitting ? "Uploader..." : "Upload Manual"}
                 </button>

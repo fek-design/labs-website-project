@@ -118,21 +118,44 @@ model Inventory {
   tags              InventoryTag[]
   repairs           RepairLog[]
   manuals           InventoryManual[]
-  bundleAccessories BundleItem[]      @relation("BundleParent")
-  bundleParents     BundleItem[]      @relation("BundleAccessory")
+  assignedBundles   EquipmentBundleAssignment[]
+  bundleAccessories BundleItem[]      @relation("BundleAccessory")
+}
+
+model Bundle {
+  id          String                      @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime                    @default(now())
+  updatedAt   DateTime                    @updatedAt
+
+  items       BundleItem[]
+  assignments EquipmentBundleAssignment[]
 }
 
 model BundleItem {
   id                   String    @id @default(uuid())
-  parentInventoryId    String
+  bundleId             String
   accessoryInventoryId String
   defaultQuantity      Int       @default(1)
   createdAt            DateTime  @default(now())
 
-  parent    Inventory @relation("BundleParent", fields: [parentInventoryId], references: [id], onDelete: Cascade)
+  bundle    Bundle    @relation(fields: [bundleId], references: [id], onDelete: Cascade)
   accessory Inventory @relation("BundleAccessory", fields: [accessoryInventoryId], references: [id], onDelete: Cascade)
 
-  @@unique([parentInventoryId, accessoryInventoryId])
+  @@unique([bundleId, accessoryInventoryId])
+}
+
+model EquipmentBundleAssignment {
+  id          String    @id @default(uuid())
+  inventoryId String
+  bundleId    String
+  assignedAt  DateTime  @default(now())
+
+  inventory Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  bundle    Bundle    @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+
+  @@unique([inventoryId, bundleId])
 }
 
 model RepairLog {

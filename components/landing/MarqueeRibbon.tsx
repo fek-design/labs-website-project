@@ -1,13 +1,12 @@
 import React from "react";
 
 const LAB_ITEMS = [
-  "DIMSELAB",
   "MAKERSPACE",
   "MEDIALAB",
-  "DIMSELAB",
   "MAKERSPACE",
   "MEDIALAB",
-  "DIMSELAB",
+  "MAKERSPACE",
+  "MEDIALAB",
   "MAKERSPACE",
   "MEDIALAB",
 ];

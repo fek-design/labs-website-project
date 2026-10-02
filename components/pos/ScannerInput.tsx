@@ -87,9 +87,9 @@ export function ScannerInput({
       <div
         className={`w-full flex items-center justify-between gap-3 bg-[#151517] border rounded-lg px-4 py-2.5 transition-all shadow-lg ${
           scanFeedback === "SUCCESS"
-            ? "border-[#009FE3] shadow-[#009FE3]/20"
+            ? "border-[#009FE3]"
             : scanFeedback === "WARN"
-            ? "border-[#E6007E] shadow-[#E6007E]/20"
+            ? "border-[#E6007E]"
             : "border-[#333333] focus-within:border-[#FFED00]"
         }`}
       >

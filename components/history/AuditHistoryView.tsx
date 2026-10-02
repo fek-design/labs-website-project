@@ -213,7 +213,7 @@ export function AuditHistoryView() {
           type="button"
           onClick={handleManualRefresh}
           disabled={isRefreshing}
-          className="h-12 px-6 bg-[#009FE3] hover:bg-[#008cc9] active:scale-[0.98] text-black font-headline font-bold text-xs sm:text-sm rounded-lg shadow-lg shadow-[#009FE3]/20 flex items-center justify-center gap-2.5 transition-all cursor-pointer shrink-0 disabled:opacity-60"
+          className="h-12 px-6 bg-[#009FE3] hover:bg-[#008cc9] active:scale-[0.98] text-black font-headline font-bold text-xs sm:text-sm rounded-lg flex items-center justify-center gap-2.5 transition-all cursor-pointer shrink-0 disabled:opacity-60"
         >
           <span>Refresh</span>
           <ArrowClockwise

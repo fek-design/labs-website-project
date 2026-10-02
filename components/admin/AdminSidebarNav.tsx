@@ -256,9 +256,6 @@ export function AdminSidebarNav({
                   weight={isActive ? "fill" : "regular"}
                   style={{
                     color: isActive ? item.accentColor : undefined,
-                    filter: isActive
-                      ? `drop-shadow(0 0 10px ${item.accentColor}80)`
-                      : undefined,
                   }}
                   className="transition-all"
                 />

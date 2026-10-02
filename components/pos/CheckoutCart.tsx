@@ -317,7 +317,7 @@ export function CheckoutCart({
           className={`w-full py-3.5 rounded-full text-sm font-bold tracking-wide transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer ${
             items.length === 0 || !patron
               ? "bg-[#262626] text-zinc-500 !cursor-not-allowed"
-              : "bg-[#FFED00] hover:bg-[#ffe600] text-black shadow-[#FFED00]/20 hover:scale-[1.01] active:scale-[0.99]"
+              : "bg-[#FFED00] hover:bg-[#ffe600] text-black hover:scale-[1.01] active:scale-[0.99]"
           }`}
         >
           <Check size={16} weight="bold" aria-hidden="true" />

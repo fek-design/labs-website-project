@@ -203,7 +203,7 @@ export function ManualsCatalogModal({
                 onClick={() => setActiveTab("BROWSE")}
                 className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer ${
                   activeTab === "BROWSE"
-                    ? "bg-[#FFED00] text-black shadow-md shadow-[#FFED00]/20"
+                    ? "bg-[#FFED00] text-black"
                     : "text-zinc-400 hover:text-white"
                 }`}
               >
@@ -214,7 +214,7 @@ export function ManualsCatalogModal({
                 onClick={() => setActiveTab("UPLOAD")}
                 className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer inline-flex items-center gap-1 ${
                   activeTab === "UPLOAD"
-                    ? "bg-[#FFED00] text-black shadow-md shadow-[#FFED00]/20"
+                    ? "bg-[#FFED00] text-black"
                     : "text-zinc-400 hover:text-white"
                 }`}
               >
@@ -322,7 +322,7 @@ export function ManualsCatalogModal({
                 <button
                   type="submit"
                   disabled={isPending || !uploadFile}
-                  className="px-6 py-2.5 bg-[#FFED00] hover:bg-[#ffe600] text-black font-bold text-xs rounded-full shadow-lg shadow-[#FFED00]/20 disabled:opacity-50"
+                  className="px-6 py-2.5 bg-[#FFED00] hover:bg-[#ffe600] text-black font-bold text-xs rounded-full disabled:opacity-50"
                 >
                   {isPending ? "Uploading..." : "Save to Catalog"}
                 </button>
@@ -373,7 +373,7 @@ export function ManualsCatalogModal({
                         key={manual.id}
                         className={`bg-[#0D0D0D] border ${
                           isLinkedToFocusedMachine
-                            ? "border-[#FFED00]/50 shadow-md shadow-[#FFED00]/10"
+                            ? "border-[#FFED00]/60"
                             : "border-[#262626]"
                         } rounded-2xl p-4 flex flex-col justify-between hover:border-zinc-700 transition-colors`}
                       >
@@ -468,7 +468,7 @@ export function ManualsCatalogModal({
                               className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                                 isLinkedToFocusedMachine
                                   ? "bg-rose-500/10 text-rose-400 border border-rose-500/30 hover:bg-rose-500/20"
-                                  : "bg-[#FFED00] text-black hover:bg-[#ffe600] shadow-md shadow-[#FFED00]/10"
+                                  : "bg-[#FFED00] text-black hover:bg-[#ffe600]"
                               }`}
                             >
                               <span className="inline-flex items-center gap-1.5">

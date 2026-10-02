@@ -10,9 +10,10 @@ import {
   FileText,
   ArrowSquareOut,
   Spinner,
+  Package,
 } from "@phosphor-icons/react";
 import { HardwareType, OperationalStatus, TrackingType } from "@prisma/client";
-import { generateAssetTag } from "@/app/actions/inventory";
+import { generateAssetTag, getBundlePresets } from "@/app/actions/inventory";
 import { resolveLocationPrefix } from "@/lib/inventory-utils";
 import { InventoryManualsDrawer } from "./InventoryManualsDrawer";
 import { InventoryBarcodeLabel } from "./InventoryBarcodeLabel";
@@ -28,8 +29,6 @@ const LOCATION_PRESETS = [
   "Køge - Medialab Fotostudie",
   "Køge - Medialab Podcast & Lydstudie",
   "Køge - Medialab VR / XR Lab",
-  "Roskilde - Makerspace Værksted",
-  "Roskilde - Medialab Udlån",
 ];
 
 function getDefaultPresetForLab(slug: string): string {
@@ -54,6 +53,7 @@ interface InventoryItemModalProps {
   selectedManualIds?: string[];
   attachedManuals: any[];
   onRemoveManual: (manualId: string) => void;
+  onOpenBundlePresetsModal?: () => void;
 }
 
 export function InventoryItemModal({
@@ -71,6 +71,7 @@ export function InventoryItemModal({
   selectedManualIds,
   attachedManuals,
   onRemoveManual,
+  onOpenBundlePresetsModal,
 }: InventoryItemModalProps) {
   const isEdit = Boolean(item);
 
@@ -87,9 +88,8 @@ export function InventoryItemModal({
   const [customLocation, setCustomLocation] = useState("");
   const [notes, setNotes] = useState("");
   const [previewTag, setPreviewTag] = useState("KG-MK-GEN-0001");
-  const [bundleItems, setBundleItems] = useState<{ accessoryInventoryId: string; defaultQuantity: number; name?: string; assetTag?: string }[]>([]);
-  const [selectedAccessoryId, setSelectedAccessoryId] = useState("");
-  const [accessoryQty, setAccessoryQty] = useState(1);
+  const [bundlePresets, setBundlePresets] = useState<any[]>([]);
+  const [selectedBundleIds, setSelectedBundleIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -139,19 +139,22 @@ export function InventoryItemModal({
       setPurchaseDate(initialDate);
       setPreviewTag(item.assetTag || "");
 
-      // Hydrate bundle accessories
-      if (item.bundleAccessories && item.bundleAccessories.length > 0) {
-        setBundleItems(
-          item.bundleAccessories.map((b: any) => ({
-            accessoryInventoryId: b.accessoryInventoryId || b.accessory?.id,
-            defaultQuantity: b.defaultQuantity || 1,
-            name: b.accessory?.name,
-            assetTag: b.accessory?.assetTag,
-          }))
-        );
-      } else {
-        setBundleItems([]);
+      // Hydrate assigned bundle presets
+      const assignedIds: string[] = [];
+      if (item.assignedBundles && item.assignedBundles.length > 0) {
+        for (const ab of item.assignedBundles) {
+          const bId = ab.bundleId || ab.bundle?.id;
+          if (bId) assignedIds.push(bId);
+        }
       }
+      if (item.bundleAccessories && item.bundleAccessories.length > 0) {
+        for (const ba of item.bundleAccessories) {
+          if (ba.bundleId && !assignedIds.includes(ba.bundleId)) {
+            assignedIds.push(ba.bundleId);
+          }
+        }
+      }
+      setSelectedBundleIds(assignedIds);
     } else {
       setName("");
       const initialLabSlug = labs[0]?.slug || "makerspace";
@@ -167,10 +170,19 @@ export function InventoryItemModal({
       setLocationPreset(defaultLoc);
       setCustomLocation("");
       setNotes("");
-      setBundleItems([]);
+      setSelectedBundleIds([]);
     }
     setError(null);
   }, [item, labs, isOpen]);
+
+  // Load available bundle presets
+  useEffect(() => {
+    if (isOpen) {
+      getBundlePresets()
+        .then((res) => setBundlePresets(res || []))
+        .catch((err) => console.error("Failed to load bundle presets", err));
+    }
+  }, [isOpen]);
 
   // Compute live deterministic 4-tier tag preview for Create mode
   useEffect(() => {
@@ -210,7 +222,7 @@ export function InventoryItemModal({
         notes: notes.trim(),
         location: location.trim(),
         purchaseDate: purchaseDate ? new Date(purchaseDate).toISOString() : null,
-        bundleItems: trackingType === "SERIALIZED" && hardwareType === "BORROWABLE_GEAR" ? bundleItems : [],
+        bundleIds: trackingType === "SERIALIZED" && hardwareType === "BORROWABLE_GEAR" ? selectedBundleIds : [],
         customFields: {
           serialNumber: trackingType === "SERIALIZED" ? serialNumber.trim() : "",
         },
@@ -436,106 +448,101 @@ export function InventoryItemModal({
             </div>
           )}
 
-          {/* Bundle Accessories Section for Serialized Gear */}
+          {/* Standalone Reusable Bundle Presets Section */}
           {trackingType === "SERIALIZED" && hardwareType === "BORROWABLE_GEAR" && (
-            <div className="flex flex-col gap-2 p-3 bg-[#151517] border border-[#333333] rounded-lg">
+            <div className="flex flex-col gap-2.5 p-3.5 bg-[#151517] border border-[#333333] rounded-lg">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-[#888888] font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
-                  Pakkesæt / Standard tilbehør ({bundleItems.length})
-                </span>
-                <span className="text-[11px] text-[#009FE3] font-medium">
-                  Foreslås automatisk i POS
-                </span>
-              </div>
-
-              {/* List of current bundle items */}
-              {bundleItems.length > 0 && (
-                <div className="flex flex-col gap-1.5 mb-1">
-                  {bundleItems.map((b, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between p-2 bg-[#202021] border border-[#444444] rounded text-xs"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-[#FFED00] font-bold font-mono">
-                          {b.defaultQuantity}x
-                        </span>
-                        <span className="text-white font-medium">
-                          {b.name || b.assetTag || "Tilbehør"}
-                        </span>
-                        {b.assetTag && (
-                          <span className="text-[10px] text-zinc-400 font-mono">
-                            ({b.assetTag})
-                          </span>
-                        )}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setBundleItems((prev) => prev.filter((_, i) => i !== idx))}
-                        className="text-zinc-400 hover:text-[#E6007E] p-1 transition-colors"
-                        title="Fjern tilbehør fra sæt"
-                      >
-                        <X size={14} weight="bold" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Add accessory selector */}
-              {availableBulkItems.length > 0 ? (
                 <div className="flex items-center gap-2">
-                  <select
-                    value={selectedAccessoryId}
-                    onChange={(e) => setSelectedAccessoryId(e.target.value)}
-                    className="flex-1 bg-[#202021] border border-[#444444] rounded px-2.5 py-1.5 text-xs text-[#d1d5db] focus:outline-none focus:border-[#1da9e4]"
-                  >
-                    <option value="">Vælg tilbehør (puljevare)...</option>
-                    {availableBulkItems
-                      .filter((acc) => acc.id !== item?.id && !bundleItems.some((b) => b.accessoryInventoryId === acc.id))
-                      .map((acc) => (
-                        <option key={acc.id} value={acc.id}>
-                          {acc.name} ({acc.assetTag})
-                        </option>
-                      ))}
-                  </select>
-                  <input
-                    type="number"
-                    min={1}
-                    max={10}
-                    value={accessoryQty}
-                    onChange={(e) => setAccessoryQty(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                    className="w-16 bg-[#202021] border border-[#444444] rounded px-2 py-1.5 text-xs text-white text-center font-mono"
-                    title="Standard antal"
-                  />
+                  <Package size={16} className="text-[#009FE3]" weight="bold" />
+                  <span className="text-xs text-white font-bold uppercase tracking-wider font-['Stack_Sans_Headline',sans-serif]">
+                    Tilknyttede pakkesæt ({selectedBundleIds.length})
+                  </span>
+                </div>
+                {onOpenBundlePresetsModal && (
                   <button
                     type="button"
-                    disabled={!selectedAccessoryId}
-                    onClick={() => {
-                      const acc = availableBulkItems.find((a) => a.id === selectedAccessoryId);
-                      if (acc) {
-                        setBundleItems((prev) => [
-                          ...prev,
-                          {
-                            accessoryInventoryId: acc.id,
-                            defaultQuantity: accessoryQty,
-                            name: acc.name,
-                            assetTag: acc.assetTag,
-                          },
-                        ]);
-                        setSelectedAccessoryId("");
-                        setAccessoryQty(1);
-                      }
-                    }}
-                    className="px-3 py-1.5 bg-[#009FE3] hover:bg-[#0082b8] text-white rounded text-xs font-bold transition-colors disabled:opacity-40"
+                    onClick={onOpenBundlePresetsModal}
+                    className="text-[11px] text-[#009FE3] hover:underline font-semibold font-headline flex items-center gap-1"
                   >
-                    Tilknyt
+                    <span>Administrer pakkesæt</span>
                   </button>
+                )}
+              </div>
+
+              {bundlePresets.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                  {bundlePresets.map((preset) => {
+                    const isChecked = selectedBundleIds.includes(preset.id);
+                    return (
+                      <label
+                        key={preset.id}
+                        className={`flex items-start gap-3 p-2.5 rounded-lg border cursor-pointer transition-all ${
+                          isChecked
+                            ? "bg-[#202021] border-[#009FE3]"
+                            : "bg-[#18181a] border-[#2e2e30] hover:border-[#444444]"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedBundleIds((prev) => [...prev, preset.id]);
+                            } else {
+                              setSelectedBundleIds((prev) => prev.filter((id) => id !== preset.id));
+                            }
+                          }}
+                          className="mt-0.5 w-4 h-4 rounded bg-[#151517] border-[#444444] text-[#009FE3] focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-bold font-headline text-white">
+                              {preset.name}
+                            </span>
+                            <span className="text-[10px] text-zinc-400 font-mono">
+                              {preset.items?.length || 0} dele
+                            </span>
+                          </div>
+                          {preset.description && (
+                            <p className="text-[11px] text-zinc-400 mt-0.5 line-clamp-1">
+                              {preset.description}
+                            </p>
+                          )}
+                          {preset.items && preset.items.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {preset.items.map((it: any, i: number) => (
+                                <span
+                                  key={i}
+                                  className="text-[10px] bg-[#151517] border border-[#333333] px-1.5 py-0.5 rounded text-zinc-300 font-mono inline-flex items-center gap-1"
+                                >
+                                  <strong className="text-[#FFED00]">
+                                    {it.defaultQuantity}x
+                                  </strong>
+                                  <span>{it.accessory?.name || it.accessory?.assetTag || "Vare"}</span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </label>
+                    );
+                  })}
                 </div>
               ) : (
-                <p className="text-[11px] text-zinc-500 italic">
-                  Opret puljevarer (f.eks. batterier eller kabler) for at tilknytte dem som standardudstyr.
-                </p>
+                <div className="p-3 bg-[#202021] border border-dashed border-[#333333] rounded-lg text-center space-y-1.5">
+                  <p className="text-xs text-zinc-400">
+                    Ingen pakkesæt er oprettet endnu.
+                  </p>
+                  {onOpenBundlePresetsModal && (
+                    <button
+                      type="button"
+                      onClick={onOpenBundlePresetsModal}
+                      className="text-xs text-[#009FE3] hover:underline font-bold font-headline"
+                    >
+                      Opret et genbrugeligt pakkesæt her
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           )}
@@ -637,10 +644,6 @@ export function InventoryItemModal({
                 <option value="Køge - Medialab Fotostudie">Køge - Medialab Fotostudie</option>
                 <option value="Køge - Medialab Podcast & Lydstudie">Køge - Medialab Podcast & Lydstudie</option>
                 <option value="Køge - Medialab VR / XR Lab">Køge - Medialab VR / XR Lab</option>
-              </optgroup>
-              <optgroup label="Roskilde Campus" className="bg-[#151517] text-zinc-400 font-semibold">
-                <option value="Roskilde - Makerspace Værksted">Roskilde - Makerspace Værksted</option>
-                <option value="Roskilde - Medialab Udlån">Roskilde - Medialab Udlån</option>
               </optgroup>
               <option value="CUSTOM">Anden placering (brugerdefineret)...</option>
             </select>

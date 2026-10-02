@@ -76,6 +76,7 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
     parent: any;
     accessories: Array<{
       accessory: any;
+      bundleName?: string;
       defaultQuantity: number;
       selectedQuantity: number;
       included: boolean;
@@ -284,6 +285,7 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
         accessory: ba.accessory,
         defaultQuantity: ba.defaultQuantity || 1,
         selectedQuantity: ba.defaultQuantity || 1,
+        bundleName: ba.bundleName,
         included: true,
       }));
       setPendingBundlePrompt({
@@ -722,10 +724,15 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
                           <div className="font-bold text-white truncate font-notch">
                             {acc.name}
                           </div>
-                          <div className="text-[11px] text-[#009FE3] font-mono">
-                            [{acc.assetTag}]
+                          <div className="text-[11px] text-[#009FE3] font-mono flex items-center gap-2">
+                            <span>[{acc.assetTag}]</span>
+                            {item.bundleName && (
+                              <span className="text-[10px] text-zinc-400 bg-[#151517] px-1.5 py-0.5 rounded border border-[#333333]">
+                                {item.bundleName}
+                              </span>
+                            )}
                             {acc.trackingType === "BULK" && (
-                              <span className="ml-2 text-zinc-400">
+                              <span className="text-zinc-400">
                                 ({acc.availableQuantity !== undefined ? acc.availableQuantity : acc.totalQuantity} ledige)
                               </span>
                             )}
@@ -790,7 +797,7 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
                 <button
                   type="button"
                   onClick={handleConfirmBundle}
-                  className="px-5 py-2 rounded-full bg-[#FFED00] hover:bg-[#e6d500] text-black font-extrabold text-xs font-headline transition-all shadow-md shadow-[#FFED00]/20 cursor-pointer"
+                  className="px-5 py-2 rounded-full bg-[#FFED00] hover:bg-[#e6d500] text-black font-extrabold text-xs font-headline transition-all border border-[#FFED00] cursor-pointer"
                 >
                   + Tilføj valgte til kurv
                 </button>

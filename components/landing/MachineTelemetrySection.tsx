@@ -87,27 +87,6 @@ const LAB_SEMANTICS: Record<string, LabSemanticConfig> = {
       { id: "fb-ml6", name: "Shure SM7B Podcast Mic", location: "Medialab - Lyd", operationalStatus: "AVAILABLE" },
     ],
   },
-  dimselab: {
-    statLabel: "Hardware & Værktøj",
-    headline: (
-      <>
-        Vi har grejet
-        <br />
-        til dit projekt
-      </>
-    ),
-    description:
-      "Udforsk microcontroller-programmering, sensorer og interaktive installationer. Her finder du loddeudstyr, måleinstrumenter og komponenter til dine fysiske prototyper.",
-    defaultLocation: "Dimselab Værksted",
-    fallbackItems: [
-      { id: "fb-d1", name: "Hakko FX-888D Loddestation", location: "Dimselab - Værksted", operationalStatus: "AVAILABLE" },
-      { id: "fb-d2", name: "Rigol DS1054Z Oscilloskop", location: "Dimselab - Målebænk", operationalStatus: "AVAILABLE" },
-      { id: "fb-d3", name: "Arduino Mega 2560 IoT Kit", location: "Dimselab - Komponenter", operationalStatus: "AVAILABLE" },
-      { id: "fb-d4", name: "Raspberry Pi 5 Lab Starter", location: "Dimselab - Komponenter", operationalStatus: "AVAILABLE" },
-      { id: "fb-d5", name: "Quick 861DW Varmluftstation", location: "Dimselab - Værksted", operationalStatus: "AVAILABLE" },
-      { id: "fb-d6", name: "ESP32-S3 AI & Vision Dev Kit", location: "Dimselab - Komponenter", operationalStatus: "AVAILABLE" },
-    ],
-  },
 };
 
 interface MachineTelemetryProps {
@@ -204,8 +183,6 @@ export function MachineTelemetrySection({
   const defaultItemImage =
     activeLabId === "medialab"
       ? "/images/landing/showcase-camera.png"
-      : activeLabId === "dimselab"
-      ? "/images/landing/showcase-3dprint.png"
       : "/images/landing/machine-prusa.png";
 
   return (

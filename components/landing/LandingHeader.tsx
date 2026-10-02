@@ -8,37 +8,56 @@ import { MapPin, ArrowUpRight } from "@phosphor-icons/react";
 
 export function LandingHeader() {
   const [isOpen, setIsOpen] = useState(false);
-  const [campusDropdown, setCampusDropdown] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const { campus, setCampus } = useCampus();
+  const [isVisible, setIsVisible] = useState(true);
+  const { campus } = useCampus();
 
   useEffect(() => {
+    let lastScrollY = window.scrollY || 0;
+
     const handleScroll = () => {
-      const pos =
+      const currentScrollY = Math.max(
+        0,
         window.scrollY ||
-        window.pageYOffset ||
-        document.documentElement.scrollTop ||
-        document.body.scrollTop ||
-        0;
-      setIsScrolled(pos > 60);
+          window.pageYOffset ||
+          document.documentElement.scrollTop ||
+          document.body.scrollTop ||
+          0
+      );
+
+      setIsScrolled(currentScrollY > 60);
+
+      if (isOpen) {
+        setIsVisible(true);
+        lastScrollY = currentScrollY;
+        return;
+      }
+
+      // Hide when scrolling down past 60px
+      if (currentScrollY > 60 && currentScrollY > lastScrollY + 5) {
+        setIsVisible(false);
+      } else if (currentScrollY < lastScrollY - 5 || currentScrollY <= 60) {
+        // Show immediately when scrolling up or at top
+        setIsVisible(true);
+      }
+
+      lastScrollY = currentScrollY;
     };
-    handleScroll();
+
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const toggleCampus = (newCampus: CampusKey) => {
-    setCampus(newCampus);
-    setCampusDropdown(false);
-  };
+  }, [isOpen]);
 
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ease-out pointer-events-auto ${isScrolled
-          ? "bg-black/85 backdrop-blur-md border-b border-white/10 shadow-2xl py-3.5"
-          : "bg-transparent border-b border-transparent py-5"
-          }`}
+        className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ease-out pointer-events-auto ${
+          isVisible || isOpen ? "translate-y-0" : "-translate-y-full"
+        } ${
+          isScrolled
+            ? "bg-black/85 backdrop-blur-md border-b border-white/10 shadow-2xl py-3.5"
+            : "bg-transparent border-b border-transparent py-5"
+        }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
           <Link href="/" className="font-notch text-2xl md:text-3xl font-extrabold tracking-tighter text-white touch-manipulation">
@@ -126,7 +145,7 @@ export function LandingHeader() {
             </nav>
 
             <div className="text-xs text-zinc-500 font-mono pt-6 border-t border-white/5">
-              Zealand Labs • Roskilde & Køge Campus
+              Zealand Labs • Køge Campus
             </div>
           </motion.div>
         )}

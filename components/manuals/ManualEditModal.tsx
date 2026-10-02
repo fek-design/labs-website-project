@@ -355,7 +355,7 @@ export function ManualEditModal({
                     onClick={() => handleToggleEquipmentLink(eq.id)}
                     className={`flex flex-col justify-between p-3 rounded-lg border transition-all cursor-pointer select-none ${
                       isSelected
-                        ? "bg-[#252316] border-[#ffd900] shadow-sm shadow-[#ffd900]/20"
+                        ? "bg-[#252316] border-[#ffd900] shadow-sm"
                         : "bg-[#202021] hover:bg-[#252527] border-[#444444] hover:border-[#666666]"
                     }`}
                   >
