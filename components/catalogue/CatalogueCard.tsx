@@ -17,7 +17,8 @@ export function CatalogueCard({ item }: CatalogueCardProps) {
   return (
     <Link
       href={`/craft/${item.slug}`}
-      className="group block flex flex-col w-full text-left transition-transform duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3]"
+      aria-label={`${item.title} - ${item.category} i ${primaryLab}`}
+      className="group block flex flex-col w-full text-left transition-transform duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFED00] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
     >
       {/* Image canvas box - Figma node 144:368 geometry */}
       <div className="relative w-full aspect-[3/4] bg-[#E9E9E9] border border-[#E7E7E7] overflow-hidden rounded-none flex items-center justify-center transition-colors duration-200 group-hover:border-[#009FE3]">

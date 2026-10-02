@@ -12,6 +12,9 @@ async function main() {
   await prisma.inventoryTag.deleteMany();
   await prisma.inventoryManual.deleteMany();
   await prisma.manual.deleteMany();
+  await prisma.equipmentBundleAssignment.deleteMany();
+  await prisma.bundleItem.deleteMany();
+  await prisma.bundle.deleteMany();
   await prisma.inventory.deleteMany();
   await prisma.tag.deleteMany();
   await prisma.patron.deleteMany();
@@ -390,40 +393,57 @@ async function main() {
 
   console.log("Centralized manuals and Many-to-Many machine links seeded.");
 
-  // 7. Seed Sample Patrons
-  const patron1 = await prisma.patron.create({
+  // 7. Seed Reusable Bundle Preset (Sony FX30 Cinema Kit Accessories)
+  console.log("Creating Verified Reusable Bundle Preset...");
+
+  const batteryNPFZ100 = await prisma.inventory.create({
     data: {
-      studentId: "20240199",
-      email: "student20240199@edu.zealand.dk",
+      assetTag: "ML-ACC-0001",
+      name: "Sony NP-FZ100 Batteri",
+      labId: medialabKoge.id,
+      hardwareType: HardwareType.BORROWABLE_GEAR,
+      trackingType: "BULK",
+      totalQuantity: 12,
+      operationalStatus: OperationalStatus.AVAILABLE,
+      location: "Køge - Batteristation",
+      notes: "Genopladeligt lithium-ion batteri til FX30 og A7 IV.",
     },
   });
 
-  const patron2 = await prisma.patron.create({
+  const sdCard128GB = await prisma.inventory.create({
     data: {
-      studentId: "20240245",
-      email: "student20240245@edu.zealand.dk",
+      assetTag: "ML-ACC-0002",
+      name: "SanDisk Extreme PRO 128GB V90 SD-kort",
+      labId: medialabKoge.id,
+      hardwareType: HardwareType.BORROWABLE_GEAR,
+      trackingType: "BULK",
+      totalQuantity: 8,
+      operationalStatus: OperationalStatus.AVAILABLE,
+      location: "Køge - Medialab Udlån",
+      notes: "300MB/s 4K videooptagelse SDXC.",
     },
   });
 
-  // 8. Seed an Active Loan
-  const now = new Date();
-  const checkoutDate = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
-  const expectedReturnDate = new Date(now.getTime() + 25 * 24 * 60 * 60 * 1000);
-
-  await prisma.loan.create({
+  const cinemaKitBundle = await prisma.bundle.create({
     data: {
-      inventoryId: sonyFX30.id,
-      patronId: patron1.id,
-      adminIdCheckout: superAdmin.id,
-      status: "ACTIVE",
-      checkoutDate,
-      expectedReturn: expectedReturnDate,
-      notes: "Documentary production course assignment.",
+      name: "Sony Cinema Basis Pakke",
+      description: "Standard tilbehørspakke med 2x ekstra batterier og 1x 128GB V90 højhastigheds SD-kort.",
+      items: {
+        create: [
+          { accessoryInventoryId: batteryNPFZ100.id, defaultQuantity: 2 },
+          { accessoryInventoryId: sdCard128GB.id, defaultQuantity: 1 },
+        ],
+      },
+      assignments: {
+        create: [
+          { inventoryId: sonyFX30.id },
+        ],
+      },
     },
   });
 
-  console.log("Seeded sample active loan for Sony FX30.");
-  console.log("✅ 2-Tier Faceted Taxonomy seed completed successfully!");
+  console.log(`Created Bundle Preset: ${cinemaKitBundle.name} assigned to ${sonyFX30.name}.`);
+  console.log("✅ Clean production baseline seeded successfully!");
 }
 
 main()

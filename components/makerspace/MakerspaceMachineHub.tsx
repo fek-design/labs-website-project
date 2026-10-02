@@ -4,7 +4,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import { getInventoryWithFilters, updateInventoryItem } from "@/app/actions/inventory";
 import { unassignManualFromMachine } from "@/app/actions/manuals";
 import { OperationalStatus, HardwareType } from "@prisma/client";
-import { ManualsCatalogModal } from "./ManualsCatalogModal";
+import dynamic from "next/dynamic";
+
+const ManualsCatalogModal = dynamic(
+  () => import("./ManualsCatalogModal").then((mod) => mod.ManualsCatalogModal),
+  { ssr: false }
+);
 import {
   Books,
   Check,

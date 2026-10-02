@@ -163,6 +163,13 @@ export function CatalogueGrid({ initialItems }: CatalogueGridProps) {
 
   return (
     <div className="w-full space-y-8">
+      {/* Screen Reader Live Region */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {filteredItems.length === 0
+          ? "Ingen resultater fundet med de valgte filtre."
+          : `Viser ${filteredItems.length} projekter i kataloget.`}
+      </div>
+
       {/* Filter and Search Bar */}
       <CatalogueFilterBar
         searchQuery={searchQuery}

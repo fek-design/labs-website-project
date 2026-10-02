@@ -18,11 +18,22 @@ import { AnimatedCounter } from "@/components/pos/AnimatedCounter";
 import { OperationalStatus } from "@prisma/client";
 import { InventoryToolbar } from "./InventoryToolbar";
 import { InventoryFilterBar } from "./InventoryFilterBar";
+import dynamic from "next/dynamic";
 import { InventoryListView } from "./InventoryListView";
 import { InventoryGridView } from "./InventoryGridView";
-import { InventoryItemModal } from "./InventoryItemModal";
-import { InventoryManualsDrawer } from "./InventoryManualsDrawer";
-import { BundlePresetsModal } from "./BundlePresetsModal";
+
+const InventoryItemModal = dynamic(
+  () => import("./InventoryItemModal").then((mod) => mod.InventoryItemModal),
+  { ssr: false }
+);
+const InventoryManualsDrawer = dynamic(
+  () => import("./InventoryManualsDrawer").then((mod) => mod.InventoryManualsDrawer),
+  { ssr: false }
+);
+const BundlePresetsModal = dynamic(
+  () => import("./BundlePresetsModal").then((mod) => mod.BundlePresetsModal),
+  { ssr: false }
+);
 
 interface InventoryManagerProps {
   activeLab?: "medialab" | "makerspace" | string;
