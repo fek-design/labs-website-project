@@ -3,6 +3,15 @@
 import { prisma } from "@/lib/prisma";
 import { LoanStatus, OperationalStatus, HardwareType, TrackingType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { checkRateLimit, getClientIdentifier } from "@/lib/rate-limit";
+import { handleDatabaseError } from "@/lib/errors";
+import {
+  posSearchSchema,
+  patronMutationSchema,
+  checkoutEquipmentSchema,
+  returnEquipmentSchema,
+  returnMultipleLoansSchema,
+} from "@/lib/validations/pos";
 
 function safeRevalidatePath(path: string) {
   try {
@@ -47,9 +56,25 @@ async function getActorAdminId(providedAdminId?: string): Promise<string> {
  * 1. Search Patron (by student ID or email) OR Inventory Asset (by assetTag, name, or location)
  */
 export async function searchPatronOrAsset(query: string, labSlug: string = "medialab") {
-  const cleanQuery = query.trim();
+  const parsed = posSearchSchema.safeParse({ query, labSlug });
+  if (!parsed.success) {
+    return { patrons: [], assets: [], exactMatch: null, error: parsed.error.issues[0]?.message };
+  }
+
+  const cleanQuery = parsed.data.query;
   if (!cleanQuery) {
     return { patrons: [], assets: [], exactMatch: null };
+  }
+
+  const clientId = await getClientIdentifier();
+  const rateLimit = checkRateLimit(`pos:search:${clientId}`, 60, 60);
+  if (!rateLimit.allowed) {
+    return {
+      patrons: [],
+      assets: [],
+      exactMatch: null,
+      error: "For mange søgninger. Vent venligst et øjeblik.",
+    };
   }
 
   const [patrons, assets] = await Promise.all([
@@ -196,20 +221,54 @@ export async function createOrUpdatePatron(data: {
   email?: string;
   adminId?: string;
 }) {
+  const parsed = patronMutationSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message || "Ugyldige data for studerende.");
+  }
+
+  const clientId = await getClientIdentifier();
+  const rateLimit = checkRateLimit(`pos:patron:${clientId}`, 40, 60);
+  if (!rateLimit.allowed) {
+    throw new Error("For mange anmodninger om oprettelse. Vent et øjeblik.");
+  }
+
   const adminId = await getActorAdminId(data.adminId);
-  const normalizedStudentId = data.studentId.trim();
-  const normalizedEmail = data.email?.trim() || `${normalizedStudentId.toLowerCase()}@edu.zealand.dk`;
+  const normalizedStudentId = parsed.data.studentId.trim();
+  const normalizedEmail =
+    parsed.data.email?.toLowerCase().trim() ||
+    `${normalizedStudentId.toLowerCase()}@edu.zealand.dk`;
 
-  const existingPatron = await prisma.patron.findFirst({
-    where: {
-      OR: [{ studentId: normalizedStudentId }, { email: normalizedEmail }],
-    },
-  });
+  try {
+    const existingPatron = await prisma.patron.findFirst({
+      where: {
+        OR: [{ studentId: normalizedStudentId }, { email: normalizedEmail }],
+      },
+    });
 
-  if (existingPatron) {
-    const updated = await prisma.patron.update({
-      where: { id: existingPatron.id },
+    if (existingPatron) {
+      const updated = await prisma.patron.update({
+        where: { id: existingPatron.id },
+        data: {
+          email: normalizedEmail,
+        },
+      });
+
+      await prisma.auditLog.create({
+        data: {
+          actorAdminId: adminId,
+          actionType: "UPDATE_PATRON",
+          targetTable: "Patron",
+          targetId: updated.id,
+          payloadDelta: { studentId: normalizedStudentId, email: normalizedEmail },
+        },
+      });
+
+      return { success: true, patron: updated, created: false };
+    }
+
+    const created = await prisma.patron.create({
       data: {
+        studentId: normalizedStudentId,
         email: normalizedEmail,
       },
     });
@@ -217,34 +276,18 @@ export async function createOrUpdatePatron(data: {
     await prisma.auditLog.create({
       data: {
         actorAdminId: adminId,
-        actionType: "UPDATE_PATRON",
+        actionType: "CREATE_PATRON",
         targetTable: "Patron",
-        targetId: updated.id,
+        targetId: created.id,
         payloadDelta: { studentId: normalizedStudentId, email: normalizedEmail },
       },
     });
 
-    return { success: true, patron: updated, created: false };
+    return { success: true, patron: created, created: true };
+  } catch (err: unknown) {
+    const errRes = handleDatabaseError(err, "Kunne ikke oprette eller opdatere studerende.");
+    throw new Error(errRes.error);
   }
-
-  const created = await prisma.patron.create({
-    data: {
-      studentId: normalizedStudentId,
-      email: normalizedEmail,
-    },
-  });
-
-  await prisma.auditLog.create({
-    data: {
-      actorAdminId: adminId,
-      actionType: "CREATE_PATRON",
-      targetTable: "Patron",
-      targetId: created.id,
-      payloadDelta: { studentId: normalizedStudentId, email: normalizedEmail },
-    },
-  });
-
-  return { success: true, patron: created, created: true };
 }
 
 /**
@@ -273,6 +316,17 @@ export async function checkoutEquipment(data: {
   adminId?: string;
   notes?: string;
 }) {
+  const parsed = checkoutEquipmentSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(`Valideringsfejl: ${parsed.error.issues[0]?.message || "Ugyldige udlånsdata."}`);
+  }
+
+  const clientId = await getClientIdentifier();
+  const rateLimit = checkRateLimit(`pos:checkout:${clientId}`, 30, 60);
+  if (!rateLimit.allowed) {
+    throw new Error("For mange udlån gennemført på kort tid. Vent venligst 1 minut.");
+  }
+
   const actorId = await getActorAdminId(data.adminId);
 
   // Normalize requested items with quantities
@@ -288,7 +342,7 @@ export async function checkoutEquipment(data: {
   }
 
   if (requestedItems.length === 0) {
-    throw new Error("No equipment items selected for checkout.");
+    throw new Error("Ingen udstyrsgenstande valgt til udlån.");
   }
 
   // Default to 30 days if not provided
@@ -302,7 +356,7 @@ export async function checkoutEquipment(data: {
   }
 
   if (isNaN(expectedReturnDate.getTime())) {
-    throw new Error("Invalid expected return date provided.");
+    throw new Error("Ugyldig afleveringsdato angivet.");
   }
 
   const patron = await prisma.patron.findUnique({
@@ -310,7 +364,7 @@ export async function checkoutEquipment(data: {
   });
 
   if (!patron) {
-    throw new Error("Patron record not found.");
+    throw new Error("Studerende blev ikke fundet i databasen.");
   }
 
   return await prisma.$transaction(async (tx) => {
@@ -325,19 +379,22 @@ export async function checkoutEquipment(data: {
     });
 
     if (dbItems.length !== targetIds.length) {
-      throw new Error("One or more selected inventory items could not be found.");
+      throw new Error("Ét eller flere valgte udstyrsdele kunne ikke findes.");
     }
 
     const itemMap = new Map(dbItems.map((i) => [i.id, i]));
 
     for (const req of requestedItems) {
       const item = itemMap.get(req.inventoryId)!;
-      if (item.operationalStatus === OperationalStatus.BROKEN) {
-        throw new Error(`Item ${item.name} (${item.assetTag}) is marked as BROKEN and cannot be loaned.`);
+      if (
+        item.operationalStatus === OperationalStatus.BROKEN ||
+        item.operationalStatus === OperationalStatus.MAINTENANCE
+      ) {
+        throw new Error(`Udstyret "${item.name}" (${item.assetTag}) er markeret som ${item.operationalStatus} og kan ikke udlånes.`);
       }
       if (item.trackingType === TrackingType.SERIALIZED) {
         if (item.loans.length > 0) {
-          throw new Error(`Item ${item.name} (${item.assetTag}) currently has an ACTIVE loan.`);
+          throw new Error(`Udstyret "${item.name}" (${item.assetTag}) har allerede et aktivt udlån.`);
         }
       }
       // Note: for BULK items, stock counts are non-limiting (soft stock check)
@@ -400,6 +457,11 @@ export async function returnEquipment(data: {
   sendToRepair?: boolean;
   returnQuantity?: number;
 }) {
+  const parsed = returnEquipmentSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(`Valideringsfejl: ${parsed.error.issues[0]?.message || "Ugyldigt udlåns-ID."}`);
+  }
+
   const actorId = await getActorAdminId(data.adminId);
   const finalStatus =
     data.status === "DAMAGED"
@@ -415,11 +477,11 @@ export async function returnEquipment(data: {
     });
 
     if (!loan) {
-      throw new Error("Loan transaction record not found.");
+      throw new Error("Lånetransaktion blev ikke fundet.");
     }
 
     if (loan.status !== LoanStatus.ACTIVE && loan.status !== LoanStatus.OVERDUE) {
-      throw new Error(`Loan is already marked as ${loan.status}.`);
+      throw new Error(`Lånet er allerede markeret som ${loan.status}.`);
     }
 
     const currentReturned = loan.returnedQty || 0;
@@ -442,6 +504,14 @@ export async function returnEquipment(data: {
         notes: data.damageNotes ? `${loan.notes ? loan.notes + " | " : ""}Return note: ${data.damageNotes}` : loan.notes,
       },
     });
+
+    // Synchronize operational status back to AVAILABLE if fully returned without damage
+    if (isFullyReturned && finalStatus === LoanStatus.RETURNED && loan.inventory.trackingType === TrackingType.SERIALIZED) {
+      await tx.inventory.update({
+        where: { id: loan.inventoryId },
+        data: { operationalStatus: OperationalStatus.AVAILABLE },
+      });
+    }
 
     // If damaged or sent to repair, update inventory state and create repair record
     if (finalStatus === LoanStatus.DAMAGED || data.sendToRepair) {
@@ -492,8 +562,9 @@ export async function returnMultipleLoans(data: {
   adminId?: string;
   notes?: string;
 }) {
-  if (!data.loanIds || data.loanIds.length === 0) {
-    throw new Error("Ingen lån valgt til returnering.");
+  const parsed = returnMultipleLoansSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(`Valideringsfejl: ${parsed.error.issues[0]?.message || "Ingen lån valgt til returnering."}`);
   }
 
   const actorId = await getActorAdminId(data.adminId);
@@ -532,6 +603,13 @@ export async function returnMultipleLoans(data: {
             : loan.notes,
         },
       });
+
+      if (loan.inventory.trackingType === TrackingType.SERIALIZED) {
+        await tx.inventory.update({
+          where: { id: loan.inventoryId },
+          data: { operationalStatus: OperationalStatus.AVAILABLE },
+        });
+      }
 
       await tx.auditLog.create({
         data: {

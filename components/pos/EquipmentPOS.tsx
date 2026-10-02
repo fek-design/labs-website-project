@@ -527,7 +527,7 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
                 placeholder="Filtrer udstyr..."
                 value={gearSearch}
                 onChange={(e) => setGearSearch(e.target.value)}
-                className="bg-[#202021] border border-[#444444] focus:border-[#FFED00] text-white text-xs px-3 py-1.5 rounded-lg outline-none w-48 font-mono"
+                className="bg-[#202021] border border-[#444444] focus:border-[#555555] text-white text-xs px-3 py-1.5 rounded-lg outline-none w-48 font-mono"
               />
             </div>
 

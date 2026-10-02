@@ -36,7 +36,7 @@ export function CatalogueFilterBar({
   return (
     <div className="w-full space-y-6">
       {/* Search Bar - Figma node 144:351: #383838 background, sharp corners, rounded-none */}
-      <div className="w-full bg-[#383838] p-3 sm:p-4 rounded-none border border-white/5 transition-all focus-within:border-[#009FE3]/60 focus-within:ring-1 focus-within:ring-[#009FE3]/40">
+      <div className="w-full bg-[#383838] p-3 sm:p-4 rounded-none border border-white/5 transition-all focus-within:border-[#555555]">
         <div className="relative flex items-center">
           <MagnifyingGlass
             size={18}

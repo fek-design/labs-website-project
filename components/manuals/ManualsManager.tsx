@@ -295,7 +295,7 @@ export function ManualsManager({ activeLab = "medialab" }: ManualsManagerProps) 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Scan eller søg i manualer, filnavne eller udstyr..."
-              className="w-full bg-[#151517] border border-[#333333] hover:border-[#444444] focus:border-[#FFED00] focus:ring-1 focus:ring-[#FFED00] rounded-lg pl-14 pr-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition-colors font-mono"
+              className="w-full bg-[#151517] border border-[#333333] hover:border-[#444444] focus:border-[#555555] rounded-lg pl-14 pr-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition-colors font-mono"
             />
             {searchQuery && (
               <button

@@ -189,36 +189,35 @@ export function MachineTelemetrySection({
     <section
       ref={containerRef}
       id="machines"
-      className="w-full bg-black text-white py-12 sm:py-16 px-4 sm:px-6 max-w-7xl mx-auto transition-all duration-300"
+      className="w-full bg-black text-white py-12 sm:py-16 px-4 sm:px-6 max-w-7xl mx-auto space-y-8 sm:space-y-10 transition-all duration-300"
     >
-      {/* Asymmetrical 35/65 Grid: Tight Narrative Measure on Left, Expansive Telemetry on Right */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-        {/* Left Column (35-40%): Tight Reading Measure, Headline & Counter */}
-        <div className="gsap-telemetry-stat lg:col-span-5 flex flex-col justify-center space-y-6">
-          <div className="space-y-3">
-            <h2 className="font-notch text-2xl sm:text-4xl md:text-5xl font-light text-white tracking-tight leading-tight">
-              {semantics.headline}
-            </h2>
-            <p className="font-sans text-xs sm:text-sm text-zinc-400 font-normal leading-relaxed max-w-prose">
-              {semantics.description}
-            </p>
-          </div>
+      {/* Dynamic Headings based on Active Lab */}
+      <div className="gsap-telemetry-header space-y-3 sm:space-y-4 max-w-2xl">
+        <h2 className="font-notch text-2xl sm:text-4xl md:text-5xl font-light text-white tracking-tight leading-tight">
+          {semantics.headline}
+        </h2>
+        <p className="font-sans text-xs sm:text-sm text-zinc-400 font-normal leading-relaxed">
+          {semantics.description}
+        </p>
+      </div>
 
-          <div className="pt-2 border-t border-[#262626]">
-            <span className="font-sans text-xs sm:text-sm font-semibold text-white/80 block">
-              {semantics.statLabel}
-            </span>
-            <span className="font-notch text-5xl sm:text-7xl font-extrabold text-white tracking-tighter leading-none mt-1 block">
-              {formattedCount}
-            </span>
-            <span className="text-[11px] sm:text-xs text-zinc-500 font-mono mt-2 block">
-              Realtidsstatus fra Zealand Labs ({campus.toUpperCase()})
-            </span>
-          </div>
+      {/* Grid: Stat Counter on Left, Clipped Autoscrolling Cards on Right */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-center">
+        {/* Left Stat Counter */}
+        <div className="gsap-telemetry-stat md:col-span-4 flex flex-col justify-center">
+          <span className="font-sans text-xs sm:text-base font-semibold text-white/80">
+            {semantics.statLabel}
+          </span>
+          <span className="font-notch text-5xl sm:text-7xl md:text-8xl font-extrabold text-white tracking-tighter leading-none mt-1">
+            {formattedCount}
+          </span>
+          <span className="text-[11px] sm:text-xs text-zinc-500 font-mono mt-2 sm:mt-3">
+            Realtidsstatus fra Zealand Labs ({campus.toUpperCase()})
+          </span>
         </div>
 
-        {/* Right Column (60-65%): Visual Machine Viewport */}
-        <div className="gsap-telemetry-viewport lg:col-span-7 relative h-[320px] overflow-hidden rounded-2xl border border-[#262626] bg-[#0c0c0e]/80 p-2 shadow-2xl">
+        {/* Right Machine Status Viewport - Fixed 3 Cards Height (~270px), Clipped, Autoscrolling */}
+        <div className="gsap-telemetry-viewport md:col-span-8 relative h-[270px] overflow-hidden rounded-xl border border-[#262626] bg-[#0c0c0e]/80 p-2 shadow-2xl">
           {/* Top & bottom edge gradient fades */}
           <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-[#0c0c0e] to-transparent z-10" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-[#0c0c0e] to-transparent z-10" />

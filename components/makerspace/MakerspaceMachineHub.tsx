@@ -146,7 +146,7 @@ export function MakerspaceMachineHub({ activeLab = "makerspace" }: MakerspaceMac
               placeholder="Search 3D printers, laser cutters, CNCs, textiles..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#0D0D0D] border border-[#262626] focus:border-[#FFED00] text-white text-xs rounded-xl p-3 outline-none pl-9 font-bold"
+              className="w-full bg-[#0D0D0D] border border-[#262626] focus:border-[#555555] text-white text-xs rounded-xl p-3 outline-none pl-9 font-bold"
             />
             {searchQuery && (
               <button

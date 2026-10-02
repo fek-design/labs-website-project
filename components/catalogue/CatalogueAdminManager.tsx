@@ -399,7 +399,7 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Søg i offentlige katalogartikler, tags eller metoder..."
-              className="w-full bg-[#151517] border border-[#333333] hover:border-[#444444] focus:border-[#E6007E] focus:ring-1 focus:ring-[#E6007E] rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition-colors font-mono"
+              className="w-full bg-[#151517] border border-[#333333] hover:border-[#444444] focus:border-[#555555] rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition-colors font-mono"
             />
             {searchQuery && (
               <button

@@ -3,6 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { HardwareType, OperationalStatus, TagFacet, TrackingType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { checkRateLimit, getClientIdentifier } from "@/lib/rate-limit";
+import { handleDatabaseError } from "@/lib/errors";
+import {
+  createInventoryItemSchema,
+  updateInventoryItemSchema,
+} from "@/lib/validations/inventory";
 
 function safeRevalidatePath(path: string) {
   try {
@@ -290,6 +296,17 @@ export async function createInventoryItem(data: {
   bundleIds?: string[];
   adminId?: string;
 }) {
+  const parsed = createInventoryItemSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(`Valideringsfejl: ${parsed.error.issues[0]?.message || "Ugyldige udstyrsdata."}`);
+  }
+
+  const clientId = await getClientIdentifier();
+  const rateLimit = checkRateLimit(`inventory:create:${clientId}`, 40, 60);
+  if (!rateLimit.allowed) {
+    throw new Error("For mange oprettelser på kort tid. Vent venligst et øjeblik.");
+  }
+
   const actorId = await getActorAdminId(data.adminId);
 
   const lab = data.labSlug
@@ -302,95 +319,121 @@ export async function createInventoryItem(data: {
     throw new Error(`Lab with slug "${data.labSlug}" or id "${data.labId}" not found.`);
   }
 
-  const trackingType = data.trackingType || TrackingType.SERIALIZED;
-  const totalQuantity = data.totalQuantity !== undefined && data.totalQuantity > 0 ? data.totalQuantity : 1;
+  const normalizedName = parsed.data.name.trim();
+  const normalizedLocation = parsed.data.location?.trim() || null;
 
-  // Generate deterministic asset tag
-  const primaryTagSlug = data.tagSlugs && data.tagSlugs.length > 0 ? data.tagSlugs[0] : undefined;
-  const generatedAssetTag = await generateAssetTag({
-    labSlug: lab.slug,
-    tagSlug: primaryTagSlug,
-    trackingType,
-    location: data.location,
-  });
-
-  let parsedPurchaseDate: Date | null = null;
-  if (data.purchaseDate) {
-    if (data.purchaseDate instanceof Date) {
-      parsedPurchaseDate = data.purchaseDate;
-    } else if (typeof data.purchaseDate === "string" && data.purchaseDate.trim()) {
-      const parsed = new Date(data.purchaseDate);
-      if (!isNaN(parsed.getTime())) {
-        parsedPurchaseDate = parsed;
-      }
-    }
-  }
-
-  const item = await prisma.inventory.create({
-    data: {
-      assetTag: generatedAssetTag,
-      name: data.name.trim(),
+  // Pre-flight duplicate check: prevent rapid double-clicks within 60 seconds
+  const recentDuplicate = await prisma.inventory.findFirst({
+    where: {
       labId: lab.id,
-      hardwareType: data.hardwareType,
-      trackingType,
-      totalQuantity,
-      operationalStatus: data.operationalStatus || OperationalStatus.AVAILABLE,
-      imageUrl: data.imageUrl?.trim() || null,
-      notes: data.notes?.trim() || null,
-      purchaseDate: parsedPurchaseDate,
-      location: data.location?.trim() || null,
-      customFields: data.customFields || null,
-    },
-  });
-
-  // Attach tags if provided
-  if (data.tagSlugs && data.tagSlugs.length > 0) {
-    const tags = await prisma.tag.findMany({
-      where: { slug: { in: data.tagSlugs } },
-    });
-
-    for (const tag of tags) {
-      await prisma.inventoryTag.create({
-        data: {
-          inventoryId: item.id,
-          tagId: tag.id,
-        },
-      });
-    }
-  }
-
-  // Attach bundle assignments if provided
-  if (data.bundleIds && data.bundleIds.length > 0) {
-    for (const bId of data.bundleIds) {
-      await prisma.equipmentBundleAssignment.create({
-        data: {
-          inventoryId: item.id,
-          bundleId: bId,
-        },
-      });
-    }
-  }
-
-  await prisma.auditLog.create({
-    data: {
-      actorAdminId: actorId,
-      actionType: "CREATE_INVENTORY",
-      targetTable: "Inventory",
-      targetId: item.id,
-      payloadDelta: {
-        assetTag: item.assetTag,
-        name: item.name,
-        lab: lab.name,
-        location: item.location,
-        hardwareType: item.hardwareType,
-        trackingType: item.trackingType,
-        totalQuantity: item.totalQuantity,
+      name: normalizedName,
+      location: normalizedLocation,
+      createdAt: {
+        gte: new Date(Date.now() - 60 * 1000),
       },
     },
   });
 
-  safeRevalidatePath("/admin/pos");
-  return { success: true, item };
+  if (recentDuplicate) {
+    throw new Error(
+      `Udstyret "${normalizedName}" er netop blevet oprettet (med stregkode ${recentDuplicate.assetTag}). Dobbeltoprettelse forhindret.`
+    );
+  }
+
+  const trackingType = parsed.data.trackingType || TrackingType.SERIALIZED;
+  const totalQuantity = parsed.data.totalQuantity !== undefined && parsed.data.totalQuantity > 0 ? parsed.data.totalQuantity : 1;
+
+  // Generate deterministic asset tag
+  const primaryTagSlug = parsed.data.tagSlugs && parsed.data.tagSlugs.length > 0 ? parsed.data.tagSlugs[0] : undefined;
+  const generatedAssetTag = await generateAssetTag({
+    labSlug: lab.slug,
+    tagSlug: primaryTagSlug,
+    trackingType,
+    location: normalizedLocation || undefined,
+  });
+
+  let parsedPurchaseDate: Date | null = null;
+  if (parsed.data.purchaseDate) {
+    if (parsed.data.purchaseDate instanceof Date) {
+      parsedPurchaseDate = parsed.data.purchaseDate;
+    } else if (typeof parsed.data.purchaseDate === "string" && parsed.data.purchaseDate.trim()) {
+      const parsedD = new Date(parsed.data.purchaseDate);
+      if (!isNaN(parsedD.getTime())) {
+        parsedPurchaseDate = parsedD;
+      }
+    }
+  }
+
+  try {
+    const item = await prisma.inventory.create({
+      data: {
+        assetTag: generatedAssetTag,
+        name: normalizedName,
+        labId: lab.id,
+        hardwareType: parsed.data.hardwareType,
+        trackingType,
+        totalQuantity,
+        operationalStatus: parsed.data.operationalStatus || OperationalStatus.AVAILABLE,
+        imageUrl: parsed.data.imageUrl?.trim() || null,
+        notes: parsed.data.notes?.trim() || null,
+        purchaseDate: parsedPurchaseDate,
+        location: normalizedLocation,
+        customFields: (parsed.data.customFields as any) ?? undefined,
+      },
+    });
+
+    // Attach tags if provided
+    if (parsed.data.tagSlugs && parsed.data.tagSlugs.length > 0) {
+      const tags = await prisma.tag.findMany({
+        where: { slug: { in: parsed.data.tagSlugs } },
+      });
+
+      for (const tag of tags) {
+        await prisma.inventoryTag.create({
+          data: {
+            inventoryId: item.id,
+            tagId: tag.id,
+          },
+        });
+      }
+    }
+
+    // Attach bundle assignments if provided
+    if (parsed.data.bundleIds && parsed.data.bundleIds.length > 0) {
+      for (const bId of parsed.data.bundleIds) {
+        await prisma.equipmentBundleAssignment.create({
+          data: {
+            inventoryId: item.id,
+            bundleId: bId,
+          },
+        });
+      }
+    }
+
+    await prisma.auditLog.create({
+      data: {
+        actorAdminId: actorId,
+        actionType: "CREATE_INVENTORY",
+        targetTable: "Inventory",
+        targetId: item.id,
+        payloadDelta: {
+          assetTag: item.assetTag,
+          name: item.name,
+          lab: lab.name,
+          location: item.location,
+          hardwareType: item.hardwareType,
+          trackingType: item.trackingType,
+          totalQuantity: item.totalQuantity,
+        },
+      },
+    });
+
+    safeRevalidatePath("/admin/pos");
+    return { success: true, item };
+  } catch (err: unknown) {
+    const errRes = handleDatabaseError(err, "Kunne ikke oprette udstyret.");
+    throw new Error(errRes.error);
+  }
 }
 
 /**
@@ -412,102 +455,118 @@ export async function updateInventoryItem(data: {
   bundleIds?: string[];
   adminId?: string;
 }) {
+  const parsed = updateInventoryItemSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(`Valideringsfejl: ${parsed.error.issues[0]?.message || "Ugyldige opdateringsdata."}`);
+  }
+
+  const clientId = await getClientIdentifier();
+  const rateLimit = checkRateLimit(`inventory:update:${clientId}`, 60, 60);
+  if (!rateLimit.allowed) {
+    throw new Error("For mange opdateringer på kort tid. Vent venligst et øjeblik.");
+  }
+
   const actorId = await getActorAdminId(data.adminId);
 
-  const existing = await prisma.inventory.findUnique({
-    where: { id: data.id },
-  });
-
-  if (!existing) {
-    throw new Error("Inventory item not found.");
-  }
-
-  let targetLabId = existing.labId;
-  if (data.labSlug) {
-    const lab = await prisma.lab.findUnique({ where: { slug: data.labSlug } });
-    if (lab) targetLabId = lab.id;
-  }
-
-  let parsedPurchaseDate: Date | null | undefined = undefined;
-  if (data.purchaseDate !== undefined) {
-    if (data.purchaseDate === null || data.purchaseDate === "") {
-      parsedPurchaseDate = null;
-    } else if (data.purchaseDate instanceof Date) {
-      parsedPurchaseDate = data.purchaseDate;
-    } else if (typeof data.purchaseDate === "string") {
-      const parsed = new Date(data.purchaseDate);
-      parsedPurchaseDate = !isNaN(parsed.getTime()) ? parsed : null;
-    }
-  }
-
-  const updated = await prisma.inventory.update({
-    where: { id: data.id },
-    data: {
-      name: data.name !== undefined ? data.name.trim() : existing.name,
-      labId: targetLabId,
-      trackingType: data.trackingType || existing.trackingType,
-      totalQuantity: data.totalQuantity !== undefined ? data.totalQuantity : existing.totalQuantity,
-      operationalStatus: data.operationalStatus || existing.operationalStatus,
-      imageUrl: data.imageUrl !== undefined ? data.imageUrl.trim() || null : existing.imageUrl,
-      notes: data.notes !== undefined ? data.notes.trim() || null : existing.notes,
-      location: data.location !== undefined ? (data.location?.trim() || null) : existing.location,
-      purchaseDate: parsedPurchaseDate !== undefined ? parsedPurchaseDate : existing.purchaseDate,
-      customFields: data.customFields !== undefined ? data.customFields : existing.customFields,
-    },
-  });
-
-  if (data.tagSlugs) {
-    await prisma.inventoryTag.deleteMany({
-      where: { inventoryId: updated.id },
+  try {
+    const existing = await prisma.inventory.findUnique({
+      where: { id: parsed.data.id },
     });
 
-    const tags = await prisma.tag.findMany({
-      where: { slug: { in: data.tagSlugs } },
-    });
-
-    for (const tag of tags) {
-      await prisma.inventoryTag.create({
-        data: {
-          inventoryId: updated.id,
-          tagId: tag.id,
-        },
-      });
+    if (!existing) {
+      throw new Error("Udstyret blev ikke fundet i databasen.");
     }
-  }
 
-  if (data.bundleIds !== undefined) {
-    await prisma.equipmentBundleAssignment.deleteMany({
-      where: { inventoryId: updated.id },
-    });
-    for (const bId of data.bundleIds) {
-      await prisma.equipmentBundleAssignment.create({
-        data: {
-          inventoryId: updated.id,
-          bundleId: bId,
-        },
-      });
+    let targetLabId = existing.labId;
+    if (parsed.data.labSlug) {
+      const lab = await prisma.lab.findUnique({ where: { slug: parsed.data.labSlug } });
+      if (lab) targetLabId = lab.id;
     }
-  }
 
-  await prisma.auditLog.create({
-    data: {
-      actorAdminId: actorId,
-      actionType: "UPDATE_INVENTORY",
-      targetTable: "Inventory",
-      targetId: updated.id,
-      payloadDelta: {
-        assetTag: updated.assetTag,
-        name: updated.name,
-        location: updated.location,
-        operationalStatus: updated.operationalStatus,
-        trackingType: updated.trackingType,
-        totalQuantity: updated.totalQuantity,
+    let parsedPurchaseDate: Date | null | undefined = undefined;
+    if (parsed.data.purchaseDate !== undefined) {
+      if (parsed.data.purchaseDate === null || parsed.data.purchaseDate === "") {
+        parsedPurchaseDate = null;
+      } else if (parsed.data.purchaseDate instanceof Date) {
+        parsedPurchaseDate = parsed.data.purchaseDate;
+      } else if (typeof parsed.data.purchaseDate === "string") {
+        const parsedD = new Date(parsed.data.purchaseDate);
+        parsedPurchaseDate = !isNaN(parsedD.getTime()) ? parsedD : null;
+      }
+    }
+
+    const updated = await prisma.inventory.update({
+      where: { id: parsed.data.id },
+      data: {
+        name: parsed.data.name !== undefined ? parsed.data.name.trim() : existing.name,
+        labId: targetLabId,
+        trackingType: parsed.data.trackingType || existing.trackingType,
+        totalQuantity: parsed.data.totalQuantity !== undefined ? parsed.data.totalQuantity : existing.totalQuantity,
+        operationalStatus: parsed.data.operationalStatus || existing.operationalStatus,
+        imageUrl: parsed.data.imageUrl !== undefined ? parsed.data.imageUrl?.trim() || null : existing.imageUrl,
+        notes: parsed.data.notes !== undefined ? parsed.data.notes?.trim() || null : existing.notes,
+        location: parsed.data.location !== undefined ? (parsed.data.location?.trim() || null) : existing.location,
+        purchaseDate: parsedPurchaseDate !== undefined ? parsedPurchaseDate : existing.purchaseDate,
+        customFields: parsed.data.customFields !== undefined ? ((parsed.data.customFields as any) ?? undefined) : existing.customFields,
       },
-    },
-  });
+    });
 
-  safeRevalidatePath("/admin/pos");
-  return { success: true, item: updated };
+    if (parsed.data.tagSlugs) {
+      await prisma.inventoryTag.deleteMany({
+        where: { inventoryId: updated.id },
+      });
+
+      const tags = await prisma.tag.findMany({
+        where: { slug: { in: parsed.data.tagSlugs } },
+      });
+
+      for (const tag of tags) {
+        await prisma.inventoryTag.create({
+          data: {
+            inventoryId: updated.id,
+            tagId: tag.id,
+          },
+        });
+      }
+    }
+
+    if (parsed.data.bundleIds !== undefined) {
+      await prisma.equipmentBundleAssignment.deleteMany({
+        where: { inventoryId: updated.id },
+      });
+      for (const bId of parsed.data.bundleIds) {
+        await prisma.equipmentBundleAssignment.create({
+          data: {
+            inventoryId: updated.id,
+            bundleId: bId,
+          },
+        });
+      }
+    }
+
+    await prisma.auditLog.create({
+      data: {
+        actorAdminId: actorId,
+        actionType: "UPDATE_INVENTORY",
+        targetTable: "Inventory",
+        targetId: updated.id,
+        payloadDelta: {
+          assetTag: updated.assetTag,
+          name: updated.name,
+          location: updated.location,
+          operationalStatus: updated.operationalStatus,
+          trackingType: updated.trackingType,
+          totalQuantity: updated.totalQuantity,
+        },
+      },
+    });
+
+    safeRevalidatePath("/admin/pos");
+    return { success: true, item: updated };
+  } catch (err: unknown) {
+    const errRes = handleDatabaseError(err, "Kunne ikke opdatere udstyret.");
+    throw new Error(errRes.error);
+  }
 }
 
 /**

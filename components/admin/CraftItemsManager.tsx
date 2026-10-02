@@ -376,7 +376,7 @@ export function CraftItemsManager() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Søg i titel, kategori eller tags..."
-          className="bg-[#171717] border border-zinc-800 px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#009FE3]"
+          className="bg-[#171717] border border-zinc-800 px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#555555]"
         />
 
         <div className="flex items-center gap-2">

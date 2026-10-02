@@ -94,7 +94,7 @@ export function ActiveLoansTable({ loans, onRefresh }: ActiveLoansTableProps) {
             placeholder="Filter by student or asset..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-[#0D0D0D] border border-[#262626] focus:border-[#009FE3] text-white text-xs font-mono px-3 py-2 rounded-full outline-none w-48 sm:w-56"
+            className="bg-[#0D0D0D] border border-[#262626] focus:border-[#555555] text-white text-xs font-mono px-3 py-2 rounded-full outline-none w-48 sm:w-56"
           />
 
           {/* Overdue quick toggle */}

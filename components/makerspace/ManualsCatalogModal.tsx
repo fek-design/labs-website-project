@@ -338,7 +338,7 @@ export function ManualsCatalogModal({
                   placeholder="Search manuals by title, description, or filename..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 bg-[#0D0D0D] border border-[#262626] focus:border-[#009FE3] text-white text-xs rounded-xl p-3 outline-none font-bold"
+                  className="flex-1 bg-[#0D0D0D] border border-[#262626] focus:border-[#555555] text-white text-xs rounded-xl p-3 outline-none font-bold"
                 />
               </div>
 
