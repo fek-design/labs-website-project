@@ -6,11 +6,11 @@ Provides a dedicated non-rental dashboard for Zealand Makerspace static machines
 ## Requirements
 
 ### Requirement: Makerspace Machine Catalog and Manuals
-The system SHALL present static machine workstations with a dedicated machine search bar, direct access to a centralized catalog of authentic PDF user manuals supporting Many-to-Many associations across machines, verified technical specifications without fake placeholder data, and operational readiness, without student loan or rental workflows.
+The system SHALL present static machine workstations with a dedicated machine search bar using neutral focus border styling (`#555555`) without yellow borders, direct access to a centralized catalog of authentic PDF user manuals supporting Many-to-Many associations across machines, verified technical specifications without fake placeholder data, and operational readiness, without student loan or rental workflows.
 
 #### Scenario: Viewing machine details and documentation
 - **WHEN** an administrator or technician opens the Makerspace hub and searches for a machine name or category
-- **THEN** the system displays matching static machines with operational status badges, verified specifications, and list of attached PDF user manuals from the central catalog
+- **THEN** the system displays matching static machines with operational status badges, verified specifications, and list of attached PDF user manuals from the central catalog, with the search bar maintaining neutral border styling.
 
 #### Scenario: Uploading and linking a PDF manual to a machine
 - **WHEN** a technician uploads a PDF manual file and associates it with a machine

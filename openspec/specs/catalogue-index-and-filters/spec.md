@@ -17,11 +17,11 @@ The catalogue page (`/katalog`) SHALL display all prototypes and activities avai
 - **THEN** the catalogue SHALL immediately re-scope the item list and lab filters to reflect Roskilde's facilities (e.g., Dimselab) without requiring a full page reload.
 
 ### Requirement: Non-Bloated Quality-of-Life Filtering
-The catalogue SHALL provide streamlined, focused filtering consisting of free-text search, contextual lab tags, and category pills, without redundant or bloated input controls.
+The catalogue SHALL provide streamlined, focused filtering consisting of free-text search, contextual lab tags, and category pills, without redundant or bloated input controls. The search input container SHALL use clean neutral border styling (`#555555`) upon focus without cyan or colored highlight rings.
 
 #### Scenario: Keyword search query filter
 - **WHEN** the user enters search text into the search card input (e.g. "print" or "tekstil")
-- **THEN** the grid SHALL filter in real time to show only items matching the title, tags, machines, or process descriptions.
+- **THEN** the grid SHALL filter in real time to show only items matching the title, tags, machines, or process descriptions, while the search input maintains a neutral border without colored accent rings.
 
 #### Scenario: Contextual lab filter toggles
 - **WHEN** the user clicks a lab pill (e.g., "Makerspace" or "Medialab")
@@ -47,11 +47,11 @@ Each item in the catalogue SHALL be dynamically populated from the unified craft
 - **THEN** the catalogue index SHALL render the item card with proper tags, thumbnail, and category without requiring modifications to the page layout component.
 
 ### Requirement: Visual Fidelity to Figma Frame 144:335
-The catalogue page SHALL implement the visual structure of Figma frame `144:335`, including dark base floor `#000000`, sharp card geometry (`rounded-none`), `#383838` search container, `#009FE3` cyan accent line, running marquee ribbon, and branded footer.
+The catalogue page SHALL implement the visual structure of Figma frame `144:335`, including dark base floor `#000000`, sharp card geometry, `#009FE3` cyan accent line, running marquee ribbon, and branded footer, without forced yellow highlight borders or fabricated prototype count badge boxes in the header.
 
 #### Scenario: Visual tokens and layout structure
 - **WHEN** the `/katalog` page renders on any viewport
-- **THEN** the page SHALL present the dark Scandinavian theme with Stack Sans typography, 2-column mobile grid adapting to multi-column desktop, and running `<MarqueeRibbon />` before the footer.
+- **THEN** the page SHALL present the dark Scandinavian theme with Stack Sans typography, clean 12-column responsive layout container, and running `<MarqueeRibbon />` before the footer, without yellow highlight borders or fabricated metadata cards in the page header.
 
 ### Requirement: Accessible Catalogue Layout and Payload Optimization
 The catalogue page (`/katalog`) SHALL implement asymmetrical visual-to-metadata hierarchy, lightweight client payload delivery, and keyboard-first accessibility.

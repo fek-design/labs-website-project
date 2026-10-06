@@ -13,18 +13,26 @@ The system SHALL preserve the staff administration launchpad previously located 
 - **THEN** the system displays the admin console dashboard with active loan statistics, gear counts, overdue counters, and quick links to the POS calendar, machine manuals, and inventory management.
 
 ### Requirement: Hero Section and Navigation
-The system SHALL present a responsive hero section featuring the Zealand Labs header, campus indicator scoped to Køge Campus, hamburger drawer trigger, and an exploration call-to-action button, without presenting a blocking first-time campus gate modal.
+The system SHALL present a centered responsive hero section featuring the Zealand Labs header, campus indicator scoped to Køge Campus, hamburger drawer trigger, and an exploration call-to-action button, structured within a standard 12-column responsive layout grid without forced highlight borders, fabricated status cards, or secondary descriptive paragraphs. The top navigation bar SHALL automatically hide on scroll down and smoothly reappear on scroll up. The underlying multi-campus architecture SHALL remain intact for future campus expandability.
 
 #### Scenario: User visits the root landing page
 - **WHEN** a visitor navigates to `/`
-- **THEN** the system displays the top navigation with `LABS` brand, the active campus indicator showing "Køge Campus", and the `Zealands Kreative hjørne` hero banner with the `UDFORSK` button, without displaying a campus selection modal.
+- **THEN** the system displays the top navigation with `LABS` brand, the active campus indicator showing "Køge Campus", and the centered `Zealands Kreative hjørne` hero banner with the `UDFORSK` button, arranged within a clean 12-column layout grid without yellow highlight borders, simulated campus status boxes, or extraneous paragraph text.
+
+#### Scenario: User scrolls down the page
+- **WHEN** a visitor scrolls downward past the header threshold (60px)
+- **THEN** the system smoothly translates the top navigation bar upward out of view (`-translate-y-full`).
+
+#### Scenario: User scrolls up after scrolling down
+- **WHEN** a visitor scrolls upward while anywhere down the page
+- **THEN** the system immediately and smoothly slides the top navigation bar back into view (`translate-y-0`).
 
 ### Requirement: Infinite Lab Marquee
-The system SHALL display an infinite running marquee ribbon transitioning across the lab pillars.
+The system SHALL display an infinite running marquee ribbon transitioning across the active Køge lab pillars.
 
 #### Scenario: Continuous marquee presentation
 - **WHEN** the hero section is in view
-- **THEN** the system continuously scrolls the label sequence `DIMSELAB • MAKERSPACE • MEDIALAB •` with seamless looped animation.
+- **THEN** the system continuously scrolls the label sequence `MAKERSPACE • MEDIALAB •` with seamless looped animation, omitting any reference to Dimselab.
 
 ### Requirement: Prototype Inspiration Carousel
 The system SHALL provide a horizontally scrollable carousel displaying prototype product categories for student inspiration populated with admin-curated featured craft items (up to 5 items) linking to `/craft/[slug]`, concluding with a streamlined catalogue navigation card where "Udforsk hele kataloget" serves as the primary header without secondary subtext clutter.
@@ -70,11 +78,11 @@ The system SHALL display the total machine inventory and live workstation cards 
 - **THEN** the system queries active static machines and borrowable items by their foreign key `lab.slug` (`makerspace` and `medialab`) and displays verified machine counts alongside individual hardware status cards.
 
 ### Requirement: Brand Footer and Navigation Directory
-The system SHALL render a branded footer with lab index navigation and operating ethos.
+The system SHALL render a branded footer with lab index navigation and operating ethos scoped to active Køge facilities.
 
 #### Scenario: Footer index navigation
 - **WHEN** the visitor reaches the bottom of the page
-- **THEN** the system renders the cyan footer with `LABS` typography, mission statement, and direct links to Makerspace, Medialab, and Dimselab directories.
+- **THEN** the system renders the cyan footer with `LABS` typography, mission statement, and direct links strictly to Makerspace and Medialab directories, omitting Dimselab and Roskilde references.
 
 ### Requirement: Asymmetrical Span Allocations and Human Attention Optimization
 The Public Landing Portal SHALL structure core editorial sections (Hero, Machine Telemetry, Prototyping Support) using asymmetrical grid span allocations (such as 35/65 or 40/60) where textual copy is strictly bound to ergonomic reading measures (45–65 characters / `max-w-prose`) and graphic/interactive components occupy the primary visual space.

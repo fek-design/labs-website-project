@@ -25,7 +25,7 @@ The system SHALL organize inventory metadata using a 2-Tier Namespaced Faceted T
 - **THEN** the system renders the canonical `LABS Inventar` header with live available/total asset KPI counters and updates the inventory filter to the selected lab.
 
 ### Requirement: Streamlined Inventory Item Creation and Editing
-The system SHALL auto-generate deterministic, unique asset tags following the 4-tier taxonomy schema `[LOCATION]-[LAB-PREFIX]-[CATEGORY]-[4-DIGIT-SEQUENCE]` upon item creation using the physical location/campus prefix (`KG` for Køge, `RO` for Roskilde) and 2-tier category taxonomy (`DISCIPLINE` and `PROCESS`), mapping lab prefixes strictly to authentic Køge facilities (`MK` for Makerspace and `ML` for MediaLab), disabling manual asset tag text entry, presenting the item creation and editing interfaces as centered modal cards (`Card - Create` node `87:5143` and `Card - Edit` node `87:5050`) styled in `#202021` card surface with 1px `#444444` border, containing equipment name, serial number, acquisition date (`purchaseDate`), physical location placement (`location`), lab facility, hardware/tracking type, linked manual attachments with cyan `#1da9e4` "Se" pill buttons, description, an integrated zero-cloud Code 128 barcode preview with direct printable sticker trigger and PNG/SVG download actions, and standardized action footers with `#e51d87` (Pink) "Slet" button, `#151517` / `#333333` "Afbryd" cancel button, and `#1da9e4` (Cyan) "Gem" / "Opret" primary action button, persisting the acquisition date and physical location in the `Inventory` database record.
+The system SHALL auto-generate deterministic, unique asset tags following the 4-tier taxonomy schema `[LOCATION]-[LAB-PREFIX]-[CATEGORY]-[4-DIGIT-SEQUENCE]` upon item creation using the physical location/campus prefix (`KG` for Køge, `RO` for Roskilde) and 2-tier category taxonomy (`DISCIPLINE` and `PROCESS`), mapping lab prefixes strictly to authentic Køge facilities (`MK` for Makerspace and `ML` for MediaLab), disabling manual asset tag text entry, presenting the item creation and editing interfaces as centered modal cards (`Card - Create` node `87:5143` and `Card - Edit` node `87:5050`) styled in `#202021` card surface with 1px `#444444` border, containing equipment name, serial number, acquisition date (`purchaseDate`), physical location placement (`location`), lab facility, hardware/tracking type, linked manual attachments with cyan `#1da9e4` "Se" pill buttons, description, an integrated zero-cloud Code 128 barcode preview with copyable tag ID and direct PNG/SVG vector download actions, and standardized action footers with `#e51d87` (Pink) "Slet" button, `#151517` / `#333333` "Afbryd" cancel button, and `#1da9e4` (Cyan) "Gem" / "Opret" primary action button, persisting the acquisition date and physical location in the `Inventory` database record.
 
 #### Scenario: Creating a new inventory item with centered modal card
 - **WHEN** an administrator clicks "Tilføj" / "+ Opret genstand" in the inventory toolbar
@@ -33,7 +33,7 @@ The system SHALL auto-generate deterministic, unique asset tags following the 4-
 
 #### Scenario: Editing an existing inventory asset with modal card interface
 - **WHEN** an administrator clicks to edit an item from list view or grid card view
-- **THEN** the system opens `Card - Edit` (node `87:5050`) populated with the item's asset tag title, equipment name, status dropdown, physical location selector, lab dropdown, linked manuals list with cyan "Se" badges, live Code 128 barcode label with print/download controls, description, and footer action buttons featuring pink "Slet", "Afbryd", and cyan "Gem".
+- **THEN** the system opens `Card - Edit` (node `87:5050`) populated with the item's asset tag title, equipment name, status dropdown, physical location selector, lab dropdown, linked manuals list with cyan "Se" badges, live Code 128 barcode label with vector download controls, description, and footer action buttons featuring pink "Slet", "Afbryd", and cyan "Gem".
 
 #### Scenario: Toggling documentation manuals library from item card
 - **WHEN** an administrator clicks "Tilføj Manualer +" from either create or edit modal card
@@ -57,15 +57,15 @@ The system SHALL auto-generate deterministic, unique asset tags following the 4-
 
 #### Scenario: Generating Code 128 barcode in item card
 - **WHEN** an administrator views the item creation or edit modal card
-- **THEN** the system generates a local, zero-cloud Code 128 barcode representation matching the current deterministic asset tag alongside human-readable text and placement metadata.
+- **THEN** the system generates a local, zero-cloud Code 128 barcode representation matching the current deterministic asset tag alongside human-readable text and placement metadata without size roll toggling controls.
 
 #### Scenario: Printing physical sticker label
-- **WHEN** an administrator clicks the "Udskriv label" action button
-- **THEN** the system triggers a print stylesheet preview formatted for thermal sticker rolls (50×25mm / 60×30mm) containing the Zealand Labs header, Code 128 barcode, asset tag, and equipment title.
+- **WHEN** an administrator attempts or requests physical label printing
+- **THEN** the system delegates physical printing to downloaded standardized vector SVG or 300 DPI PNG graphics loaded in dedicated thermal printer software, deprecating direct in-browser thermal print dialog triggers.
 
 #### Scenario: Downloading barcode asset files
-- **WHEN** an administrator clicks the "Hent Barcode" action button
-- **THEN** the system directly downloads the high-resolution vector SVG and/or PNG image file of the asset tag barcode without invoking external web services.
+- **WHEN** an administrator clicks "Hent SVG" or "Hent PNG"
+- **THEN** the system directly downloads the high-resolution vector SVG or 300 DPI PNG image file of the standardized label asset tag barcode without invoking external web services or browser print dialogs.
 
 ### Requirement: Equipment Manuals Documentation Library Integration
 The system SHALL provide a dedicated slide-out documentation browser (`Card - Manual side to edit/create` / `MANUALER` library node `87:6081`) accessible from item creation and edit cards, featuring header title `MANUALER Many-to-Many documentation library`, live `Valgt N` counter, high-contrast search input, and a 2-column card grid allowing administrators to inspect, search, and link many-to-many PDF manuals and standard operating procedures (SOPs) to equipment assets.

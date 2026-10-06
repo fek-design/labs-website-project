@@ -358,33 +358,6 @@ export function AdminSettingsView({
               </div>
             </form>
           </div>
-
-          {/* SECTION 4: System & Security Architecture Card */}
-          <div className="bg-[#202021] border border-[#444444] rounded-xl p-5 space-y-3 text-xs">
-            <div className="text-xs font-headline font-bold text-zinc-300 uppercase tracking-wider mb-2">
-              System & Sikkerhedsarkitektur
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#151517] border border-[#333333]">
-                <span className="text-zinc-400 font-text">Sikkerhedsprotokol:</span>
-                <span className="text-emerald-400 font-bold font-mono">Zero-Cloud Local MySQL</span>
-              </div>
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#151517] border border-[#333333]">
-                <span className="text-zinc-400 font-text">Hashing:</span>
-                <span className="text-zinc-200 font-bold font-mono">bcrypt (work factor 12)</span>
-              </div>
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#151517] border border-[#333333]">
-                <span className="text-zinc-400 font-text">Tildelt Campus:</span>
-                <span className="text-[#E6007E] font-bold font-mono">{assignedCampus}</span>
-              </div>
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#151517] border border-[#333333]">
-                <span className="text-zinc-400 font-text">Aktiv Session:</span>
-                <span className="text-[#009FE3] font-bold font-mono">
-                  {activeLab === "makerspace" ? "Makerspace (Køge)" : "MediaLab (Køge)"}
-                </span>
-              </div>
-            </div>
-          </div>
         </div>
       )}
     </div>

@@ -13,6 +13,10 @@
     "db:clean": "tsx prisma/clean-test-data.ts",
     "db:wipe": "tsx prisma/clean-all-dummy-data.ts",
     "setup:admin": "tsx prisma/setup-superadmin.ts",
+    "users:list": "tsx prisma/manage-users.ts list",
+    "users:create": "tsx prisma/manage-users.ts create",
+    "users:delete": "tsx prisma/manage-users.ts delete",
+    "users:password": "tsx prisma/manage-users.ts password",
     "db:studio": "prisma studio",
     "db:generate": "prisma generate"
   },
