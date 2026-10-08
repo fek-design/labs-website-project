@@ -77,3 +77,81 @@ export function generateCatalogueSchema(items: Array<{
     }))
   };
 }
+
+export function generateHowToSchema(item: {
+  slug: string;
+  title: string;
+  category?: string;
+  description?: string;
+  heroImage?: string;
+  prerequisites?: {
+    materials?: string;
+    estimatedTime?: string;
+    difficulty?: string;
+  };
+  processes?: Array<{
+    id?: string;
+    name: string;
+    subtitle?: string;
+    machines?: Array<{
+      name: string;
+      model?: string;
+      time?: string;
+      description?: string;
+    }>;
+  }>;
+}) {
+  const steps = (item.processes || []).flatMap((proc, pIdx) => {
+    if (proc.machines && proc.machines.length > 0) {
+      return proc.machines.map((m, mIdx) => ({
+        "@type": "HowToStep",
+        "position": pIdx * 10 + mIdx + 1,
+        "name": `${proc.name}: ${m.name}`,
+        "text": m.description || `Udfør fremstilling med ${m.name} (${m.model || ""}) i Zealand Labs.`,
+        "timeRequired": m.time || item.prerequisites?.estimatedTime || "PT30M",
+      }));
+    }
+    return [
+      {
+        "@type": "HowToStep",
+        "position": pIdx + 1,
+        "name": proc.name,
+        "text": proc.subtitle || `Trin i fremstillingsprocessen for ${item.title}.`,
+        "timeRequired": item.prerequisites?.estimatedTime || "PT30M",
+      },
+    ];
+  });
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "@id": `https://labs.zealand.dk/craft/${item.slug}#howto`,
+    "name": `Sådan fremstiller du ${item.title} i Zealand Labs`,
+    "description":
+      item.description ||
+      `Komplet vejledning, maskinoversigt og proces til ${item.title} (${
+        item.category || "Prototype"
+      }) på Zealand Erhvervsakademi Køge Campus.`,
+    "image": item.heroImage ? `https://labs.zealand.dk${item.heroImage}` : undefined,
+    "totalTime": item.prerequisites?.estimatedTime || "PT1H",
+    "supply": item.prerequisites?.materials
+      ? [
+          {
+            "@type": "HowToSupply",
+            "name": item.prerequisites.materials,
+          },
+        ]
+      : undefined,
+    "step":
+      steps.length > 0
+        ? steps
+        : [
+            {
+              "@type": "HowToStep",
+              "position": 1,
+              "name": "Design & Forberedelse",
+              "text": `Klargør dine digitale filer og medbring materialer til ${item.title}.`,
+            },
+          ],
+  };
+}

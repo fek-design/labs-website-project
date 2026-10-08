@@ -38,18 +38,6 @@ export function LandingFooter({ className = "" }: LandingFooterProps) {
                 <span>Hverdage 08:30 – 16:00 (Onsdag 14–17 i Makerspace)</span>
               </div>
             </div>
-
-            {/* Real-Time Lab Status Pill */}
-            <div className="pt-2">
-              <div
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#151517] border border-[#262626] text-xs font-mono shadow-sm"
-                role="status"
-                aria-label="Værksted status: Åben"
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                <span className="text-zinc-300 font-medium">Makerspace & MediaLab Åbent</span>
-              </div>
-            </div>
           </div>
 
           {/* Column 2: Udforsk (Spans 3 of 12) */}
@@ -112,23 +100,8 @@ export function LandingFooter({ className = "" }: LandingFooterProps) {
               >
                 MediaLab & Udlånsregler
               </Link>
-              <a
-                href="/uploads/manuals/Makerspace_Universal_Safety_SOP_v2.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200 inline-flex items-center gap-1.5"
-              >
-                <span>Sikkerhedsmanualer (SOPs)</span>
-                <span className="text-[10px] font-mono text-zinc-500">PDF</span>
-              </a>
-              <a
-                href="/docs/USER_MANUAL.md"
-                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
-              >
-                Brugermanual (Hurtigguide)
-              </a>
-              <span className="text-[11px] text-zinc-500 pt-1 block">
-                Brug for hjælp? Spørg lab-vagten i åbningstiden.
+              <span className="text-[11px] text-zinc-500 pt-2 block border-t border-white/10">
+                Brug for vejledning eller materialer? Mød op i lab-åbningstiden eller tag fat i lab-vagten.
               </span>
             </nav>
           </div>
@@ -152,12 +125,6 @@ export function LandingFooter({ className = "" }: LandingFooterProps) {
               >
                 POS Udlånsskranke
               </Link>
-              <Link
-                href="/admin/pos"
-                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
-              >
-                Lager & Maskiner
-              </Link>
 
               <div className="pt-2">
                 <span className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-zinc-500 bg-[#151517] px-2 py-1 rounded border border-[#262626]">
@@ -172,7 +139,7 @@ export function LandingFooter({ className = "" }: LandingFooterProps) {
         {/* Bottom Utility Bar (Divisible by 8 rhythm: pt-8 mt-12 = 32px / 48px) */}
         <div className="pt-8 mt-12 border-t border-[#262626] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono text-zinc-500">
           <div className="flex items-center gap-2">
-            <span>© 2026 Zealand Labs</span>
+            <span>Zealand Sjællands Erhvervsakademi</span>
             <span>•</span>
             <span>Køge Campus</span>
           </div>

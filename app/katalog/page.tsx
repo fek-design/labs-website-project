@@ -29,7 +29,7 @@ export default async function CataloguePage() {
         {/* Sticky Header with Campus Switcher & Brand */}
         <LandingHeader />
 
-        <main className="flex-1 w-full pt-20 sm:pt-24 pb-16">
+        <main id="main-content" className="flex-1 w-full pt-20 sm:pt-24 pb-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Catalogue Header Section - Figma frame 144:354 */}
             <div className="mb-8 sm:mb-10">

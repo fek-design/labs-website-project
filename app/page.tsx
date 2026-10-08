@@ -102,7 +102,7 @@ export default async function LandingPage() {
         {/* Fixed/Overlay Navigation with Campus Switcher */}
         <LandingHeader />
 
-        <main className="flex-1 w-full">
+        <main id="main-content" className="flex-1 w-full">
           {/* Hero Section */}
           <HeroSection />
 

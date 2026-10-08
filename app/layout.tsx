@@ -42,6 +42,13 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-[#000000] text-white font-mono overflow-x-hidden">
+        {/* WCAG AA Keyboard Skip to Main Content Link */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2.5 focus:bg-[#009FE3] focus:text-black focus:font-headline focus:font-extrabold focus:text-sm focus:rounded-full focus:shadow-2xl focus:outline-none focus:ring-2 focus:ring-white"
+        >
+          Spring til hovedindhold
+        </a>
         {children}
       </body>
     </html>

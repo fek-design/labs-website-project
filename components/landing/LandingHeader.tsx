@@ -124,96 +124,28 @@ export function LandingHeader() {
         }`}
       >
         <div className="max-w-5xl mx-auto px-4 sm:px-8 flex items-center justify-between gap-4">
-          {/* Left: Brand Logo & Campus Indicator */}
-          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-            <Link
-              href="/"
-              className="font-notch text-2xl md:text-3xl font-extrabold tracking-tighter text-white touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3] rounded"
-            >
-              LABS
-            </Link>
-
-            <div className="hidden lg:flex items-center gap-1.5 text-[11px] text-white/90 font-bold px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/15 select-none font-headline">
-              <span>{campus.toUpperCase()} CAMPUS</span>
-              <MapPin size={12} weight="bold" className="text-[#009FE3] shrink-0" aria-hidden="true" />
-            </div>
-          </div>
-
-          {/* Center: Desktop Sticky Navigation with Scroll Spy (8-divisible rhythm) */}
-          <nav
-            className="hidden md:flex items-center gap-6 lg:gap-8 px-6 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/15 font-headline text-xs font-bold uppercase tracking-wider text-zinc-300 select-none shadow-lg"
-            aria-label="Primær navigation"
+          {/* Left: Brand Logo */}
+          <Link
+            href="/"
+            className="font-notch text-2xl md:text-3xl font-extrabold tracking-tighter text-white touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3] rounded"
           >
-            <a
-              href="#prototypes"
-              onClick={(e) => handleAnchorClick(e, "prototypes")}
-              className={`transition-colors py-1 relative hover:text-white ${
-                activeSection === "prototypes" ? "text-white" : "text-zinc-400"
-              }`}
-            >
-              <span>Guides</span>
-              {activeSection === "prototypes" && (
-                <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#009FE3]" />
-              )}
-            </a>
+            LABS
+          </Link>
 
-            <a
-              href="#showcase"
-              onClick={(e) => handleAnchorClick(e, "showcase")}
-              className={`transition-colors py-1 relative hover:text-white ${
-                activeSection === "showcase" ? "text-white" : "text-zinc-400"
-              }`}
-            >
-              <span>Showcase</span>
-              {activeSection === "showcase" && (
-                <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#009FE3]" />
-              )}
-            </a>
+          {/* Right: Location Indicator Badge & Universal Hamburger Menu Toggle */}
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+            {/* Location Indicator Badge */}
+            <div className="flex items-center gap-1.5 text-xs text-white font-bold px-3 sm:px-3.5 py-1.5 sm:py-2 min-h-[36px] sm:min-h-[40px] rounded-full bg-black/60 backdrop-blur-md border border-white/15 select-none font-headline">
+              <span>{campus.toUpperCase()} CAMPUS</span>
+              <MapPin size={13} weight="bold" className="text-[#009FE3] shrink-0" aria-hidden="true" />
+            </div>
 
-            <a
-              href="#machines"
-              onClick={(e) => handleAnchorClick(e, "machines")}
-              className={`transition-colors py-1 relative hover:text-white ${
-                activeSection === "machines" ? "text-white" : "text-zinc-400"
-              }`}
-            >
-              <span>Maskiner</span>
-              {activeSection === "machines" && (
-                <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#009FE3]" />
-              )}
-            </a>
-
-            <a
-              href="#support-pillars"
-              onClick={(e) => handleAnchorClick(e, "support-pillars")}
-              className={`transition-colors py-1 relative hover:text-white ${
-                activeSection === "support-pillars" ? "text-white" : "text-zinc-400"
-              }`}
-            >
-              <span>Værksteder</span>
-              {activeSection === "support-pillars" && (
-                <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#009FE3]" />
-              )}
-            </a>
-          </nav>
-
-          {/* Right: Katalog CTA Button & Mobile Menu Toggle */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Primary High-Visibility Katalog CTA */}
-            <Link
-              href="/katalog"
-              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[40px] rounded-full bg-[#009FE3] hover:bg-[#0089c4] text-black font-headline font-extrabold text-xs uppercase tracking-wider transition-colors shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-            >
-              <span>Katalog</span>
-              <ArrowUpRight size={14} weight="bold" aria-hidden="true" />
-            </Link>
-
-            {/* Mobile Hamburger Menu Toggle (48x48 hit target) */}
+            {/* Universal Hamburger Menu Toggle (Accessible across all viewports) */}
             <button
               type="button"
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden flex flex-col justify-center items-center w-12 h-12 p-2 text-white focus:outline-none cursor-pointer rounded-lg hover:bg-white/10 active:bg-white/20 transition-colors touch-manipulation focus-visible:ring-2 focus-visible:ring-[#009FE3]"
-              aria-label="Åbn navigationsmenu"
+              className="flex flex-col justify-center items-center w-11 h-11 sm:w-12 sm:h-12 p-2 text-white focus:outline-none cursor-pointer rounded-lg hover:bg-white/10 active:bg-white/20 transition-colors touch-manipulation focus-visible:ring-2 focus-visible:ring-[#009FE3]"
+              aria-label={isOpen ? "Luk navigationsmenu" : "Åbn navigationsmenu"}
               aria-expanded={isOpen}
             >
               <span className="w-5 flex flex-col gap-1.5 pointer-events-none">

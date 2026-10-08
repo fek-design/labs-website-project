@@ -13,6 +13,7 @@ import { CraftManualsSection } from "@/components/craft/CraftManualsSection";
 import { MarqueeRibbon } from "@/components/landing/MarqueeRibbon";
 
 import { getCraftArticles } from "@/app/actions/crafts";
+import { generateHowToSchema } from "@/lib/schema";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -49,13 +50,21 @@ export default async function CraftItemPage({ params }: PageProps) {
     notFound();
   }
 
+  const howToSchema = generateHowToSchema(item);
+
   return (
     <CampusProvider>
       <div className="min-h-screen bg-black text-white selection:bg-brand-pink/30 selection:text-white flex flex-col justify-between overflow-x-hidden">
+        {/* Structured JSON-LD HowTo Schema for AI-First Discoverability */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
+        />
+
         {/* Fixed Navigation with Campus Context */}
         <LandingHeader />
 
-        <main className="flex-1 w-full">
+        <main id="main-content" className="flex-1 w-full">
           {/* Upper Sections with Flow Spacing */}
           <div className="space-y-10 sm:space-y-14">
             {/* Hero Photography & Location Hours */}
