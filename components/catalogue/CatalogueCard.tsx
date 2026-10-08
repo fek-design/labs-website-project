@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
+import { SafeImageBox } from "@/components/landing/SafeImageBox";
 import Link from "next/link";
 import { CraftItemData } from "@/lib/craft-data";
 import { ArrowRight } from "@phosphor-icons/react";
@@ -29,12 +29,14 @@ export function CatalogueCard({ item }: CatalogueCardProps) {
           </span>
         </div>
 
-        {/* Thumbnail image */}
+        {/* Thumbnail image with SafeImageBox fallback */}
         <div className="relative w-full h-full p-4 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-          <Image
+          <SafeImageBox
             src={displayImage}
             alt={item.title}
             fill
+            fallbackIcon="image"
+            fallbackLabel={item.title}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="object-contain p-2"
           />

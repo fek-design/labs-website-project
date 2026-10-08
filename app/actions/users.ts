@@ -73,8 +73,12 @@ export async function createOperator(data: {
     throw new Error("Brugernavn skal være på mindst 3 tegn.");
   }
 
-  if (!cleanPassword || cleanPassword.length < 6) {
-    throw new Error("Adgangskode skal være på mindst 6 tegn.");
+  if (!cleanPassword || cleanPassword.length < 8) {
+    throw new Error("Adgangskode skal være på mindst 8 tegn.");
+  }
+
+  if (!/[0-9]/.test(cleanPassword) && !/[!@#$%^&*(),.?":{}|<>]/.test(cleanPassword)) {
+    throw new Error("Adgangskoden skal indeholde mindst ét tal eller specialtegn.");
   }
 
   // Check unique username

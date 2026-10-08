@@ -1,12 +1,15 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth";
 
 export async function getAuditLogs(filters?: {
   actionType?: string;
   limit?: number;
   searchQuery?: string;
 }) {
+  await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+
   const limit = filters?.limit || 100;
   const where: any = {};
 
@@ -47,6 +50,8 @@ export async function getAuditLogs(filters?: {
 }
 
 export async function getDistinctActionTypes() {
+  await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+
   const actions = await prisma.auditLog.findMany({
     select: { actionType: true },
     distinct: ["actionType"],

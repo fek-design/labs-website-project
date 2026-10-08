@@ -82,10 +82,13 @@ export async function updateAdminCredentials(data: {
     // Only process password if non-empty string provided
     const trimmedPassword = data.newPassword ? data.newPassword.trim() : "";
     if (trimmedPassword.length > 0) {
-      if (trimmedPassword.length < 6) {
-        throw new Error("Adgangskoden skal være på mindst 6 tegn.");
+      if (trimmedPassword.length < 8) {
+        throw new Error("Adgangskoden skal være på mindst 8 tegn.");
       }
-      const hash = await bcrypt.hash(trimmedPassword, 10);
+      if (!/[0-9]/.test(trimmedPassword) && !/[!@#$%^&*(),.?":{}|<>]/.test(trimmedPassword)) {
+        throw new Error("Adgangskoden skal indeholde mindst ét tal eller specialtegn.");
+      }
+      const hash = await bcrypt.hash(trimmedPassword, 12);
       updateData.passwordHash = hash;
     }
 

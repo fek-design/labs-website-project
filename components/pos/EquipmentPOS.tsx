@@ -598,15 +598,18 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="new-patron-dialog-title"
               className="bg-[#151517] border border-[#333333] rounded-lg p-6 max-w-md w-full shadow-2xl font-mono text-xs"
             >
               <div className="flex items-center justify-between pb-3 border-b border-[#2e2e2e]">
-                <h4 className="font-bold text-sm text-[#FFED00] font-headline">Opret & Tilknyt Studerende</h4>
+                <h4 id="new-patron-dialog-title" className="font-bold text-sm text-[#FFED00] font-headline">Opret & Tilknyt Studerende</h4>
                 <button
                   type="button"
                   onClick={() => setShowNewPatronPrompt(null)}
                   aria-label="Luk modal"
-                  className="text-zinc-500 hover:text-white transition-colors cursor-pointer"
+                  className="text-zinc-500 hover:text-white transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3] rounded p-1"
                 >
                   <X size={16} weight="bold" aria-hidden="true" />
                 </button>
@@ -630,7 +633,8 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
                     placeholder={`${showNewPatronPrompt.toLowerCase()}@edu.zealand.dk`}
                     value={newPatronEmail}
                     onChange={(e) => setNewPatronEmail(e.target.value)}
-                    className="w-full bg-[#101012] border border-[#2e2e2e] focus:border-[#FFED00] text-white rounded-lg p-2.5 outline-none"
+                    aria-label="Student Email"
+                    className="w-full bg-[#101012] border border-[#2e2e2e] focus:border-[#FFED00] focus:ring-1 focus:ring-[#FFED00] text-white rounded-lg p-2.5 outline-none"
                   />
                 </div>
               </div>
@@ -639,14 +643,14 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
                 <button
                   type="button"
                   onClick={() => setShowNewPatronPrompt(null)}
-                  className="px-4 py-2 bg-[#202021] border border-[#444444] text-zinc-300 hover:text-white rounded-lg cursor-pointer"
+                  className="px-4 py-2 bg-[#202021] border border-[#444444] text-zinc-300 hover:text-white rounded-lg cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
                 >
                   Annuller
                 </button>
                 <button
                   type="button"
                   onClick={handleRegisterPatron}
-                  className="px-5 py-2 bg-[#ffd900] text-black font-bold rounded-lg shadow-md cursor-pointer hover:bg-yellow-400 transition-colors"
+                  className="px-5 py-2 bg-[#ffd900] text-black font-bold rounded-lg shadow-md cursor-pointer hover:bg-yellow-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3]"
                 >
                   Opret & Tilknyt
                 </button>
@@ -664,23 +668,27 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
               initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="bundle-prompt-dialog-title"
               className="bg-[#151517] border border-[#333333] rounded-2xl max-w-lg w-full p-6 shadow-2xl relative font-mono"
             >
               <button
                 type="button"
                 onClick={() => setPendingBundlePrompt(null)}
-                className="absolute top-4 right-4 text-zinc-400 hover:text-white p-1 rounded-full cursor-pointer transition-colors"
+                aria-label="Luk pakkesæt modal"
+                className="absolute top-4 right-4 text-zinc-400 hover:text-white p-1 rounded-full cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3]"
                 title="Luk"
               >
-                <X size={18} weight="bold" />
+                <X size={18} weight="bold" aria-hidden="true" />
               </button>
 
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-[#FFED00]/15 border border-[#FFED00]/30 text-[#FFED00] flex items-center justify-center shrink-0">
-                  <Package size={22} weight="bold" />
+                  <Package size={22} weight="bold" aria-hidden="true" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold font-notch text-white">
+                  <h3 id="bundle-prompt-dialog-title" className="text-base font-bold font-notch text-white">
                     Pakkesæt tilgængeligt
                   </h3>
                   <p className="text-xs text-zinc-400 font-headline">
@@ -790,14 +798,14 @@ export function EquipmentPOS({ labSlug = "medialab", initialStats }: EquipmentPO
                 <button
                   type="button"
                   onClick={() => setPendingBundlePrompt(null)}
-                  className="px-4 py-2 rounded-full bg-[#202021] hover:bg-zinc-800 border border-[#333333] text-zinc-300 text-xs font-headline transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-full bg-[#202021] hover:bg-zinc-800 border border-[#333333] text-zinc-300 text-xs font-headline transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
                 >
                   Spring over
                 </button>
                 <button
                   type="button"
                   onClick={handleConfirmBundle}
-                  className="px-5 py-2 rounded-full bg-[#FFED00] hover:bg-[#e6d500] text-black font-extrabold text-xs font-headline transition-all border border-[#FFED00] cursor-pointer"
+                  className="px-5 py-2 rounded-full bg-[#FFED00] hover:bg-[#e6d500] text-black font-extrabold text-xs font-headline transition-all border border-[#FFED00] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3]"
                 >
                   + Tilføj valgte til kurv
                 </button>

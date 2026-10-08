@@ -54,36 +54,63 @@ export async function getManualsCatalog(searchQuery?: string) {
  */
 export async function uploadManual(formData: FormData) {
   try {
+    const user = await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+    const actorAdminId = user.id;
+
     const file = formData.get("file") as File | null;
     const title = (formData.get("title") as string | null)?.trim();
     const description = (formData.get("description") as string | null)?.trim();
     const inventoryId = (formData.get("inventoryId") as string | null)?.trim() || (formData.get("machineId") as string | null)?.trim();
-    const actorAdminIdParam = formData.get("actorAdminId") as string | null;
 
     if (!file) {
       throw new Error("No PDF file provided.");
     }
 
-    if (!file.name.toLowerCase().endsWith(".pdf") && file.type !== "application/pdf") {
-      throw new Error("Only PDF documents are allowed for user manuals.");
+    const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
+    if (file.size > MAX_FILE_SIZE) {
+      throw new Error("Filen overskrider den maksimale tilladte størrelse på 20 MB.");
     }
 
-    const manualTitle = title || file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+    const cleanBaseName = path.basename(file.name);
+    if (!cleanBaseName.toLowerCase().endsWith(".pdf")) {
+      throw new Error("Kun PDF-dokumenter (.pdf) er tilladt til brugermanualer.");
+    }
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
+    if (buffer.length > MAX_FILE_SIZE) {
+      throw new Error("Filen overskrider den maksimale tilladte størrelse på 20 MB.");
+    }
+
+    // Verify PDF Magic Bytes: %PDF- (hex: 25 50 44 46 2d)
+    const magicHeader = buffer.subarray(0, 5).toString("latin1");
+    if (magicHeader !== "%PDF-") {
+      throw new Error("Ugyldigt filformat: Filen mangler en gyldig PDF-signatur (%PDF-).");
+    }
+
+    // Anti-injection check: Reject any file containing executable script markers
+    const previewContent = buffer.subarray(0, 1024).toString("latin1").toLowerCase();
+    if (
+      previewContent.includes("<?php") ||
+      previewContent.includes("#!/bin") ||
+      previewContent.includes("<script") ||
+      previewContent.includes("<html")
+    ) {
+      throw new Error("Sikkerhedsafvisning: Filen indeholder potentielt eksekverbar kode eller script-tags.");
+    }
+
+    const manualTitle = title || cleanBaseName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+
     const uploadDir = path.join(process.cwd(), "public", "uploads", "manuals");
     await fs.mkdir(uploadDir, { recursive: true });
 
-    const sanitizedFileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+    const safeFileNamePart = cleanBaseName.replace(/[^a-zA-Z0-9.-]/g, "_");
+    const sanitizedFileName = `${Date.now()}-${safeFileNamePart}`;
     const filePath = path.join(uploadDir, sanitizedFileName);
 
     await fs.writeFile(filePath, buffer);
     const publicUrl = `/uploads/manuals/${sanitizedFileName}`;
-
-    const user = await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
-    const actorAdminId = user.id;
 
     // Create standalone Manual record
     const createdManual = await prisma.manual.create({

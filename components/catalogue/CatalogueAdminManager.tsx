@@ -632,10 +632,15 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
       {/* 4. Full Article Authoring & Editing Modal */}
       {isEditing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-[#151517] border border-[#333333] rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl my-8">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="catalogue-authoring-dialog-title"
+            className="bg-[#151517] border border-[#333333] rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl my-8"
+          >
             <div className="flex items-center justify-between border-b border-[#333333] pb-4">
               <div>
-                <h2 className="text-2xl font-bold font-notch text-white flex items-center gap-2">
+                <h2 id="catalogue-authoring-dialog-title" className="text-2xl font-bold font-notch text-white flex items-center gap-2">
                   <span className="w-2.5 h-2.5 bg-[#E6007E] rounded-full" />
                   <span>{formData.slug ? "Rediger Katalogartikel" : "Opret Ny Katalogartikel"}</span>
                 </h2>
@@ -646,9 +651,10 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-[#202021] cursor-pointer"
+                aria-label="Luk modal"
+                className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-[#202021] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E6007E]"
               >
-                <X size={20} weight="bold" />
+                <X size={20} weight="bold" aria-hidden="true" />
               </button>
             </div>
 
@@ -933,18 +939,24 @@ export function CatalogueAdminManager({ activeLab = "makerspace" }: CatalogueAdm
       {/* 5. Asset Library Browser Modal */}
       {showAssetModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#151517] border border-[#333333] rounded-2xl w-full max-w-2xl p-6 space-y-4 shadow-2xl max-h-[85vh] flex flex-col">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="asset-browser-dialog-title"
+            className="bg-[#151517] border border-[#333333] rounded-2xl w-full max-w-2xl p-6 space-y-4 shadow-2xl max-h-[85vh] flex flex-col"
+          >
             <div className="flex items-center justify-between border-b border-[#333333] pb-3">
-              <h3 className="text-lg font-bold font-notch text-white flex items-center gap-2">
-                <FolderOpen size={20} weight="bold" className="text-[#E6007E]" />
+              <h3 id="asset-browser-dialog-title" className="text-lg font-bold font-notch text-white flex items-center gap-2">
+                <FolderOpen size={20} weight="bold" className="text-[#E6007E]" aria-hidden="true" />
                 <span>Vælg eller Upload Billede</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setShowAssetModal(false)}
-                className="p-1.5 text-zinc-400 hover:text-white rounded-lg cursor-pointer"
+                aria-label="Luk modal"
+                className="p-1.5 text-zinc-400 hover:text-white rounded-lg cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E6007E]"
               >
-                <X size={18} weight="bold" />
+                <X size={18} weight="bold" aria-hidden="true" />
               </button>
             </div>
 

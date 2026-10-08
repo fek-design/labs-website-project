@@ -122,12 +122,15 @@ export function LoanDetailModal({
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="loan-detail-title"
         className="bg-[#141414] border border-[#262626] rounded-3xl p-6 max-w-lg w-full shadow-2xl font-mono text-xs"
       >
         {/* Top Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#262626]">
           <div className="flex items-center gap-2">
-            <span className="text-zinc-500 uppercase tracking-wider font-bold">
+            <span id="loan-detail-title" className="text-zinc-500 uppercase tracking-wider font-bold">
               Loan Status & Verification
             </span>
             <span
@@ -140,7 +143,7 @@ export function LoanDetailModal({
             type="button"
             onClick={onClose}
             aria-label="Luk dialog"
-            className="text-zinc-500 hover:text-white transition-colors cursor-pointer"
+            className="text-zinc-500 hover:text-white transition-colors cursor-pointer p-1 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3]"
           >
             <X size={16} weight="bold" aria-hidden="true" />
           </button>
@@ -300,7 +303,7 @@ export function LoanDetailModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-[#0D0D0D] border border-[#262626] text-zinc-400 hover:text-white rounded-full"
+              className="px-4 py-2 bg-[#0D0D0D] border border-[#262626] text-zinc-400 hover:text-white rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 cursor-pointer"
             >
               Close
             </button>
@@ -308,7 +311,7 @@ export function LoanDetailModal({
               <button
                 type="button"
                 onClick={startEditing}
-                className="px-3.5 py-2 bg-[#0D0D0D] border border-zinc-700 text-zinc-300 hover:text-white rounded-full font-bold inline-flex items-center gap-1.5 cursor-pointer"
+                className="px-3.5 py-2 bg-[#0D0D0D] border border-zinc-700 text-zinc-300 hover:text-white rounded-full font-bold inline-flex items-center gap-1.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3]"
               >
                 <PencilSimple size={14} weight="regular" aria-hidden="true" />
                 <span>Extend / Edit</span>
@@ -323,7 +326,7 @@ export function LoanDetailModal({
                   <button
                     type="button"
                     onClick={() => setShowDamageForm(true)}
-                    className="px-3.5 py-2 bg-[#0D0D0D] hover:bg-[#262626] text-[#E6007E] border border-[#E6007E]/40 rounded-full"
+                    className="px-3.5 py-2 bg-[#0D0D0D] hover:bg-[#262626] text-[#E6007E] border border-[#E6007E]/40 rounded-full cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E6007E]"
                   >
                     Flag Damage
                   </button>
@@ -331,7 +334,7 @@ export function LoanDetailModal({
                     type="button"
                     disabled={isProcessing}
                     onClick={() => handleReturn(false)}
-                    className="px-5 py-2 bg-[#009FE3] hover:bg-[#0089c4] text-black font-bold rounded-full cursor-pointer"
+                    className="px-5 py-2 bg-[#009FE3] hover:bg-[#0089c4] text-black font-bold rounded-full cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3]"
                   >
                     {isProcessing ? "Processing..." : "Check In Equipment"}
                   </button>
@@ -341,7 +344,7 @@ export function LoanDetailModal({
                   type="button"
                   disabled={isProcessing}
                   onClick={() => handleReturn(true)}
-                  className="px-5 py-2 bg-[#E6007E] hover:bg-[#cf006f] text-white font-bold rounded-full cursor-pointer"
+                  className="px-5 py-2 bg-[#E6007E] hover:bg-[#cf006f] text-white font-bold rounded-full cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E6007E]"
                 >
                   {isProcessing ? "Processing..." : "Confirm Damaged Return"}
                 </button>

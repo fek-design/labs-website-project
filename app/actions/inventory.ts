@@ -660,6 +660,18 @@ export async function saveBundlePreset(data: {
   const name = data.name.trim();
   if (!name) throw new Error("Pakkenavn er påkrævet");
 
+  // Prevent duplicate bundle names
+  const existingBundle = await prisma.bundle.findFirst({
+    where: {
+      name,
+      ...(data.id ? { id: { not: data.id } } : {}),
+    },
+  });
+
+  if (existingBundle) {
+    throw new Error(`En udstyrspakke med navnet "${name}" findes allerede.`);
+  }
+
   let bundle;
   if (data.id) {
     bundle = await prisma.bundle.update({

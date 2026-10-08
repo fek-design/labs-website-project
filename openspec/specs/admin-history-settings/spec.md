@@ -25,11 +25,11 @@ The system SHALL provide a filterable audit log viewer (`LABS Logs`) matching Fi
 - **THEN** the system re-fetches the latest audit log entries and updates the feed with fresh database records.
 
 ### Requirement: Admin Credential Settings
-The system SHALL provide a basic authentication login wrapper with default administrator credentials (`admin` / `pass`), manage authentication state, allow administrators to update their credentials and location assignments safely without runtime crashes or serialization errors, and display accurate node profile telemetry adhering to the canonical project design system tokens without stale hardcoded location strings.
+The system SHALL manage administrative authentication state, enforce cryptographic password hashing, allow administrators to update their credentials and location assignments safely without runtime crashes or serialization errors, eliminate insecure default credentials (`admin` / `pass`), and display accurate profile telemetry adhering to canonical design system tokens.
 
 #### Scenario: Basic login verification
-- **WHEN** an unauthenticated administrator enters `admin` and `pass` on the login screen
-- **THEN** the system grants access to the operational console and stores a secure local session.
+- **WHEN** an administrator enters their valid username and password on the login screen
+- **THEN** the system verifies credentials using bcrypt hash comparison, issues an HMAC session, and grants access to the operational console.
 
 #### Scenario: Updating admin login credentials
 - **WHEN** an administrator submits a new username and optional new password in the Settings view
@@ -57,3 +57,10 @@ The Settings view (`/admin` under Settings) SHALL dynamically display the active
 #### Scenario: User session hydration from assigned location
 - **WHEN** an administrator logs in with an assigned location and facility
 - **THEN** the administrative workspace session initializes with the user's assigned facility automatically selected as the default operational workspace.
+
+### Requirement: Audit Log Access Control
+The audit log retrieval endpoint SHALL strictly require an authenticated session with an authorized administrative role (`SUPER_ADMIN` or `TECHNICIAN`).
+
+#### Scenario: Unauthenticated audit log access attempt
+- **WHEN** an unauthenticated request attempts to call `getAuditLogs`
+- **THEN** the system denies access with an unauthorized error and returns no sensitive audit records

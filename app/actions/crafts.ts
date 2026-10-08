@@ -5,6 +5,9 @@ import path from "path";
 import { revalidatePath } from "next/cache";
 import { CraftItemData, CRAFT_CATALOG, getAllCraftItems } from "@/lib/craft-data";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth";
+
+import { craftItemSchema } from "@/lib/validations/crafts";
 
 const CRAFTS_FILE_PATH = path.join(process.cwd(), "data", "crafts.json");
 
@@ -17,27 +20,8 @@ async function ensureDataDirectory() {
   }
 }
 
-async function getActorAdminId(providedAdminId?: string): Promise<string> {
-  if (providedAdminId) {
-    try {
-      const admin = await prisma.admin.findUnique({ where: { id: providedAdminId } });
-      if (admin) return admin.id;
-    } catch {
-      // ignore
-    }
-  }
-  try {
-    const defaultAdmin =
-      (await prisma.admin.findFirst({ where: { isActive: true, role: "TECHNICIAN" } })) ||
-      (await prisma.admin.findFirst({ where: { isActive: true } }));
-    return defaultAdmin?.id || "system";
-  } catch {
-    return "system";
-  }
-}
-
 /**
- * Fetch all craft prototype articles
+ * Fetch all craft prototype articles (Public read)
  */
 export async function getCraftArticles(): Promise<CraftItemData[]> {
   try {
@@ -61,25 +45,32 @@ export async function getCraftArticles(): Promise<CraftItemData[]> {
 }
 
 /**
- * Save or update a craft prototype article
+ * Save or update a craft prototype article (Protected: SuperAdmin / Technician)
  */
 export async function saveCraftArticle(
-  item: CraftItemData,
-  adminId?: string
+  item: CraftItemData
 ): Promise<{ success: boolean; data?: CraftItemData; error?: string }> {
   try {
-    if (!item.slug || !item.title) {
-      return { success: false, error: "Titel og slug er påkrævet." };
+    const user = await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+
+    const parsed = craftItemSchema.safeParse(item);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: `Valideringsfejl: ${parsed.error.issues[0]?.message || "Ugyldige data for prototype."}`,
+      };
     }
 
+    const validatedItem = parsed.data as CraftItemData;
+
     const items = await getCraftArticles();
-    const existingIndex = items.findIndex((i) => i.slug.toLowerCase() === item.slug.toLowerCase());
+    const existingIndex = items.findIndex((i) => i.slug.toLowerCase() === validatedItem.slug.toLowerCase());
 
     const isUpdate = existingIndex >= 0;
     if (isUpdate) {
-      items[existingIndex] = { ...items[existingIndex], ...item };
+      items[existingIndex] = { ...items[existingIndex], ...validatedItem };
     } else {
-      items.push(item);
+      items.push(validatedItem);
     }
 
     await ensureDataDirectory();
@@ -87,10 +78,9 @@ export async function saveCraftArticle(
 
     // Attempt audit log
     try {
-      const actorId = await getActorAdminId(adminId);
       await prisma.auditLog.create({
         data: {
-          actorAdminId: actorId,
+          actorAdminId: user.id,
           actionType: isUpdate ? "UPDATE_CRAFT_ARTICLE" : "CREATE_CRAFT_ARTICLE",
           targetTable: "CraftArticle",
           targetId: item.slug,
@@ -118,13 +108,14 @@ export async function saveCraftArticle(
 }
 
 /**
- * Delete a craft prototype article
+ * Delete a craft prototype article (Protected: SuperAdmin / Technician)
  */
 export async function deleteCraftArticle(
-  slug: string,
-  adminId?: string
+  slug: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const user = await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+
     const items = await getCraftArticles();
     const filtered = items.filter((i) => i.slug.toLowerCase() !== slug.toLowerCase());
 
@@ -137,10 +128,9 @@ export async function deleteCraftArticle(
 
     // Attempt audit log
     try {
-      const actorId = await getActorAdminId(adminId);
       await prisma.auditLog.create({
         data: {
-          actorAdminId: actorId,
+          actorAdminId: user.id,
           actionType: "DELETE_CRAFT_ARTICLE",
           targetTable: "CraftArticle",
           targetId: slug,
@@ -169,12 +159,14 @@ export interface CraftAssetItem {
 }
 
 /**
- * Upload an image file directly to public/images/craft/ for zero-cloud local storage
+ * Upload an image file directly to public/images/craft/ for zero-cloud local storage (Protected)
  */
 export async function uploadCraftImage(
   formData: FormData
 ): Promise<{ success: boolean; url?: string; error?: string }> {
   try {
+    await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+
     const file = formData.get("file") as File | null;
     if (!file) {
       return { success: false, error: "Ingen fil modtaget." };
@@ -233,7 +225,7 @@ export async function getAvailableCraftAssets(): Promise<CraftAssetItem[]> {
 
   for (const { dir, folder, publicPrefix } of folders) {
     try {
-      const files = await fs.readdir(dir);
+      const files = await fs.readdir(/*turbopackIgnore: true*/ dir);
       for (const file of files) {
         const ext = path.extname(file).toLowerCase();
         if (allowedExtensions.has(ext)) {
@@ -256,10 +248,11 @@ export async function getAvailableCraftAssets(): Promise<CraftAssetItem[]> {
  * Toggle whether a craft prototype is featured on the public frontpage carousel (cap: 5)
  */
 export async function toggleFeatureOnFrontpage(
-  slug: string,
-  adminId?: string
+  slug: string
 ): Promise<{ success: boolean; isFeatured?: boolean; count?: number; error?: string }> {
   try {
+    const user = await requireAuth(["SUPER_ADMIN", "TECHNICIAN"]);
+
     const items = await getCraftArticles();
     const itemIndex = items.findIndex((i) => i.slug.toLowerCase() === slug.toLowerCase());
 
@@ -293,10 +286,9 @@ export async function toggleFeatureOnFrontpage(
 
     // Audit log
     try {
-      const actorId = await getActorAdminId(adminId);
       await prisma.auditLog.create({
         data: {
-          actorAdminId: actorId,
+          actorAdminId: user.id,
           actionType: "UPDATE_CRAFT_ARTICLE",
           targetTable: "CraftArticle",
           targetId: slug,

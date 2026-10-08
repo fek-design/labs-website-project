@@ -69,7 +69,7 @@ export function AdminConsoleClient({ initialStats }: AdminConsoleClientProps) {
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-6 sm:px-8 sm:py-8 space-y-8">
+        <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-6 sm:px-6 sm:py-8 space-y-8">
           {/* Dynamic Views */}
           {mainNav === "FRONT_DESK" && (
             <EquipmentPOS labSlug={activeLab} initialStats={initialStats} />
@@ -110,7 +110,7 @@ export function AdminConsoleClient({ initialStats }: AdminConsoleClientProps) {
 
         {/* Footer */}
         <footer className="border-t border-[#262626] bg-[#0D0D0D] py-6 px-6 text-center text-xs text-zinc-600">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
             <span>Zealand Labs Infrastructure • Zero Cloud Dependency Protocol</span>
             <span className="text-zinc-500">Køge Campus • Open Spec Visual Contract</span>
           </div>

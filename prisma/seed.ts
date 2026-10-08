@@ -1,4 +1,5 @@
 import "dotenv/config";
+import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma";
 import { Role, HardwareType, OperationalStatus, TagFacet } from "@prisma/client";
@@ -46,29 +47,26 @@ async function main() {
   - ${makerspaceKoge.name} [Default]
   - ${medialabKoge.name}`);
 
-  // 2. Seed Admin Accounts (with temporary "pass" password)
+  // 2. Seed Admin Accounts (Secure Randomized or Env-Specified Credentials)
   console.log("Creating Admin accounts...");
-  const defaultPasswordHash = await bcrypt.hash("pass", 10);
+  const adminUsername = process.env.SEED_ADMIN_USER || "superadmin";
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD || `ZL_${crypto.randomBytes(6).toString("hex")}!`;
+  const salt = await bcrypt.genSalt(12);
+  const passwordHash = await bcrypt.hash(adminPassword, salt);
 
   const superAdmin = await prisma.admin.create({
     data: {
-      username: "admin",
-      passwordHash: defaultPasswordHash,
+      username: adminUsername,
+      passwordHash: passwordHash,
       role: Role.SUPER_ADMIN,
       isActive: true,
+      assignedCampus: "Køge Campus",
+      assignedLabId: medialabKoge.id,
     },
   });
 
-  const technician = await prisma.admin.create({
-    data: {
-      username: "technician",
-      passwordHash: defaultPasswordHash,
-      role: Role.TECHNICIAN,
-      isActive: true,
-    },
-  });
-
-  console.log(`Admins ready: admin (SUPER_ADMIN / password: pass), technician (TECHNICIAN / password: pass)`);
+  console.log(`🔐 SuperAdmin provisioned: '${superAdmin.username}' | Password: '${adminPassword}'`);
+  console.log(`⚠️  Store these credentials securely. In production, use 'npm run setup:admin' with custom credentials.`);
 
   // 3. Seed 3-Tier Faceted Taxonomy Tags
   console.log("Creating 3-Tier Faceted Taxonomy Tags...");

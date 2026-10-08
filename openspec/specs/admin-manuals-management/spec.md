@@ -17,11 +17,11 @@ The system SHALL provide a dedicated top-level admin page (`LABS Manualer`) matc
 - **THEN** the system displays an informative zero-data state with a prompt to upload a new manual or clear active filters.
 
 ### Requirement: PDF Document Upload and Metadata Management
-The system SHALL provide an upload workflow triggered by the yellow (`#FFED00`) "Tilføj" button allowing administrators to upload local PDF files, define titles, descriptions, categories, and tags.
+The system SHALL provide an upload workflow allowing authenticated administrators to upload PDF documents, strictly verifying PDF magic bytes (`%PDF-`), rejecting non-PDF or executable scripts, enforcing a 20 MB size limit, and associating metadata.
 
 #### Scenario: Uploading a new PDF manual
-- **WHEN** an administrator clicks "Tilføj", selects a valid PDF file, fills in title and description, and submits
-- **THEN** the system stores the file on local disk, registers the database record, and displays the new card in the grid.
+- **WHEN** an authenticated administrator uploads a file with valid PDF magic bytes (`%PDF-`), filename, title, and description
+- **THEN** the system stores the file in designated local storage, registers the database record, and displays the card in the manuals grid.
 
 #### Scenario: Deleting a manual document
 - **WHEN** an administrator initiates manual deletion and confirms the action
@@ -55,3 +55,10 @@ The system SHALL support instant real-time text search across manual titles, fil
 #### Scenario: Filtering manuals by lab facility
 - **WHEN** an administrator selects a specific lab from the `LAB` dropdown
 - **THEN** the grid updates to show only manuals relevant or linked to hardware within the selected lab facility.
+
+### Requirement: Anti-Executable Upload Rejection
+The file upload engine SHALL reject any upload that fails magic bytes inspection or exceeds size limits.
+
+#### Scenario: Rejecting invalid or non-PDF file upload
+- **WHEN** an upload is submitted containing executable code, scripts, HTML payloads, or files without `%PDF-` header bytes
+- **THEN** the system rejects the upload with a validation error and writes nothing to disk.

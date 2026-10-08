@@ -14,15 +14,17 @@ import bcrypt from "bcryptjs";
 async function main() {
   const args = process.argv.slice(2);
   const username = (args[0] || process.env.SUPERADMIN_USER || "superadmin").trim();
-  const password = (args[1] || process.env.SUPERADMIN_PASSWORD || "ZealandLabs2026!").trim();
+  const password = (args[1] || process.env.SUPERADMIN_PASSWORD)?.trim();
 
-  if (!username || !password) {
-    console.error("❌ Username and password are required to setup the SuperAdmin account.");
+  if (!password) {
+    console.error("❌ SuperAdmin password is required to setup the SuperAdmin account.");
+    console.error("   Usage: npx tsx prisma/setup-superadmin.ts <username> <password>");
+    console.error("   Or:    SUPERADMIN_PASSWORD=yourStrongPassword npx tsx prisma/setup-superadmin.ts");
     process.exit(1);
   }
 
-  if (password.length < 8) {
-    console.error("❌ SuperAdmin password must be at least 8 characters long.");
+  if (password.length < 10) {
+    console.error("❌ SuperAdmin password must be at least 10 characters long.");
     process.exit(1);
   }
 

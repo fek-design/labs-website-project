@@ -4,9 +4,18 @@ import { cookies } from "next/headers";
 export const SESSION_COOKIE_NAME = "zl_session";
 const SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
-const SESSION_SECRET =
-  process.env.SESSION_SECRET ||
-  "zealand-labs-hmac-sha256-production-session-secret-local-2026";
+export function getSessionSecret(): string {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "FATAL SIKKERHEDSFEJL: SESSION_SECRET miljøvariabel mangler i production. Angiv venligst en stærk hemmelighed i .env."
+      );
+    }
+    return "zealand-labs-hmac-sha256-production-session-secret-local-2026";
+  }
+  return secret;
+}
 
 export interface SessionData {
   adminId: string;
@@ -33,7 +42,7 @@ export function createSessionToken(data: {
     })
   ).toString("base64url");
 
-  const hmac = crypto.createHmac("sha256", SESSION_SECRET);
+  const hmac = crypto.createHmac("sha256", getSessionSecret());
   hmac.update(payload);
   const signature = hmac.digest("base64url");
 
@@ -53,7 +62,7 @@ export function verifySessionToken(token: string): SessionData | null {
   const [payload, signature] = parts;
 
   // 1. Verify HMAC signature using timing-safe comparison
-  const hmac = crypto.createHmac("sha256", SESSION_SECRET);
+  const hmac = crypto.createHmac("sha256", getSessionSecret());
   hmac.update(payload);
   const expectedSignature = hmac.digest("base64url");
 

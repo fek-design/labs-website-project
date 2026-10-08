@@ -8,8 +8,17 @@ import {
   clearSessionCookie,
   getVerifiedSession,
 } from "@/lib/session";
+import { checkRateLimit, getClientIdentifier } from "@/lib/rate-limit";
 
 export async function loginAdmin(formData: { username: string; password: string }) {
+  const clientId = await getClientIdentifier();
+  const rateLimit = checkRateLimit(`auth:login:${clientId}`, 5, 300); // 5 attempts per 5 minutes (300s)
+  if (!rateLimit.allowed) {
+    throw new Error(
+      `For mange login-forsøg. Vent venligst ${rateLimit.resetInSeconds} sekunder før næste forsøg.`
+    );
+  }
+
   const cleanUsername = formData.username.trim();
   const cleanPassword = formData.password.trim();
 

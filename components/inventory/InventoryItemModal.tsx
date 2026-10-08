@@ -258,20 +258,24 @@ export function InventoryItemModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-200">
       <div className="flex flex-col xl:flex-row items-center xl:items-start justify-center gap-4 w-full max-w-[1320px] my-auto">
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="inventory-item-dialog-title"
           className="w-full max-w-[576px] max-h-[90vh] overflow-y-auto bg-[#202021] border border-[#444444] rounded-xl p-5 sm:p-6 shadow-2xl flex flex-col gap-5 text-white font-['Stack_Sans_Text',sans-serif]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
         <div className="flex items-center justify-between border-b border-[#333333] pb-3">
-          <h2 className="text-base sm:text-lg font-bold font-['Stack_Sans_Notch',sans-serif] tracking-wider uppercase text-white">
+          <h2 id="inventory-item-dialog-title" className="text-base sm:text-lg font-bold font-['Stack_Sans_Notch',sans-serif] tracking-wider uppercase text-white">
             {isEdit ? item.assetTag : "NY GENSTAND"}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-md text-[#888888] hover:text-white hover:bg-[#333333] transition-colors"
+            aria-label="Luk modal"
+            className="p-1 rounded-md text-[#888888] hover:text-white hover:bg-[#333333] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3]"
           >
-            <X size={18} weight="bold" />
+            <X size={18} weight="bold" aria-hidden="true" />
           </button>
         </div>
 
@@ -750,7 +754,7 @@ export function InventoryItemModal({
                 type="button"
                 disabled={isDeleting || isSubmitting}
                 onClick={handleDelete}
-                className="flex items-center gap-1.5 bg-[#e51d87] hover:bg-[#c91874] text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 bg-[#e51d87] hover:bg-[#c91874] text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#e51d87]"
               >
                 {isDeleting ? <Spinner size={14} className="animate-spin" /> : <Trash size={14} />}
                 <span>Slet</span>
@@ -764,14 +768,14 @@ export function InventoryItemModal({
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting || isDeleting}
-                className="bg-[#151517] hover:bg-[#202021] border border-[#333333] text-[#888888] hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
+                className="bg-[#151517] hover:bg-[#202021] border border-[#333333] text-[#888888] hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
               >
                 Afbryd
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting || isDeleting}
-                className="flex items-center gap-1.5 bg-[#1da9e4] hover:bg-[#1895ca] text-white px-5 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm disabled:opacity-50"
+                className="flex items-center gap-1.5 bg-[#1da9e4] hover:bg-[#1895ca] text-white px-5 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm disabled:opacity-50 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1da9e4]"
               >
                 {isSubmitting && <Spinner size={14} className="animate-spin" />}
                 <span>{isEdit ? "Gem" : "Opret"}</span>
