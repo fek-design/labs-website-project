@@ -92,66 +92,68 @@ export function HeroSection() {
       {/* Subtle Vignette for Text Legibility without Dull Video */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
 
-      {/* Hero Content */}
-      <div className="gsap-hero-content relative z-10 flex flex-col items-center text-center max-w-xl mx-auto space-y-6">
-        {/* Bouncing Headline Animated Letter by Letter with Motion.js */}
-        <motion.h1
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          aria-label="Zealands Kreative hjørne"
-          className="font-notch text-3xl sm:text-5xl md:text-7xl font-light text-white tracking-tight leading-[1.1] drop-shadow-md select-none"
-        >
-          {/* First Line: "Zealands Kreative" */}
-          <span className="block" aria-hidden="true">
-            {line1Words.map((word, wordIdx) => (
-              <span
-                key={word}
-                className={`inline-block whitespace-nowrap overflow-hidden ${
-                  wordIdx < line1Words.length - 1 ? "mr-2.5 sm:mr-4" : ""
-                }`}
-              >
-                {Array.from(word).map((char, charIdx) => (
-                  <motion.span
-                    key={`${word}-${charIdx}`}
-                    variants={letterVariants}
-                    className="inline-block will-change-transform"
-                  >
-                    {char}
-                  </motion.span>
-                ))}
-              </span>
-            ))}
-          </span>
-
-          {/* Second Line: "hjørne" */}
-          <span className="block mt-1 sm:mt-2" aria-hidden="true">
-            {line2Words.map((word) => (
-              <span key={word} className="inline-block whitespace-nowrap overflow-hidden">
-                {Array.from(word).map((char, charIdx) => (
-                  <motion.span
-                    key={`${word}-${charIdx}`}
-                    variants={letterVariants}
-                    className="inline-block font-normal will-change-transform"
-                  >
-                    {char}
-                  </motion.span>
-                ))}
-              </span>
-            ))}
-          </span>
-        </motion.h1>
-
-        {/* Action Button - Enters deliberately via GSAP timeline */}
-        <div className="gsap-hero-action">
-          <motion.a
-            href="#prototypes"
-            whileHover={{ scale: 1.025, backgroundColor: "#f4f4f5" }}
-            whileTap={{ scale: 0.97 }}
-            className="inline-flex items-center justify-center min-h-[48px] px-10 sm:px-12 py-3.5 bg-white text-black font-sans text-sm md:text-base font-semibold tracking-wider uppercase hover:bg-zinc-200 active:scale-95 transition-all shadow-none touch-manipulation border border-zinc-200 rounded-none cursor-pointer"
+      {/* Hero Content Container (Aligned to max-w-5xl layout standard) */}
+      <div className="relative z-10 w-full max-w-5xl mx-auto flex justify-center">
+        <div className="gsap-hero-content flex flex-col items-center text-center max-w-xl mx-auto space-y-6">
+          {/* Bouncing Headline Animated Letter by Letter with Motion.js */}
+          <motion.h1
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            aria-label="Zealands Kreative hjørne"
+            className="font-notch text-3xl sm:text-5xl md:text-7xl font-light text-white tracking-tight leading-[1.1] drop-shadow-md select-none"
           >
-            UDFORSK
-          </motion.a>
+            {/* First Line: "Zealands Kreative" */}
+            <span className="block" aria-hidden="true">
+              {line1Words.map((word, wordIdx) => (
+                <span
+                  key={word}
+                  className={`inline-block whitespace-nowrap overflow-hidden ${
+                    wordIdx < line1Words.length - 1 ? "mr-2.5 sm:mr-4" : ""
+                  }`}
+                >
+                  {Array.from(word).map((char, charIdx) => (
+                    <motion.span
+                      key={`${word}-${charIdx}`}
+                      variants={letterVariants}
+                      className="inline-block will-change-transform"
+                    >
+                      {char}
+                    </motion.span>
+                  ))}
+                </span>
+              ))}
+            </span>
+
+            {/* Second Line: "hjørne" */}
+            <span className="block mt-1 sm:mt-2" aria-hidden="true">
+              {line2Words.map((word) => (
+                <span key={word} className="inline-block whitespace-nowrap overflow-hidden">
+                  {Array.from(word).map((char, charIdx) => (
+                    <motion.span
+                      key={`${word}-${charIdx}`}
+                      variants={letterVariants}
+                      className="inline-block font-normal will-change-transform"
+                    >
+                      {char}
+                    </motion.span>
+                  ))}
+                </span>
+              ))}
+            </span>
+          </motion.h1>
+
+          {/* Action Button - Enters deliberately via GSAP timeline */}
+          <div className="gsap-hero-action">
+            <motion.a
+              href="#prototypes"
+              whileHover={{ scale: 1.025, backgroundColor: "#f4f4f5" }}
+              whileTap={{ scale: 0.97 }}
+              className="inline-flex items-center justify-center min-h-[48px] px-10 sm:px-12 py-3.5 bg-white text-black font-sans text-sm md:text-base font-semibold tracking-wider uppercase hover:bg-zinc-200 active:scale-95 transition-all shadow-none touch-manipulation border border-zinc-200 rounded-none cursor-pointer"
+            >
+              UDFORSK
+            </motion.a>
+          </div>
         </div>
       </div>
     </section>

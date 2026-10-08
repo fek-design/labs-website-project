@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { SafeImageBox } from "./SafeImageBox";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -136,16 +136,17 @@ export function HotspotShowcase() {
       id="showcase"
       className="w-full bg-white text-zinc-950 pt-10 sm:pt-16 md:pt-20 pb-16 sm:pb-24 transition-colors duration-300"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-4 sm:space-y-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-4 sm:space-y-6">
         {/* Row 1 (1x1): Primary Feature Card: Textile Print */}
-        <div className="gsap-showcase-block relative w-full h-[360px] sm:h-[500px] md:h-[580px] rounded-none group border border-[#DFDFDF] shadow-none">
+        <div className="gsap-showcase-block relative w-full h-[360px] sm:h-[500px] md:h-[580px] rounded-none group border border-[#DFDFDF] shadow-none overflow-hidden">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <Image
+            <SafeImageBox
               src="/images/landing/showcase-textile.jpg"
               alt="Student model showcasing custom textile printing"
               fill
-              sizes="(max-width: 768px) 100vw, 1200px"
-              quality={85}
+              sizes="(max-width: 768px) 100vw, 1024px"
+              fallbackLabel="Makerspace • Tekstil Print"
+              fallbackIcon="image"
               className="object-cover object-center filter contrast-[1.05]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40" />
@@ -169,14 +170,15 @@ export function HotspotShowcase() {
         {/* Row 2 (1x2): Two Column Grid: Medialab Posters & Cameras */}
         <div className="gsap-showcase-block grid grid-cols-2 gap-3 sm:gap-6">
           {/* Poster Print */}
-          <div className="relative h-[220px] sm:h-[340px] md:h-[380px] rounded-none group border border-[#DFDFDF] shadow-none">
+          <div className="relative h-[220px] sm:h-[340px] md:h-[380px] rounded-none group border border-[#DFDFDF] shadow-none overflow-hidden">
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              <Image
+              <SafeImageBox
                 src="/images/landing/showcase-poster.jpg"
                 alt="Medialab wide format poster printing gallery"
                 fill
-                sizes="(max-width: 768px) 50vw, 600px"
-                quality={85}
+                sizes="(max-width: 768px) 50vw, 512px"
+                fallbackLabel="Medialab • Poster Print"
+                fallbackIcon="image"
                 className="object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40" />
@@ -189,18 +191,19 @@ export function HotspotShowcase() {
                 Poster Print
               </span>
             </div>
-            <HotspotBeacon x={26} y={64} title="Poster Print" category="Medialab" linkHref="#support-pillars" />
+            <HotspotBeacon x={26} y={64} title="Poster Print" category="Medialab" linkHref="/craft/plakat" />
           </div>
 
           {/* Camera Gear Rental */}
-          <div className="relative h-[220px] sm:h-[340px] md:h-[380px] rounded-none group border border-[#DFDFDF] shadow-none">
+          <div className="relative h-[220px] sm:h-[340px] md:h-[380px] rounded-none group border border-[#DFDFDF] shadow-none overflow-hidden">
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              <Image
+              <SafeImageBox
                 src="/images/landing/showcase-camera.jpg"
                 alt="Medialab pro photography and video equipment"
                 fill
-                sizes="(max-width: 768px) 50vw, 600px"
-                quality={85}
+                sizes="(max-width: 768px) 50vw, 512px"
+                fallbackLabel="Medialab • Kamera Udlån"
+                fallbackIcon="image"
                 className="object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40" />
@@ -213,19 +216,20 @@ export function HotspotShowcase() {
                 Kamera udlejning
               </span>
             </div>
-            <HotspotBeacon x={81} y={62} title="Kamera Udlejning" category="Medialab" linkHref="#support-pillars" />
+            <HotspotBeacon x={81} y={62} title="Kamera Udlejning" category="Medialab" linkHref="/katalog" />
           </div>
         </div>
 
         {/* Row 3 (1x1): 3D Print Card matching Row 1 scale */}
-        <div className="gsap-showcase-block relative w-full h-[360px] sm:h-[500px] md:h-[580px] rounded-none group border border-[#DFDFDF] shadow-none">
+        <div className="gsap-showcase-block relative w-full h-[360px] sm:h-[500px] md:h-[580px] rounded-none group border border-[#DFDFDF] shadow-none overflow-hidden">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <Image
+            <SafeImageBox
               src="/images/landing/showcase-3dprint.jpg"
               alt="Makerspace 3D printing rapid prototype game pieces"
               fill
-              sizes="(max-width: 768px) 100vw, 1200px"
-              quality={85}
+              sizes="(max-width: 768px) 100vw, 1024px"
+              fallbackLabel="Makerspace • 3D Print"
+              fallbackIcon="image"
               className="object-cover object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40" />
@@ -238,7 +242,7 @@ export function HotspotShowcase() {
               3D Print
             </span>
           </div>
-          <HotspotBeacon x={52} y={70} title="3D Printet Brik" category="Makerspace" linkHref="#support-pillars" />
+          <HotspotBeacon x={52} y={70} title="3D Printet Brik" category="Makerspace" linkHref="/craft/3d-print" />
         </div>
       </div>
     </section>

@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useRef } from "react";
-import Image from "next/image";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { useCampus } from "./CampusContext";
+import { SafeImageBox } from "./SafeImageBox";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -189,7 +189,7 @@ export function MachineTelemetrySection({
     <section
       ref={containerRef}
       id="machines"
-      className="w-full bg-black text-white py-12 sm:py-16 px-4 sm:px-6 max-w-7xl mx-auto space-y-8 sm:space-y-10 transition-all duration-300"
+      className="w-full bg-black text-white py-12 sm:py-16 px-4 sm:px-6 max-w-5xl mx-auto space-y-8 sm:space-y-10 transition-all duration-300"
     >
       {/* Dynamic Headings based on Active Lab */}
       <div className="gsap-telemetry-header space-y-3 sm:space-y-4 max-w-2xl">
@@ -238,11 +238,13 @@ export function MachineTelemetrySection({
                 >
                   <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
                     <div className="relative w-11 h-11 sm:w-14 sm:h-14 rounded-md bg-[#18181b] border border-[#262626] overflow-hidden flex-shrink-0">
-                      <Image
+                      <SafeImageBox
                         src={item.imageUrl || defaultItemImage}
                         alt={item.name}
                         fill
                         sizes="56px"
+                        fallbackLabel="LABS"
+                        fallbackIcon="cube"
                         className="object-cover"
                       />
                     </div>

@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useRef } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { CraftItemData } from "@/lib/craft-data";
+import { SafeImageBox } from "./SafeImageBox";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -87,7 +87,7 @@ export function PrototypeCarousel({ items }: PrototypeCarouselProps) {
       id="prototypes"
       className="w-full bg-white text-zinc-950 pt-12 sm:pt-16 pb-6 transition-colors duration-300 overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6 sm:space-y-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-6 sm:space-y-8">
         <div className="gsap-carousel-header max-w-xl">
           <h2 className="font-notch text-2xl sm:text-4xl md:text-5xl font-medium text-zinc-950 tracking-tight leading-tight">
             Din næste prototype
@@ -106,11 +106,13 @@ export function PrototypeCarousel({ items }: PrototypeCarouselProps) {
             >
               {/* Full Bleed Image Background Filling the Square */}
               <div className="absolute inset-0">
-                <Image
+                <SafeImageBox
                   src={item.image}
                   alt={item.name}
                   fill
                   sizes="(max-width: 640px) 192px, 240px"
+                  fallbackLabel={item.name}
+                  fallbackIcon="cube"
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>

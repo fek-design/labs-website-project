@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
-import { useCampus, CampusKey } from "./CampusContext";
+import { useCampus } from "./CampusContext";
 import { MapPin, ArrowUpRight } from "@phosphor-icons/react";
 
 export function LandingHeader() {
@@ -59,7 +59,7 @@ export function LandingHeader() {
             : "bg-transparent border-b border-transparent py-5"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between">
           <Link href="/" className="font-notch text-2xl md:text-3xl font-extrabold tracking-tighter text-white touch-manipulation">
             LABS
           </Link>
@@ -103,49 +103,67 @@ export function LandingHeader() {
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-40 bg-black/95 backdrop-blur-xl flex flex-col justify-between px-6 sm:px-8 pt-24 pb-12 overflow-y-auto"
           >
-            <nav className="flex flex-col gap-6 text-2xl sm:text-3xl font-notch text-white my-auto">
-              <a
-                href="#prototypes"
-                onClick={() => setIsOpen(false)}
-                className="hover:text-brand-cyan transition-colors py-1"
-              >
-                Prototypes
-              </a>
-              <a
-                href="#showcase"
-                onClick={() => setIsOpen(false)}
-                className="hover:text-brand-cyan transition-colors py-1"
-              >
-                Projekter & Hotspots
-              </a>
-              <a
-                href="#support-pillars"
-                onClick={() => setIsOpen(false)}
-                className="hover:text-brand-cyan transition-colors py-1"
-              >
-                Prototyping & Labs
-              </a>
-              <a
-                href="#machines"
-                onClick={() => setIsOpen(false)}
-                className="hover:text-brand-cyan transition-colors py-1"
-              >
-                Maskiner & Status
-              </a>
-              <div className="pt-6 border-t border-white/10">
+            <div className="max-w-5xl mx-auto w-full flex-1 flex flex-col justify-between">
+              <nav className="flex flex-col gap-4 sm:gap-5 text-xl sm:text-2xl font-notch text-white my-auto">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-bold block pt-2">
+                  Studerende & Værksteder
+                </span>
                 <Link
-                  href="/admin"
+                  href="/katalog"
                   onClick={() => setIsOpen(false)}
-                  className="inline-flex items-center gap-2 text-base font-sans font-bold text-brand-yellow hover:underline py-2"
+                  className="hover:text-brand-cyan transition-colors py-1 flex items-center justify-between group"
                 >
-                  <span>Admin Portal</span>
-                  <ArrowUpRight size={16} weight="bold" aria-hidden="true" />
+                  <span>Udstyrskatalog & Udlån</span>
+                  <span className="text-xs font-mono text-zinc-500 group-hover:text-brand-cyan transition-colors">SE ALLE →</span>
                 </Link>
-              </div>
-            </nav>
+                <a
+                  href="#prototypes"
+                  onClick={() => setIsOpen(false)}
+                  className="hover:text-brand-cyan transition-colors py-1"
+                >
+                  Prototypes & Inspiration
+                </a>
+                <a
+                  href="#showcase"
+                  onClick={() => setIsOpen(false)}
+                  className="hover:text-brand-cyan transition-colors py-1"
+                >
+                  Projekter & Hotspots
+                </a>
+                <a
+                  href="#machines"
+                  onClick={() => setIsOpen(false)}
+                  className="hover:text-brand-cyan transition-colors py-1"
+                >
+                  Maskiner & Live Status
+                </a>
+                <a
+                  href="#support-pillars"
+                  onClick={() => setIsOpen(false)}
+                  className="hover:text-brand-cyan transition-colors py-1"
+                >
+                  Laboratorier & Support
+                </a>
 
-            <div className="text-xs text-zinc-500 font-mono pt-6 border-t border-white/5">
-              Zealand Labs • Køge Campus
+                <div className="pt-6 mt-2 border-t border-white/10">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-bold block pb-2">
+                    Underviser & Personale
+                  </span>
+                  <Link
+                    href="/admin"
+                    onClick={() => setIsOpen(false)}
+                    className="inline-flex items-center gap-2 text-base font-sans font-bold text-brand-yellow hover:underline py-1"
+                  >
+                    <span>Admin Launchpad & Værktøjer</span>
+                    <ArrowUpRight size={16} weight="bold" aria-hidden="true" />
+                  </Link>
+                </div>
+              </nav>
+
+              <div className="text-xs text-zinc-500 font-mono pt-6 border-t border-white/5 flex items-center justify-between">
+                <span>Zealand Labs • {campus.toUpperCase()} CAMPUS</span>
+                <span className="text-[11px] text-zinc-600">Off-line Local Infrastructure</span>
+              </div>
             </div>
           </motion.div>
         )}
