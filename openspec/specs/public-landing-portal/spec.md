@@ -13,19 +13,27 @@ The system SHALL preserve the staff administration launchpad previously located 
 - **THEN** the system displays the admin console dashboard with active loan statistics, gear counts, overdue counters, and quick links to the POS calendar, machine manuals, and inventory management.
 
 ### Requirement: Hero Section and Navigation
-The system SHALL present a centered responsive hero section featuring the Zealand Labs header, campus indicator scoped to Køge Campus, hamburger drawer trigger, and an exploration call-to-action button, structured within an Apple-style narrow container column width (max 1024px / `max-w-5xl`) with generous margins. The top navigation bar SHALL automatically hide on scroll down and smoothly reappear on scroll up, while the fullscreen navigation drawer SHALL provide explicit direct pathways for Students and Teachers, including the equipment catalogue (`/katalog`), machine live status (`#machines`), lab overview (`#support-pillars`), and the staff admin portal (`/admin`). The underlying multi-campus architecture SHALL remain intact for future campus expandability.
+The system SHALL present a responsive sticky top navigation bar and hero section structured within an Apple-style narrow container column width (`max-w-5xl`). The sticky top navigation bar SHALL feature the brand logo on the left returning to `/`, centered navigation items for Showcase (`/#showcase`), Maskiner (`/#machines`), and Guides (`/craft` or craft inspiration), and a prominent high-priority CTA button for the Equipment Catalogue (`/katalog`) on the right. The navigation bar SHALL implement a GSAP/IntersectionObserver scroll spy indicating the active section on the frontpage. When an anchor link (`#showcase`, `#machines`) is clicked on `/`, the system SHALL smooth-scroll to the target section; when clicked from other public routes (such as `/katalog` or `/craft/[slug]`), the system SHALL trigger a Next.js router navigation to the corresponding frontpage anchor (`/#<anchor>`). The hamburger drawer trigger SHALL be preserved for mobile viewports.
 
 #### Scenario: User visits the root landing page
 - **WHEN** a visitor navigates to `/`
-- **THEN** the system displays the top navigation with `LABS` brand, the active campus indicator showing "Køge Campus", and the centered `Zealands Kreative hjørne` hero banner with the `UDFORSK` button, arranged within a focused Apple-style narrow layout container without yellow highlight borders, simulated campus status boxes, or extraneous paragraph text.
+- **THEN** the system displays the top navigation with `LABS` brand, the active campus indicator showing "Køge Campus", the centered navigation links, the prominent `/katalog` CTA button, and the centered `Zealands Kreative hjørne` hero banner with the `UDFORSK` button within the `max-w-5xl` column layout.
 
 #### Scenario: User scrolls down the page
 - **WHEN** a visitor scrolls downward past the header threshold (60px)
-- **THEN** the system smoothly translates the top navigation bar upward out of view (`-translate-y-full`).
+- **THEN** the system smoothly maintains the sticky top navigation bar with active scroll-spy indicators reflecting the currently viewed section.
 
 #### Scenario: User scrolls up after scrolling down
 - **WHEN** a visitor scrolls upward while anywhere down the page
-- **THEN** the system immediately and smoothly slides the top navigation bar back into view (`translate-y-0`).
+- **THEN** the system immediately and smoothly ensures the top navigation bar remains accessible with crisp backdrop styling.
+
+#### Scenario: User clicks anchor link from homepage
+- **WHEN** a visitor clicks "Showcase" or "Maskiner" while browsing `/`
+- **THEN** the browser smoothly scrolls directly to the corresponding `#showcase` or `#machines` section and updates the active spy indicator.
+
+#### Scenario: User clicks anchor link from another route
+- **WHEN** a visitor clicks "Showcase" or "Maskiner" while on `/katalog` or `/craft/[slug]`
+- **THEN** the system executes a Next.js router push to `/#showcase` or `/#machines`, redirecting to the homepage and scrolling to the target section.
 
 #### Scenario: User opens navigation drawer
 - **WHEN** a visitor clicks or taps the hamburger navigation toggle
@@ -82,11 +90,15 @@ The system SHALL display the total machine inventory and live workstation cards 
 - **THEN** the system queries active static machines and borrowable items by their foreign key `lab.slug` (`makerspace` and `medialab`) and displays verified machine counts alongside individual hardware status cards.
 
 ### Requirement: Brand Footer and Navigation Directory
-The system SHALL render a branded footer styled in brand cyan with a clear, non-repetitive sitemap directory structured within Apple-style narrow column boundaries, providing unambiguous routes for both Student and Teacher personas.
+The system SHALL render a persistent 4-column utility belt footer across all public routes (`/`, `/katalog`, `/craft/[slug]`), structured within an Apple-style narrow container (`max-w-5xl`), organized into four distinct operational columns.
 
 #### Scenario: Footer index navigation
-- **WHEN** the visitor reaches the bottom of the page
-- **THEN** the system renders the cyan footer with `LABS` typography, mission statement, distinct direct links to the Equipment Catalogue (`/katalog`), Makerspace, Medialab, and Admin Console (`/admin`), without repeating redundant anchor tags.
+- **WHEN** a visitor views the footer on any public route
+- **THEN** the system renders a 4-column responsive grid containing:
+  - **Column 1 (Zealand Labs)**: Campus physical location, opening hours, and real-time lab operational status indicator (e.g. "Makerspace: Åben").
+  - **Column 2 (Udforsk)**: Direct links to Udstyrskatalog (`/katalog`), Craft Guides (`/craft` / `/craft/t-shirt`), and Prototype Galleri (`/#prototypes`).
+  - **Column 3 (Support & Pillars)**: Makerspace Retningslinjer (`/#support-pillars`), Medialab Retningslinjer (`/#support-pillars`), and Kontakt / Hjælp.
+  - **Column 4 (Personale)**: Underviser Login trigger and direct link to Admin Dashboard (`/admin`) requiring authentication.
 
 ### Requirement: Asymmetrical Span Allocations and Human Attention Optimization
 The Public Landing Portal SHALL structure core editorial sections (Hero, Machine Telemetry, Prototyping Support) using asymmetrical grid span allocations (such as 35/65 or 40/60) where textual copy is strictly bound to ergonomic reading measures (45–65 characters / `max-w-prose`) and graphic/interactive components occupy the primary visual space.

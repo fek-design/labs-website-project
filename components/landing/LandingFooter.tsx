@@ -1,51 +1,186 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import { ArrowUpRight, MapPin, Clock, ShieldCheck } from "@phosphor-icons/react";
 
 interface LandingFooterProps {
   className?: string;
 }
 
-export function LandingFooter({ className = "mt-8 sm:mt-12" }: LandingFooterProps) {
+export function LandingFooter({ className = "" }: LandingFooterProps) {
   return (
-    <footer className={`w-full bg-brand-cyan text-white py-12 sm:py-16 px-4 sm:px-6 ${className}`}>
-      <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-8 sm:gap-12">
-        {/* Left Brand info */}
-        <div className="space-y-2 sm:space-y-3 max-w-sm">
-          <span className="font-notch text-3xl sm:text-5xl font-extrabold tracking-tighter block">
-            LABS
-          </span>
-          <p className="font-sans text-xs sm:text-sm font-extralight text-white/90 leading-snug">
-            Initializing workspaces.
-            <br />
-            Isolating variables.
-          </p>
+    <footer
+      className={`w-full bg-[#09090b] text-white border-t border-[#262626] py-12 sm:py-16 px-4 sm:px-8 select-none ${className}`}
+      aria-label="Sidefod og navigation"
+    >
+      <div className="max-w-5xl mx-auto">
+        {/* Responsive 8-12-16 Grid Structure (Stacked on mobile, Scaled 12-col on desktop) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-8 items-start">
+          {/* Column 1: Zealand Labs Brand, Location & Live Status (Spans 4 of 12) */}
+          <div className="sm:col-span-2 lg:col-span-4 space-y-4">
+            <div className="space-y-1.5">
+              <span className="font-notch text-3xl sm:text-4xl font-extrabold tracking-tighter text-white block">
+                LABS
+              </span>
+              <p className="font-headline text-xs font-semibold text-zinc-400">
+                Zealand Sjællands Erhvervsakademi
+              </p>
+            </div>
+
+            <div className="space-y-2 text-xs font-sans text-zinc-400">
+              <div className="flex items-center gap-2">
+                <MapPin size={14} weight="bold" className="text-[#009FE3] shrink-0" aria-hidden="true" />
+                <span>Lyngvej 21, 4600 Køge</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock size={14} weight="bold" className="text-zinc-500 shrink-0" aria-hidden="true" />
+                <span>Hverdage 08:30 – 16:00 (Onsdag 14–17 i Makerspace)</span>
+              </div>
+            </div>
+
+            {/* Real-Time Lab Status Pill */}
+            <div className="pt-2">
+              <div
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#151517] border border-[#262626] text-xs font-mono shadow-sm"
+                role="status"
+                aria-label="Værksted status: Åben"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <span className="text-zinc-300 font-medium">Makerspace & MediaLab Åbent</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Column 2: Udforsk (Spans 3 of 12) */}
+          <div className="space-y-3 lg:col-span-3">
+            <span className="font-headline text-xs font-bold uppercase tracking-wider text-[#009FE3] block">
+              Udforsk
+            </span>
+            <nav className="flex flex-col gap-2 font-sans text-xs sm:text-sm text-zinc-300" aria-label="Udforsk links">
+              <Link
+                href="/katalog"
+                className="hover:text-white transition-colors py-0.5 inline-flex items-center justify-between group focus:outline-none focus-visible:ring-1 focus-visible:ring-[#009FE3] rounded"
+              >
+                <span className="font-bold text-white group-hover:text-[#009FE3] transition-colors">
+                  Udstyrskatalog & Udlån
+                </span>
+                <span className="text-[10px] font-mono text-zinc-500 group-hover:text-[#009FE3]">↗</span>
+              </Link>
+              <Link
+                href="/craft/t-shirt"
+                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
+              >
+                Prototype Guides
+              </Link>
+              <Link
+                href="/#showcase"
+                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
+              >
+                Projekter & Hotspots
+              </Link>
+              <Link
+                href="/#machines"
+                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
+              >
+                Maskintelemetri (Live)
+              </Link>
+              <Link
+                href="/#prototypes"
+                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
+              >
+                Inspiration & Galleri
+              </Link>
+            </nav>
+          </div>
+
+          {/* Column 3: Værksteder & Support (Spans 3 of 12) */}
+          <div className="space-y-3 lg:col-span-3">
+            <span className="font-headline text-xs font-bold uppercase tracking-wider text-[#FFED00] block">
+              Værksteder & Support
+            </span>
+            <nav className="flex flex-col gap-2 font-sans text-xs sm:text-sm text-zinc-300" aria-label="Værksted og support links">
+              <Link
+                href="/#support-pillars"
+                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
+              >
+                Makerspace Retningslinjer
+              </Link>
+              <Link
+                href="/#support-pillars"
+                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
+              >
+                MediaLab & Udlånsregler
+              </Link>
+              <a
+                href="/uploads/manuals/Makerspace_Universal_Safety_SOP_v2.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200 inline-flex items-center gap-1.5"
+              >
+                <span>Sikkerhedsmanualer (SOPs)</span>
+                <span className="text-[10px] font-mono text-zinc-500">PDF</span>
+              </a>
+              <a
+                href="/docs/USER_MANUAL.md"
+                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
+              >
+                Brugermanual (Hurtigguide)
+              </a>
+              <span className="text-[11px] text-zinc-500 pt-1 block">
+                Brug for hjælp? Spørg lab-vagten i åbningstiden.
+              </span>
+            </nav>
+          </div>
+
+          {/* Column 4: Personale & Gateway (Spans 2 of 12) */}
+          <div className="space-y-3 lg:col-span-2">
+            <span className="font-headline text-xs font-bold uppercase tracking-wider text-[#E6007E] block">
+              Personale
+            </span>
+            <nav className="flex flex-col gap-2 font-sans text-xs sm:text-sm text-zinc-300" aria-label="Personale links">
+              <Link
+                href="/admin"
+                className="hover:text-white transition-colors py-0.5 inline-flex items-center gap-1 font-bold text-white hover:text-[#FFED00] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FFED00] rounded"
+              >
+                <span>Admin Portal</span>
+                <ArrowUpRight size={12} weight="bold" aria-hidden="true" />
+              </Link>
+              <Link
+                href="/admin/pos"
+                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
+              >
+                POS Udlånsskranke
+              </Link>
+              <Link
+                href="/admin/pos"
+                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
+              >
+                Lager & Maskiner
+              </Link>
+
+              <div className="pt-2">
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-zinc-500 bg-[#151517] px-2 py-1 rounded border border-[#262626]">
+                  <ShieldCheck size={12} weight="bold" className="text-emerald-400" aria-hidden="true" />
+                  <span>Zero-Cloud</span>
+                </span>
+              </div>
+            </nav>
+          </div>
         </div>
 
-        {/* Right Index Navigation */}
-        <div className="space-y-3 w-full md:w-auto">
-          <span className="font-notch text-xs font-bold uppercase tracking-widest text-white/80 block">
-            SITEMAP & OVERSIGT
-          </span>
-          <nav className="flex flex-col gap-1.5 font-notch text-xs sm:text-sm font-light tracking-wider text-white">
-            <Link href="/katalog" className="py-1 hover:text-black transition-colors flex items-center font-bold">
-              UDSTYRSKATALOG & UDLÅN ↗
-            </Link>
-            <a href="#support-pillars" className="py-1 hover:text-black transition-colors flex items-center">
-              MAKERSPACE & FABRICATION
-            </a>
-            <a href="#machines" className="py-1 hover:text-black transition-colors flex items-center">
-              MEDIALAB & MASKINSTATUS
-            </a>
-            <Link href="/admin" className="py-1 hover:text-black transition-colors text-white font-bold pt-1 text-xs flex items-center">
-              ADMIN CONSOLE (UNDERVISER) ↗
-            </Link>
-          </nav>
-        </div>
-      </div>
+        {/* Bottom Utility Bar (Divisible by 8 rhythm: pt-8 mt-12 = 32px / 48px) */}
+        <div className="pt-8 mt-12 border-t border-[#262626] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono text-zinc-500">
+          <div className="flex items-center gap-2">
+            <span>© 2026 Zealand Labs</span>
+            <span>•</span>
+            <span>Køge Campus</span>
+          </div>
 
-      <div className="max-w-5xl mx-auto pt-8 sm:pt-10 mt-8 sm:mt-10 border-t border-white/20 flex flex-col sm:flex-row items-start sm:items-center justify-between text-[11px] text-white/80 gap-2 font-mono">
-        <span>Zealand Labs • Køge Campus</span>
-        <span>Offline Local Infrastructure</span>
+          <div className="flex items-center gap-3 text-[11px] text-zinc-500">
+            <span>100% Offline Local Network Infrastructure</span>
+          </div>
+        </div>
       </div>
     </footer>
   );
