@@ -14,7 +14,8 @@
 │   ├── #prototypes            ── Prototype Inspiration Carousel (T-Shirt, Kop, 3D Print...)
 │   ├── #showcase              ── Interactive Hotspots (Tekstil, Plakat, Kamera, 3D)
 │   ├── #machines              ── Live Hardware & Workstation Status (Realtidstelemetri)
-│   ├── #support-pillars       ── Makerspace & Medialab Pillars & Support Guides
+│   ├── /makerspace            ── Makerspace Fabrikation (3D-Print, Tekstil, Laserskæring)
+│   ├── /medialab              ── Medialab AV-Studio (4K Kamera, Podcast, Plakatprint)
 │   ├── /katalog               ── Hele Udstyrskataloget (Søgning, Filtre, Udlånsstatus)
 │   └── /craft/[slug]          ── Dybdegående Craft Guides & Trin-for-trin Maskinmanualer
 │       ├── /craft/t-shirt

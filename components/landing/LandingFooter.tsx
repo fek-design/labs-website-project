@@ -89,16 +89,24 @@ export function LandingFooter({ className = "" }: LandingFooterProps) {
             </span>
             <nav className="flex flex-col gap-2 font-sans text-xs sm:text-sm text-zinc-300" aria-label="Værksted og support links">
               <Link
-                href="/#support-pillars"
-                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
+                href="/makerspace"
+                className="hover:text-white transition-colors py-0.5 text-zinc-300 hover:text-[#009FE3] inline-flex items-center justify-between"
               >
-                Makerspace Retningslinjer
+                <span>Makerspace Værksted</span>
+                <span className="text-[10px] font-mono text-[#009FE3]">↗</span>
+              </Link>
+              <Link
+                href="/medialab"
+                className="hover:text-white transition-colors py-0.5 text-zinc-300 hover:text-[#E6007E] inline-flex items-center justify-between"
+              >
+                <span>MediaLab AV-Udlån</span>
+                <span className="text-[10px] font-mono text-[#E6007E]">↗</span>
               </Link>
               <Link
                 href="/#support-pillars"
                 className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
               >
-                MediaLab & Udlånsregler
+                Prototyping Retningslinjer
               </Link>
               <span className="text-[11px] text-zinc-500 pt-2 block border-t border-white/10">
                 Brug for vejledning eller materialer? Mød op i lab-åbningstiden eller tag fat i lab-vagten.

@@ -1,42 +1,41 @@
 ## Context
 
-See `proposal.md` for motivation. Zealand Labs requires top navigation consistency across all viewports (removing the desktop-only Katalog CTA button and employing the universal burger menu trigger alongside the campus badge), strict hyperlink integrity in the footer (no links to unrouted files, no open status pill, no copyright notice), an 8-12-16 asymmetrical grid layout in `CampusLabExplorer.tsx` (5 columns text / 7 columns graphical card), AI-first schema and crawler guardrails, and WCAG AA accessibility skip navigation.
+See `proposal.md` for motivation. The Zealand Labs web application requires responsive layout uniformity (universal hamburger topnav, clean footer without blank links or status pill/copyright, 8-12-16 asymmetrical grid layout), complete cross-device reliability (preventing broken click events and database mutations when accessed over local network IPs), dedicated laboratory portal routes (`/makerspace` and `/medialab`), and resolution of local Playwright test runner issues.
 
 ## Goals / Non-Goals
 
 **Goals:**
-- Unify `LandingHeader.tsx` so that all viewports (desktop, tablet, mobile) render the `LABS` brand, location badge (`KØGE CAMPUS`), and the hamburger trigger. Remove the desktop quicklaunch CTA button and redundant topnav center anchor links.
-- Prune `LandingFooter.tsx`: remove the "is currently open" status pill, remove the copyright notice, and remove links to non-existent files (`/uploads/manuals/...`, `/docs/USER_MANUAL.md`).
-- Refactor `CampusLabExplorer.tsx` to follow an 8-12-16 grid structure divisible by 8: stacked on mobile (`grid-cols-1 gap-8`), scaled on desktop (`lg:grid-cols-12 gap-8`) with 5-column left narrative and 7-column right spotlight card.
-- Inject Schema.org `HowTo` structured data into `app/craft/[slug]/page.tsx` via `lib/schema.ts`.
-- Implement `app/robots.ts` to allow public discovery routes while disallowing private `/admin/` and `/api/` paths.
-- Sanitize `app/sitemap.ts` to exclude private administrative paths (`/admin`, `/admin/pos`).
-- Provide keyboard skip link in `app/layout.tsx` targeting `<main id="main-content">` and ensure all landing/content pages contain `id="main-content"`.
-- Configure `next.config.ts` for AVIF/WebP image generation and gzip/brotli compression.
+- Provide uniform top navigation across mobile, tablet, and desktop: `LABS` brand on left, `KØGE CAMPUS` badge + universal hamburger trigger on right.
+- Prune all dead/blank links in `LandingFooter.tsx` and eliminate the open status pill and copyright notice.
+- Implement 8-12-16 asymmetrical grid spans (5-col text narrative / 7-col spotlight card) in `CampusLabExplorer.tsx`.
+- Fix cross-device click events by removing client-side hydration mismatches in `FirstTimeCampusGate.tsx` and `CampusContext.tsx`.
+- Enable cross-device database actions over local network IP by configuring Server Action allowed origins in `next.config.ts`.
+- Reintroduce dedicated laboratory portal routes: `app/makerspace/page.tsx` and `app/medialab/page.tsx`.
+- Configure Playwright browser automation to use local Chromium binaries without external CDN download crashes.
 
 **Non-Goals:**
-- Modifying POS backend business logic or database schema.
-- Changing admin dashboard layout or authentication authorization gates.
+- Changing database schema or admin authentication logic.
+- Adding third-party cloud dependencies (strict Zero-Cloud mandate maintained).
 
 ## Decisions
 
-### Decision 1: Universal Hamburger Navigation Trigger
-- **Rationale**: The user explicitly requested removing the quicklaunch Katalog button from the top navigation and using a hamburger menu regardless of viewport. Having a uniform header (`LABS` + `KØGE CAMPUS` + Hamburger button) across mobile, tablet, and desktop creates a minimalist, consistent aesthetic, leaving editorial space uncluttered while offering rich navigation inside the slide-down drawer.
-- **Alternatives Considered**: Retaining desktop horizontal center links and only removing the Katalog button. Rejected because the requirement explicitly specifies: "no matter the viewport have a burger menu".
+### Decision 1: Hydration Mismatch Defense for Cross-Device Interactivity
+- **Rationale**: When React hydrates on a mobile device or secondary browser, any discrepancy between server-rendered HTML and client state (e.g. synchronously reading `localStorage` in `useState` initializers) causes React to cancel event delegation or throw hydration warnings, resulting in non-responsive click events.
+- **Solution**: All client state relying on browser-specific storage or viewport measurement starts with static canonical values and updates strictly within `useEffect` after mount.
 
-### Decision 2: Elimination of Phantom Footer Links & Visual Clutter
-- **Rationale**: Linking to markdown documentation (`USER_MANUAL.md`) or non-existent static SOP files directly from public navigation leads to 404s and broken user journeys. Pruning these dead links maintains a 100% functional link tree. Furthermore, removing the "is currently open" status pill and copyright notice satisfies direct user aesthetic and operational requirements.
-- **Alternatives Considered**: Keeping empty anchor tags (`#`). Rejected because dead `#` links confuse screen readers and visitors.
+### Decision 2: Next.js Server Action Allowed Origins for Local Area Network
+- **Rationale**: Next.js App Router enforces strict Host-Origin matching for Server Actions. When a student or educator accesses `http://192.168.1.50:3000` from their phone, Server Action requests (such as catalogue filters or inventory queries) are rejected with 403 unless the LAN origin is explicitly permitted.
+- **Solution**: Configure `experimental: { serverActions: { allowedOrigins: ['localhost:3000', '127.0.0.1:3000', '192.168.*', '10.*'] } }` in `next.config.ts`.
 
-### Decision 3: 8-12-16 Asymmetrical Span Layout (5-col / 7-col)
-- **Rationale**: An asymmetrical 12-column grid (`lg:grid-cols-12`) with 5 columns for text copy and 7 columns for the graphical spotlight card optimizes human eye span (avoiding lines longer than 65 characters) while providing prominent visual weight to the CMYK color-coded lab spotlight. The mobile layout stacks vertically (`grid-cols-1`) with 32px (`gap-8`) rhythm.
-- **Alternatives Considered**: 6-col / 6-col symmetrical split. Rejected because symmetrical text stretches too wide or leaves visual cards under-emphasized.
+### Decision 3: Dedicated Lab Portal Routes (`/makerspace` & `/medialab`)
+- **Rationale**: Users frequently want to explore specific lab capabilities, safety requirements, and available machinery without opening the admin console or generic catalogue.
+- **Solution**: Implement dedicated pages under `app/makerspace/page.tsx` and `app/medialab/page.tsx` displaying lab-specific equipment lists, opening hours, safety SOPs, and craft links.
 
-### Decision 4: AI-First JSON-LD and Crawler Control
-- **Rationale**: Generating `HowTo` structured schema in `lib/schema.ts` allows search engines and generative AI agents to parse equipment, materials, and step-by-step instructions. Creating `app/robots.ts` and removing `/admin` routes from `app/sitemap.ts` prevents AI crawlers from wasting crawl budget on private staff portals.
-- **Alternatives Considered**: Static robots.txt in `public/`. Rejected because Next.js App Router dynamic `robots.ts` ensures environment-aware base URLs.
+### Decision 4: Playwright Driver Fix
+- **Rationale**: Automated browser testing subagents and scripts failed due to Azure CDN 404 errors when downloading Mac ARM64 driver binaries.
+- **Solution**: Configure Playwright to use system-installed Chromium (`/Applications/Google Chrome.app` or local browser channel) and supply fallback execution scripts.
 
 ## Risks / Trade-offs
 
-- [Desktop users must click hamburger button to access section anchors] → Mitigated by smooth opening animations and direct links inside the drawer, plus prominent in-page CTAs throughout the editorial scroll.
-- [External links to sitemap could cache old admin routes] → Mitigated by Next.js revalidating dynamic sitemap routes immediately on deployment.
+- [Permitting LAN origins in Server Actions] → Mitigated by restricting wildcards to RFC 1918 private IPv4 subnets (`192.168.*`, `10.*`).
+- [New lab routes increase route count] → Mitigated by leveraging existing components and static generation (`generateStaticParams`).

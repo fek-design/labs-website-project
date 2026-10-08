@@ -15,7 +15,6 @@ export function LandingHeader() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  const [activeSection, setActiveSection] = useState<string | null>(null);
 
   // Dynamic Scroll Listener
   useEffect(() => {
@@ -53,36 +52,6 @@ export function LandingHeader() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isOpen]);
-
-  // Scroll Spy for Home Page Sections
-  useEffect(() => {
-    if (pathname !== "/") {
-      setActiveSection(null);
-      return;
-    }
-
-    const sectionIds = ["prototypes", "showcase", "support-pillars", "machines"];
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        }
-      },
-      {
-        rootMargin: "-20% 0px -55% 0px",
-        threshold: 0.1,
-      }
-    );
-
-    sectionIds.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, [pathname]);
 
   // Handle cross-route incoming hash anchor scrolls
   useEffect(() => {
@@ -221,6 +190,22 @@ export function LandingHeader() {
                 >
                   Laboratorier & Support
                 </a>
+                <Link
+                  href="/makerspace"
+                  onClick={() => setIsOpen(false)}
+                  className="hover:text-[#009FE3] transition-colors py-1 flex items-center justify-between"
+                >
+                  <span>Makerspace Værksted</span>
+                  <span className="text-xs font-mono text-[#009FE3]">KØGE ↗</span>
+                </Link>
+                <Link
+                  href="/medialab"
+                  onClick={() => setIsOpen(false)}
+                  className="hover:text-[#E6007E] transition-colors py-1 flex items-center justify-between"
+                >
+                  <span>Medialab AV-Studio</span>
+                  <span className="text-xs font-mono text-[#E6007E]">KØGE ↗</span>
+                </Link>
 
                 <div className="pt-6 mt-2 border-t border-white/10">
                   <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-bold block pb-2">

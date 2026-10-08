@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/katalog", "/craft/"],
+        allow: ["/", "/katalog", "/craft/", "/makerspace", "/medialab"],
         disallow: ["/admin/", "/api/"],
       },
     ],

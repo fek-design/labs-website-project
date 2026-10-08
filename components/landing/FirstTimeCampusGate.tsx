@@ -13,11 +13,6 @@ interface FirstTimeCampusGateProps {
 const CAMPUSES: CampusKey[] = ["køge"];
 
 export function FirstTimeCampusGate({ forceShow = false, onEnter }: FirstTimeCampusGateProps) {
-  // Scoped to Køge: Bypassed to avoid blocking visitors with single-campus selection
-  if (!forceShow) {
-    return null;
-  }
-
   const { campus, setCampus } = useCampus();
   const [selectedCampus, setSelectedCampus] = useState<CampusKey>(
     campus in CAMPUS_DATA ? campus : "køge"
@@ -27,16 +22,16 @@ export function FirstTimeCampusGate({ forceShow = false, onEnter }: FirstTimeCam
 
   useEffect(() => {
     setHasMounted(true);
+    if (!forceShow) {
+      setIsOpen(false);
+      return;
+    }
 
     try {
       const stored = localStorage.getItem(STORAGE_KEY_CAMPUS);
       if (stored && stored in CAMPUS_DATA) {
         setSelectedCampus(stored as CampusKey);
-        if (forceShow) {
-          setIsOpen(true);
-        } else {
-          setIsOpen(false);
-        }
+        setIsOpen(forceShow);
       } else {
         setSelectedCampus("køge");
         setIsOpen(true);
@@ -48,7 +43,7 @@ export function FirstTimeCampusGate({ forceShow = false, onEnter }: FirstTimeCam
 
   // Lock background scrolling while modal is open
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !forceShow) return;
 
     const originalBodyOverflow = document.body.style.overflow;
     const originalHtmlOverflow = document.documentElement.style.overflow;
@@ -63,7 +58,7 @@ export function FirstTimeCampusGate({ forceShow = false, onEnter }: FirstTimeCam
       document.documentElement.style.overflow = originalHtmlOverflow;
       document.body.style.touchAction = originalTouchAction;
     };
-  }, [isOpen]);
+  }, [isOpen, forceShow]);
 
   // Synchronize internal selection if context changes
   useEffect(() => {
@@ -85,7 +80,7 @@ export function FirstTimeCampusGate({ forceShow = false, onEnter }: FirstTimeCam
     }
   };
 
-  if (!hasMounted) {
+  if (!hasMounted || !forceShow || !isOpen) {
     return null;
   }
 
