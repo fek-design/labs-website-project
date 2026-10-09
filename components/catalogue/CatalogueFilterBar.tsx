@@ -36,7 +36,7 @@ export function CatalogueFilterBar({
   return (
     <div className="w-full space-y-6">
       {/* Search Bar - Figma node 144:351: #383838 background, sharp corners, rounded-none */}
-      <div className="w-full bg-[#383838] p-3 sm:p-4 rounded-none border border-white/5 transition-all focus-within:border-[#555555]">
+      <div className="w-full bg-[#383838] p-3 sm:p-4 rounded-none border border-white/5 transition-all focus-within:border-[#009FE3] focus-within:ring-2 focus-within:ring-[#009FE3]">
         <div className="relative flex items-center">
           <MagnifyingGlass
             size={18}
@@ -55,7 +55,7 @@ export function CatalogueFilterBar({
             <button
               type="button"
               onClick={() => onSearchChange("")}
-              className="p-1 text-zinc-400 hover:text-white transition-colors mr-1 cursor-pointer"
+              className="p-1 text-zinc-400 hover:text-white transition-colors mr-1 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3]"
               aria-label="Ryd søgning"
             >
               <X size={14} weight="bold" aria-hidden="true" />
@@ -74,7 +74,7 @@ export function CatalogueFilterBar({
           <button
             type="button"
             onClick={() => onLabChange("all")}
-            className={`px-3 py-1.5 text-xs font-mono uppercase rounded-none border transition-colors cursor-pointer ${
+            className={`px-3 py-1.5 text-xs font-mono uppercase rounded-none border transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3] ${
               selectedLab === "all"
                 ? "bg-white text-black border-white font-medium"
                 : "bg-zinc-900/80 text-zinc-300 border-zinc-700 hover:border-zinc-500 hover:text-white"
@@ -89,7 +89,7 @@ export function CatalogueFilterBar({
                 key={lab}
                 type="button"
                 onClick={() => onLabChange(lab)}
-                className={`px-3 py-1.5 text-xs font-mono uppercase rounded-none border transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 text-xs font-mono uppercase rounded-none border transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3] ${
                   isActive
                     ? "bg-[#009FE3] text-black border-[#009FE3] font-semibold"
                     : "bg-zinc-900/80 text-zinc-300 border-zinc-700 hover:border-zinc-500 hover:text-white"
@@ -109,7 +109,7 @@ export function CatalogueFilterBar({
           <button
             type="button"
             onClick={() => onCategoryChange("all")}
-            className={`px-3 py-1 text-xs font-sans rounded-none border transition-colors cursor-pointer ${
+            className={`px-3 py-1 text-xs font-sans rounded-none border transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3] ${
               selectedCategory === "all"
                 ? "bg-white text-black border-white font-medium"
                 : "bg-zinc-900/60 text-zinc-400 border-zinc-800 hover:border-zinc-600 hover:text-zinc-200"
@@ -124,7 +124,7 @@ export function CatalogueFilterBar({
                 key={cat}
                 type="button"
                 onClick={() => onCategoryChange(cat)}
-                className={`px-3 py-1 text-xs font-sans rounded-none border transition-colors cursor-pointer ${
+                className={`px-3 py-1 text-xs font-sans rounded-none border transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3] ${
                   isActive
                     ? "bg-white text-black border-white font-medium"
                     : "bg-zinc-900/60 text-zinc-400 border-zinc-800 hover:border-zinc-600 hover:text-zinc-200"

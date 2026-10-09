@@ -69,7 +69,7 @@ export function AdminConsoleClient({ initialStats }: AdminConsoleClientProps) {
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-6 sm:px-6 sm:py-8 space-y-8">
+        <main id="main-content" className="flex-1 max-w-5xl w-full mx-auto px-4 py-6 sm:px-6 sm:py-8 space-y-8">
           {/* Dynamic Views */}
           {mainNav === "FRONT_DESK" && (
             <EquipmentPOS labSlug={activeLab} initialStats={initialStats} />

@@ -57,25 +57,25 @@ export function LandingFooter({ className = "" }: LandingFooterProps) {
               </Link>
               <Link
                 href="/craft/t-shirt"
-                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
+                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#009FE3] rounded"
               >
                 Prototype Guides
               </Link>
               <Link
                 href="/#showcase"
-                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
+                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#009FE3] rounded"
               >
                 Projekter & Hotspots
               </Link>
               <Link
                 href="/#machines"
-                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
+                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#009FE3] rounded"
               >
                 Maskintelemetri (Live)
               </Link>
               <Link
                 href="/#prototypes"
-                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
+                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#009FE3] rounded"
               >
                 Inspiration & Galleri
               </Link>
@@ -90,21 +90,21 @@ export function LandingFooter({ className = "" }: LandingFooterProps) {
             <nav className="flex flex-col gap-2 font-sans text-xs sm:text-sm text-zinc-300" aria-label="Værksted og support links">
               <Link
                 href="/makerspace"
-                className="hover:text-white transition-colors py-0.5 text-zinc-300 hover:text-[#009FE3] inline-flex items-center justify-between"
+                className="hover:text-white transition-colors py-0.5 text-zinc-300 hover:text-[#009FE3] inline-flex items-center justify-between focus:outline-none focus-visible:ring-1 focus-visible:ring-[#009FE3] rounded"
               >
                 <span>Makerspace Værksted</span>
                 <span className="text-[10px] font-mono text-[#009FE3]">↗</span>
               </Link>
               <Link
                 href="/medialab"
-                className="hover:text-white transition-colors py-0.5 text-zinc-300 hover:text-[#E6007E] inline-flex items-center justify-between"
+                className="hover:text-white transition-colors py-0.5 text-zinc-300 hover:text-[#E6007E] inline-flex items-center justify-between focus:outline-none focus-visible:ring-1 focus-visible:ring-[#E6007E] rounded"
               >
                 <span>MediaLab AV-Udlån</span>
                 <span className="text-[10px] font-mono text-[#E6007E]">↗</span>
               </Link>
               <Link
                 href="/#support-pillars"
-                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
+                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FFED00] rounded"
               >
                 Prototyping Retningslinjer
               </Link>
@@ -129,7 +129,7 @@ export function LandingFooter({ className = "" }: LandingFooterProps) {
               </Link>
               <Link
                 href="/admin/pos"
-                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200"
+                className="hover:text-white transition-colors py-0.5 text-zinc-400 hover:text-zinc-200 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#009FE3] rounded"
               >
                 POS Udlånsskranke
               </Link>

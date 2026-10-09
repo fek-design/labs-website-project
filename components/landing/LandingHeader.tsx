@@ -155,7 +155,7 @@ export function LandingHeader() {
                 <Link
                   href="/katalog"
                   onClick={() => setIsOpen(false)}
-                  className="hover:text-[#009FE3] transition-colors py-1 flex items-center justify-between group"
+                  className="hover:text-[#009FE3] transition-colors py-1 flex items-center justify-between group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3] rounded"
                 >
                   <span>Udstyrskatalog & Udlån</span>
                   <span className="text-xs font-mono text-zinc-500 group-hover:text-[#009FE3] transition-colors">
@@ -165,35 +165,35 @@ export function LandingHeader() {
                 <a
                   href="#prototypes"
                   onClick={(e) => handleAnchorClick(e, "prototypes")}
-                  className="hover:text-[#009FE3] transition-colors py-1"
+                  className="hover:text-[#009FE3] transition-colors py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3] rounded"
                 >
                   Prototypes & Guides
                 </a>
                 <a
                   href="#showcase"
                   onClick={(e) => handleAnchorClick(e, "showcase")}
-                  className="hover:text-[#009FE3] transition-colors py-1"
+                  className="hover:text-[#009FE3] transition-colors py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3] rounded"
                 >
                   Projekter & Hotspots
                 </a>
                 <a
                   href="#machines"
                   onClick={(e) => handleAnchorClick(e, "machines")}
-                  className="hover:text-[#009FE3] transition-colors py-1"
+                  className="hover:text-[#009FE3] transition-colors py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3] rounded"
                 >
                   Maskiner & Live Status
                 </a>
                 <a
                   href="#support-pillars"
                   onClick={(e) => handleAnchorClick(e, "support-pillars")}
-                  className="hover:text-[#009FE3] transition-colors py-1"
+                  className="hover:text-[#009FE3] transition-colors py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3] rounded"
                 >
                   Laboratorier & Support
                 </a>
                 <Link
                   href="/makerspace"
                   onClick={() => setIsOpen(false)}
-                  className="hover:text-[#009FE3] transition-colors py-1 flex items-center justify-between"
+                  className="hover:text-[#009FE3] transition-colors py-1 flex items-center justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3] rounded"
                 >
                   <span>Makerspace Værksted</span>
                   <span className="text-xs font-mono text-[#009FE3]">KØGE ↗</span>
@@ -201,23 +201,31 @@ export function LandingHeader() {
                 <Link
                   href="/medialab"
                   onClick={() => setIsOpen(false)}
-                  className="hover:text-[#E6007E] transition-colors py-1 flex items-center justify-between"
+                  className="hover:text-[#E6007E] transition-colors py-1 flex items-center justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E6007E] rounded"
                 >
                   <span>Medialab AV-Studio</span>
                   <span className="text-xs font-mono text-[#E6007E]">KØGE ↗</span>
                 </Link>
 
-                <div className="pt-6 mt-2 border-t border-white/10">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-bold block pb-2">
+                <div className="pt-6 mt-2 border-t border-white/10 flex flex-col gap-2">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-bold block pb-1">
                     Underviser & Personale
                   </span>
                   <Link
                     href="/admin"
                     onClick={() => setIsOpen(false)}
-                    className="inline-flex items-center gap-2 text-base font-sans font-bold text-[#FFED00] hover:underline py-1"
+                    className="inline-flex items-center justify-between text-base font-sans font-bold text-[#FFED00] hover:underline py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3] rounded"
                   >
                     <span>Admin Launchpad & Værktøjer</span>
                     <ArrowUpRight size={16} weight="bold" aria-hidden="true" />
+                  </Link>
+                  <Link
+                    href="/admin/pos"
+                    onClick={() => setIsOpen(false)}
+                    className="inline-flex items-center justify-between text-sm font-sans text-zinc-400 hover:text-white py-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009FE3] rounded"
+                  >
+                    <span>POS Udlånsskranke</span>
+                    <span className="text-xs font-mono text-zinc-500">DIREKTE ↗</span>
                   </Link>
                 </div>
               </nav>

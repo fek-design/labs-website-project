@@ -90,7 +90,7 @@ export function ScannerInput({
             ? "border-[#009FE3]"
             : scanFeedback === "WARN"
             ? "border-[#E6007E]"
-            : "border-[#333333] focus-within:border-[#009FE3]"
+            : "border-[#333333] focus-within:border-[#009FE3] focus-within:ring-2 focus-within:ring-[#009FE3]"
         }`}
       >
         {/* Left: Barcode icon + Input */}
